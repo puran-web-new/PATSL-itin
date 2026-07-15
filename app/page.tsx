@@ -1,1 +1,3 @@
-'use client'\n\nexport default function Home() {\n  return (\n    <main className=\"flex min-h-screen flex-col items-center justify-between p-24\">\n      <div className=\"z-10 w-full max-w-5xl items-center justify-between font-mono text-sm\">\n        <h1 className=\"text-4xl font-bold\">PATSL ITIN Application Portal</h1>\n        <p className=\"mt-4 text-lg\">Welcome to the ITIN application system</p>\n      </div>\n    </main>\n  )\n}
+'use client';
+import TaxFormsWizard from '../../components/form/TaxFormsWizard';
+export default function HomePage(){ return <main className='min-h-screen bg-slate-50 p-8'><TaxFormsWizard /></main>; }

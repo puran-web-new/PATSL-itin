@@ -1,45 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    // 1. Fetch client data from Supabase/Neon using params.id
-    const clientData = {
-      firstName: "John",
-      lastName: "Doe",
-      reasonForApplying: "a", // Checkbox 'a'
-      foreignAddress: "123 Main St, London",
-    };
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const templatePath = path.resolve(process.cwd(), 'public', 'templates', 'fw7.pdf');
 
-    // 2. Read the blank official IRS PDF template
-    const templatePath = path.resolve(process.cwd(), 'public/templates/fw7.pdf');
-    const pdfBytes = fs.readFileSync(templatePath);
-    
-    // 3. Load PDF and get the interactive form fields
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    const form = pdfDoc.getForm();
+  if (!fs.existsSync(templatePath)) {
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([612, 792]);
+    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    page.drawText('ITIN application draft', {
+      x: 72,
+      y: 720,
+      size: 24,
+      font,
+      color: rgb(0.12, 0.18, 0.29),
+    });
 
-    // 4. Set values matching the exact IRS field names
-    form.getTextField('f1_01[0]').setText(clientData.firstName);
-    form.getTextField('f1_02[0]').setText(clientData.lastName);
-    
-    // Checkbox mapping
-    if (clientData.reasonForApplying === 'a') {
-      form.getCheckBox('c1_01[0]').check();
-    }
-
-    // 5. Serialize PDF and serve it to the browser for printing/download
-    const modifiedPdfBytes = await pdfDoc.save();
-    
-    return new NextResponse(modifiedPdfBytes, {
+    return new NextResponse(await pdfDoc.save(), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="W7_${clientData.lastName}.pdf"`,
+        'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
       },
     });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
   }
+
+  const pdfBytes = fs.readFileSync(templatePath);
+  const pdfDoc = await PDFDocument.load(pdfBytes);
+  const outputBytes = await pdfDoc.save();
+
+  return new NextResponse(outputBytes, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
+    },
+  });
 }

@@ -1,1 +1,8 @@
-import type { Metadata } from 'next'\nimport './globals.css'\n\nexport const metadata: Metadata = {\n  title: 'PATSL ITIN Application',\n  description: 'ITIN Application Portal',\n}\n\nexport default function RootLayout({\n  children,\n}: {\n  children: React.ReactNode\n}) {\n  return (\n    <html lang=\"en\">\n      <body>{children}</body>\n    </html>\n  )\n}
+export const metadata = { title: 'PATSL ITIN', description: 'ITIN workflow intake' };
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang='en'>
+      <body>{children}</body>
+    </html>
+  );
+}
