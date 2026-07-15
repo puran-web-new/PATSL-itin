@@ -31,11 +31,13 @@ return new NextResponse(Buffer.from(pdfBytes), {
 
   const pdfBytes = fs.readFileSync(templatePath);
   const pdfDoc = await PDFDocument.load(pdfBytes);
-  const outputBytes = await pdfDoc.save();
-
-  return new NextResponse(outputBytes, {
-    headers: {
-      'Content-Type': 'application/pdf',
+ const outputBytes = await pdfDoc.save();
+return new NextResponse(Buffer.from(outputBytes), {
+  headers: {
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
+  },
+});
       'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
     },
   });
