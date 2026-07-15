@@ -21,7 +21,8 @@ return new NextResponse(Buffer.from(pdfBytes), {
   },
 });
 
-    return new NextResponse(await pdfDoc.save(), {
+    const pdfBytes = await pdfDoc.save();
+return new NextResponse(Buffer.from(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
