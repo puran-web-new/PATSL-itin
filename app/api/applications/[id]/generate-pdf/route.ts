@@ -13,13 +13,13 @@ export async function GET(
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([612, 792]);
     const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    page.drawText('ITIN application draft', {
-      x: 72,
-      y: 720,
-      size: 24,
-      font,
-      color: rgb(0.12, 0.18, 0.29),
-    });
+    const pdfBytes = await pdfDoc.save();
+return new NextResponse(Buffer.from(pdfBytes), {
+  headers: {
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
+  },
+});
 
     return new NextResponse(await pdfDoc.save(), {
       headers: {
