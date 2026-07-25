@@ -3,7 +3,8 @@ import { PDFDocument, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const templatePath = path.resolve(process.cwd(), 'public', 'templates', 'fw7.pdf');
   
   if (!fs.existsSync(templatePath)) {
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return new NextResponse(Buffer.from(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
+        'Content-Disposition': `inline; filename="application-${id}.pdf"`,
       },
     });
   }
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return new NextResponse(Buffer.from(outputBytes), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="application-${params.id}.pdf"`,
+      'Content-Disposition': `inline; filename="application-${id}.pdf"`,
     },
   });
 }
