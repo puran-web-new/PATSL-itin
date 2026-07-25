@@ -1,9 +1,19 @@
 {
   "version": 2,
-  "builds": [
+  "functions": {
+    "app/api/generate-packages/route.ts": {
+      "includeFiles": "public/templates/*.pdf",
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "app/api/cron/scrub-pii/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
     {
-      "src": "package.json",
-      "use": "@vercel/next"
+      "path": "/api/cron/scrub-pii",
+      "schedule": "0 5 * * *"
     }
   ]
 }
