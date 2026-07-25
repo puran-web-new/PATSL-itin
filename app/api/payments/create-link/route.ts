@@ -23,8 +23,6 @@ export async function POST(req: NextRequest) {
 
     const tier = prices[serviceTier] ? serviceTier : 'CAA_CONCIERGE';
     const selected = prices[tier];
-    const pool = getPool();
-    const db = await pool.connect();
 
     let checkoutUrl: string | null = null;
     let squareOrderId: string | null = null;
@@ -58,6 +56,9 @@ export async function POST(req: NextRequest) {
       checkoutUrl = payload.payment_link?.url || null;
       squareOrderId = payload.payment_link?.order_id || null;
     }
+
+    const pool = getPool();
+    const db = await pool.connect();
 
     try {
       await db.query('BEGIN');
