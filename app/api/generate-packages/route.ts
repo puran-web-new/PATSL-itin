@@ -5,7 +5,8 @@ import path from 'path';
 import { getPool } from '../../../lib/db';
 import { requireAdmin } from '../../../lib/security';
 import { CaseData, deriveFinancials, hydrateCaseData, REASON_LABELS } from '../../../lib/caseData';
-import { F1040_FIELDS, W7_FIELD_MAP } from '../../../lib/pdfFieldMaps';
+import { getFirmProfile } from '../../../lib/firmProfile';
+import { F1040_FIELDS, W7_FIELD_MAP, COA_FIELD_MAP, coaRowField } from '../../../lib/pdfFieldMaps';
 
 const INK = rgb(0.04, 0.05, 0.12);
 const SLATE = rgb(0.35, 0.39, 0.45);
@@ -63,6 +64,19 @@ function setSsnField(form: any, fieldName: string | undefined, rawValue: string)
 
 function money(n: number) {
   return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+// The W-7's date-of-birth, ID-expiration, and date-of-entry boxes are 8-character
+// "comb" fields — the MM / DD / YYYY dividers are printed on the form itself, not part
+// of the fillable field, so the field only accepts 8 raw digits (MMDDYYYY). Accepts
+// either an ISO date (YYYY-MM-DD, from the case editor's <input type="date">) or an
+// already-digits string.
+function formatDateComb(value: string) {
+  if (!value) return '';
+  const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return `${iso[2]}${iso[3]}${iso[1]}`;
+  const digits = digitsOnly(value);
+  return digits.length === 8 ? digits : '';
 }
 
 // ---------------------------------------------------------------------------
@@ -140,32 +154,98 @@ async function buildF1040(caseData: CaseData): Promise<PDFDocument> {
 }
 
 // ---------------------------------------------------------------------------
-// Form W-7 — uses the real IRS template once it's installed at
-// public/templates/fW7.pdf (see lib/pdfFieldMaps.ts). Until then, renders a
-// clearly labeled data-summary page so the case can still move forward.
+// Form W-7 — real official IRS template at public/templates/fW7.pdf, filled
+// against field names verified in lib/pdfFieldMaps.ts (confirmed visually by
+// rendering a labeled copy of the form and reading off every field name against
+// its printed position — not guessed from the cryptic Adobe field IDs alone).
 // ---------------------------------------------------------------------------
+function splitIntoParts(digits: string, lengths: number[]) {
+  const parts: string[] = [];
+  let offset = 0;
+  for (const len of lengths) {
+    parts.push(digits.slice(offset, offset + len));
+    offset += len;
+  }
+  return parts;
+}
+
+function combine(...parts: (string | undefined)[]) {
+  return parts.filter(Boolean).join(', ');
+}
+
 async function buildW7(caseData: CaseData): Promise<PDFDocument> {
   const filePath = path.join(process.cwd(), 'public', 'templates', 'fW7.pdf');
 
   if (await fileExists(filePath)) {
     const doc = await PDFDocument.load(await fs.readFile(filePath));
     const form = doc.getForm();
+    const M = W7_FIELD_MAP;
 
-    const reasonBoxes: Record<string, string> = {
-      a: 'Reason_A', b: 'Reason_B', c: 'Reason_C', d: 'Reason_D',
-      e: 'Reason_E', f: 'Reason_F', g: 'Reason_G', h: 'Reason_H',
-    };
-    caseData.reasonCodes.forEach((code) => setCheck(form, W7_FIELD_MAP[`reason_${code}`] || reasonBoxes[code]));
+    const priorIdDigits = digitsOnly(caseData.previousItinOrIrsn);
+    setCheck(form, priorIdDigits.length === 9 ? M.renewExisting : M.applyNew);
 
-    setText(form, W7_FIELD_MAP.firstName, caseData.firstName);
-    setText(form, W7_FIELD_MAP.middleName, caseData.middleName);
-    setText(form, W7_FIELD_MAP.lastName, caseData.lastName);
-    setText(form, W7_FIELD_MAP.mailingStreet, caseData.mailingStreet);
-    setText(form, W7_FIELD_MAP.foreignStreet, caseData.foreignStreet);
-    setText(form, W7_FIELD_MAP.dateOfBirth, caseData.dateOfBirth);
-    setText(form, W7_FIELD_MAP.countryOfBirth, caseData.countryOfBirth);
-    setText(form, W7_FIELD_MAP.passportNumber, caseData.idNumber);
-    setText(form, W7_FIELD_MAP.passportCountry, caseData.idIssuedBy || caseData.countryOfCitizenship);
+    caseData.reasonCodes.forEach((code) => setCheck(form, (M.reason as Record<string, string>)[code]));
+    setText(form, M.dependentRelationship, caseData.dependentRelationship);
+    setText(form, M.usCitizenName, caseData.usCitizenName);
+    setText(form, M.usCitizenSsnOrItin, caseData.usCitizenSsnOrItin);
+    setText(form, M.reasonOtherDetails, caseData.reasonOtherDetails);
+    setText(form, M.treatyCountry, caseData.treatyCountry);
+    setText(form, M.treatyArticleNumber, caseData.treatyArticleNumber);
+
+    setText(form, M.firstName, caseData.firstName);
+    setText(form, M.middleName, caseData.middleName);
+    setText(form, M.lastName, caseData.lastName);
+
+    if (caseData.nameAtBirth) {
+      const parts = caseData.nameAtBirth.trim().split(/\s+/);
+      setText(form, M.birthFirstName, parts[0] || '');
+      setText(form, M.birthLastName, parts.length > 1 ? parts[parts.length - 1] : '');
+      setText(form, M.birthMiddleName, parts.length > 2 ? parts.slice(1, -1).join(' ') : '');
+    }
+
+    setText(form, M.mailingLine1, combine(caseData.mailingStreet, caseData.mailingAptOrRoute));
+    setText(form, M.mailingLine2, combine(caseData.mailingCity, caseData.mailingState, caseData.mailingZip));
+    setText(form, M.foreignLine1, caseData.foreignStreet);
+    setText(form, M.foreignLine2, combine(caseData.foreignCity, caseData.foreignProvince, caseData.foreignPostalCode, caseData.foreignCountry));
+
+    setText(form, M.dateOfBirth, formatDateComb(caseData.dateOfBirth));
+    setText(form, M.countryOfBirth, caseData.countryOfBirth);
+    setText(form, M.birthCityState, caseData.birthCityState);
+    if (caseData.sex === 'MALE') setCheck(form, M.sexMale);
+    if (caseData.sex === 'FEMALE') setCheck(form, M.sexFemale);
+
+    setText(form, M.countryOfCitizenship, caseData.countryOfCitizenship);
+    setText(form, M.foreignTaxId, caseData.foreignTaxId);
+    setText(form, M.visaInfo, combine(caseData.visaType, caseData.visaNumber, caseData.visaExpirationDate));
+
+    if (caseData.idDocType === 'PASSPORT') setCheck(form, M.idDoc.passport);
+    else if (caseData.idDocType === 'DRIVERS_LICENSE') setCheck(form, M.idDoc.driversLicense);
+    else if (caseData.idDocType === 'USCIS') setCheck(form, M.idDoc.uscis);
+    else {
+      setCheck(form, M.idDoc.other);
+      setText(form, M.idOtherDescription, caseData.idDocType === 'NATIONAL_ID' ? 'National ID card' : 'Other');
+    }
+    setText(form, M.idIssuedBy, caseData.idIssuedBy);
+    setText(form, M.idNumber, caseData.idNumber);
+    setText(form, M.idExpirationDate, formatDateComb(caseData.idExpirationDate));
+    setText(form, M.dateOfEntryUs, formatDateComb(caseData.dateOfEntryUs));
+
+    if (priorIdDigits.length === 9) {
+      setCheck(form, M.previousItinKnownYes);
+      const parts = splitIntoParts(priorIdDigits, [3, 2, 4]);
+      M.previousItin.forEach((field, i) => setText(form, field, parts[i]));
+    } else {
+      setCheck(form, M.previousItinKnownNo);
+    }
+
+    setText(form, M.applicantPhone, caseData.phone);
+
+    setText(form, M.aaPhone, getFirmProfile().phone);
+    setText(form, M.aaNameAndTitle, combine(caseData.caaReviewerName, caseData.caaReviewerTitle));
+    setText(form, M.aaCompanyName, caseData.caaBusinessName);
+    setText(form, M.aaEin, caseData.caaEin);
+    setText(form, M.aaPtin, caseData.caaPtin);
+    setText(form, M.aaOfficeCode, caseData.caaOfficeCode);
 
     form.flatten();
     return doc;
@@ -195,76 +275,66 @@ async function buildW7(caseData: CaseData): Promise<PDFDocument> {
 }
 
 // ---------------------------------------------------------------------------
-// Certificate of Accuracy — the IRS does not publish a fillable COA PDF (CAAs
-// compose their own per the CAA Agreement's required content elements), so this
-// is generated directly rather than filled from a template.
+// Certificate of Accuracy — real official IRS template at
+// public/templates/fw7coa.pdf ("Form W-7-COA", Rev. 8-2025), filled against
+// its own self-descriptive field names in lib/pdfFieldMaps.ts.
 // ---------------------------------------------------------------------------
+const DOC_TYPE_TO_COA_ROW: Record<string, keyof typeof COA_FIELD_MAP.docRows> = {
+  PASSPORT: 'PASSPORT',
+  NATIONAL_ID: 'NATIONAL_ID',
+  USCIS: 'USCIS',
+};
+
 async function buildCOA(caseData: CaseData): Promise<PDFDocument> {
-  const doc = await PDFDocument.create();
-  const page = doc.addPage([612, 792]);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const regular = await doc.embedFont(StandardFonts.Helvetica);
+  const filePath = path.join(process.cwd(), 'public', 'templates', 'fw7coa.pdf');
 
-  let y = 742;
-  page.drawRectangle({ x: 0, y: 742, width: 612, height: 50, color: INK });
-  page.drawText('Certificate of Accuracy', { x: 50, y: 762, size: 18, font: bold, color: rgb(1, 1, 1) });
-  page.drawText('For IRS Individual Taxpayer Identification Number (Form W-7)', { x: 50, y: 748, size: 9, font: regular, color: rgb(0.8, 0.85, 0.95) });
+  if (await fileExists(filePath)) {
+    const doc = await PDFDocument.load(await fs.readFile(filePath));
+    const form = doc.getForm();
+    const M = COA_FIELD_MAP;
 
-  y = 710;
-  const line = (label: string, value: string, size = 10) => {
-    page.drawText(label, { x: 50, y, size: 8, font: bold, color: SLATE });
-    page.drawText(value || '—', { x: 50, y: y - 13, size, font: regular, color: rgb(0.1, 0.1, 0.15) });
-    y -= 34;
-  };
-
-  line('Acceptance Agent', `${caseData.caaBusinessName}  |  EIN: ${caseData.caaEin || '—'}  |  PTIN: ${caseData.caaPtin || '—'}  |  Office code: ${caseData.caaOfficeCode || '—'}`);
-  line('Applicant', [caseData.firstName, caseData.middleName, caseData.lastName].filter(Boolean).join(' '));
-  line('Date of birth / Country of citizenship', `${caseData.dateOfBirth || '—'}  /  ${caseData.countryOfCitizenship || '—'}`);
-  line('Reason for ITIN application', caseData.reasonCodes.map((c) => `${c}) ${REASON_LABELS[c] || ''}`).join('; ') || '—');
-  line('Identity document reviewed', `${caseData.idDocType.replace('_', ' ')} #${caseData.idNumber || '—'}, issued by ${caseData.idIssuedBy || '—'}, expires ${caseData.idExpirationDate || '—'}`);
-  if (caseData.documentsReviewedSummary) line('Reviewer notes', caseData.documentsReviewedSummary);
-
-  y -= 10;
-  page.drawLine({ start: { x: 50, y }, end: { x: 562, y }, thickness: 0.5, color: rgb(0.85, 0.86, 0.9) });
-  y -= 24;
-
-  const attestation =
-    'I certify that: (1) I am authorized under my Acceptance Agent Agreement with the Internal Revenue Service ' +
-    'to submit this Form W-7 on behalf of the applicant; (2) I have reviewed the original identification ' +
-    'document(s) listed above, or certified copies issued by the issuing agency, and returned them to the ' +
-    'applicant; (3) to the best of my knowledge and belief, the information provided on the accompanying ' +
-    'Form W-7 and this Certificate of Accuracy is true, correct, and complete.';
-
-  const words = attestation.split(' ');
-  let lineText = '';
-  const maxWidth = 512;
-  for (const word of words) {
-    const test = lineText ? `${lineText} ${word}` : word;
-    if (regular.widthOfTextAtSize(test, 10) > maxWidth) {
-      page.drawText(lineText, { x: 50, y, size: 10, font: regular, color: rgb(0.15, 0.17, 0.22) });
-      y -= 16;
-      lineText = word;
-    } else {
-      lineText = test;
+    setText(form, M.theUndersigned, caseData.caaReviewerName);
+    setText(form, M.businessName, caseData.caaBusinessName);
+    if (caseData.signatureDate) {
+      const [year, month, day] = caseData.signatureDate.split('-');
+      setText(form, M.datedMonth, month);
+      setText(form, M.datedDay, day);
+      setText(form, M.datedYear, year ? year.slice(2) : '');
     }
+    setText(form, M.applicantsName, [caseData.firstName, caseData.middleName, caseData.lastName].filter(Boolean).join(' '));
+
+    let rowKey: keyof typeof COA_FIELD_MAP.docRows | undefined = DOC_TYPE_TO_COA_ROW[caseData.idDocType];
+    if (!rowKey && caseData.idDocType === 'DRIVERS_LICENSE') {
+      const foreign = !/united states|u\.s\.a?\.?|usa/i.test(caseData.idIssuedBy || '');
+      rowKey = foreign ? 'FOREIGN_DRIVERS_LICENSE' : 'US_DRIVERS_LICENSE';
+    }
+    if (rowKey) {
+      const row = M.docRows[rowKey];
+      setCheck(form, coaRowField(row, 'identity'));
+      // A passport is the only stand-alone document proving both identity and
+      // foreign status; national ID and USCIS photo ID also cover both columns
+      // per the form's own instructions. A same-country driver's license only
+      // proves identity, so it deliberately does not check Foreign Status.
+      if (rowKey !== 'US_DRIVERS_LICENSE') setCheck(form, coaRowField(row, 'foreignStatus'));
+    }
+
+    setText(form, M.signatureResponsible, caseData.caaReviewerName);
+    setText(form, M.dateResponsibleParty, caseData.signatureDate);
+    setText(form, M.acceptanceAgentEIN, caseData.caaEin);
+    setText(form, M.agentCode, caseData.caaOfficeCode);
+    setText(form, M.agentPTIN, caseData.caaPtin);
+
+    form.flatten();
+    return doc;
   }
-  if (lineText) {
-    page.drawText(lineText, { x: 50, y, size: 10, font: regular, color: rgb(0.15, 0.17, 0.22) });
-    y -= 16;
-  }
 
-  y -= 40;
-  page.drawLine({ start: { x: 50, y }, end: { x: 260, y }, thickness: 0.8, color: rgb(0.2, 0.2, 0.25) });
-  page.drawText('Signature of Certifying Acceptance Agent', { x: 50, y: y - 12, size: 8, font: regular, color: SLATE });
-  page.drawText(caseData.caaReviewerName || caseData.caaBusinessName, { x: 50, y: y + 4, size: 10, font: bold });
-
-  page.drawLine({ start: { x: 320, y }, end: { x: 480, y }, thickness: 0.8, color: rgb(0.2, 0.2, 0.25) });
-  page.drawText('Date', { x: 320, y: y - 12, size: 8, font: regular, color: SLATE });
-  page.drawText(caseData.signatureDate || '—', { x: 320, y: y + 4, size: 10, font: bold });
-
-  page.drawText(caseData.caaReviewerTitle || 'Certified Acceptance Agent', { x: 50, y: y - 28, size: 8, font: regular, color: SLATE });
-
-  return doc;
+  return buildDataSummary('Certificate of Accuracy (Form W-7-COA)', 'Template not found at public/templates/fw7coa.pdf.', [
+    ['Acceptance Agent', `${caseData.caaBusinessName} | EIN ${caseData.caaEin || '—'} | PTIN ${caseData.caaPtin || '—'}`],
+    ['Applicant', [caseData.firstName, caseData.middleName, caseData.lastName].filter(Boolean).join(' ')],
+    ['Identity document reviewed', `${caseData.idDocType.replace('_', ' ')} #${caseData.idNumber || '—'}`],
+    ['Reviewer', caseData.caaReviewerName],
+    ['Date', caseData.signatureDate],
+  ]);
 }
 
 function drawCenteredNote(page: PDFPage, font: PDFFont, text: string, y: number) {
@@ -388,7 +458,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Application not found.' }, { status: 404 });
     }
 
-    const caseData = hydrateCaseData(app);
+    let caseData = hydrateCaseData(app);
+    if (!caseData.caaEin && !caseData.caaPtin && !caseData.caaOfficeCode) {
+      const firm = getFirmProfile();
+      caseData = {
+        ...caseData,
+        caaBusinessName: caseData.caaBusinessName || firm.businessName,
+        caaEin: firm.ein,
+        caaPtin: firm.ptin,
+        caaOfficeCode: firm.officeCode,
+        caaReviewerName: caseData.caaReviewerName || firm.reviewerName,
+        caaReviewerTitle: caseData.caaReviewerTitle || firm.reviewerTitle,
+      };
+    }
 
     const w7Doc = await buildW7(caseData);
     const coaDoc = await buildCOA(caseData);

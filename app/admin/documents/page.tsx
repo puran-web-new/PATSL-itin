@@ -1,0 +1,145 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { useAdminAuth } from '../../../lib/useAdminAuth';
+import AdminSidebarShell from '../../../components/admin/AdminSidebarShell';
+
+type DocRow = {
+  id: string;
+  application_id: string;
+  doc_type: string;
+  document_number: string | null;
+  issuing_country: string | null;
+  expiration_date: string | null;
+  ocr_confidence: number | null;
+  storage_path: string | null;
+  verification_status: string;
+  is_scrubbed: boolean;
+  created_at: string;
+  application_status: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+};
+
+const VERIFICATION_STYLES: Record<string, string> = {
+  PENDING_REVIEW: 'bg-amber-50 text-amber-700',
+  VERIFIED: 'bg-emerald-50 text-emerald-700',
+  REJECTED: 'bg-red-50 text-red-700',
+};
+
+export default function DocumentsPage() {
+  const { token, ready } = useAdminAuth();
+  const [rows, setRows] = useState<DocRow[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [docTypeFilter, setDocTypeFilter] = useState('ALL');
+
+  useEffect(() => {
+    if (!ready || !token) return;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/documents', { headers: { 'x-admin-token': token } });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load documents.');
+        setRows(data.documents || []);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load documents.');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [ready, token]);
+
+  const docTypes = useMemo(() => Array.from(new Set(rows.map((r) => r.doc_type))), [rows]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (docTypeFilter !== 'ALL' && r.doc_type !== docTypeFilter) return false;
+      if (!q) return true;
+      const haystack = `${r.first_name} ${r.last_name} ${r.email} ${r.document_number || ''}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [rows, query, docTypeFilter]);
+
+  if (!ready) return <div className="flex min-h-screen items-center justify-center bg-ink-950 text-sm text-slate-400">Checking staff session...</div>;
+
+  return (
+    <AdminSidebarShell title="Documents" subtitle={`${filtered.length} of ${rows.length} identity documents on file`}>
+      {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filter by client name, email, or document number..."
+          className="w-80 rounded-lg border border-slate-200 bg-white p-2.5 text-xs"
+        />
+        <select
+          value={docTypeFilter}
+          onChange={(e) => setDocTypeFilter(e.target.value)}
+          className="rounded-lg border border-slate-200 bg-white p-2.5 text-xs font-semibold"
+        >
+          <option value="ALL">All document types</option>
+          {docTypes.map((t) => (
+            <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
+            <tr>
+              <th className="px-4 py-3">Client</th>
+              <th className="px-4 py-3">Document</th>
+              <th className="px-4 py-3">Issuer</th>
+              <th className="px-4 py-3">Expires</th>
+              <th className="px-4 py-3">Verification</th>
+              <th className="px-4 py-3">Uploaded</th>
+              <th className="px-4 py-3">File</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">Loading documents...</td></tr>}
+            {!loading && filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No documents match this search.</td></tr>}
+            {filtered.map((d) => (
+              <tr key={d.id} className="border-t border-slate-100 hover:bg-slate-50">
+                <td className="px-4 py-3">
+                  <Link href={`/admin/clients/${d.application_id}`} className="font-semibold text-ink-900 hover:text-brand-700">
+                    {d.first_name} {d.last_name}
+                  </Link>
+                  <div className="text-[10.5px] text-slate-500">{d.email}</div>
+                </td>
+                <td className="px-4 py-3">
+                  {d.doc_type.replace(/_/g, ' ')}
+                  {d.document_number && <div className="text-[10.5px] text-slate-500">#{d.document_number}</div>}
+                </td>
+                <td className="px-4 py-3">{d.issuing_country || '—'}</td>
+                <td className="px-4 py-3">{d.expiration_date ? new Date(d.expiration_date).toLocaleDateString() : '—'}</td>
+                <td className="px-4 py-3">
+                  <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${VERIFICATION_STYLES[d.verification_status] || 'bg-slate-100 text-slate-600'}`}>
+                    {d.verification_status.toLowerCase().replace(/_/g, ' ')}
+                  </span>
+                  {d.is_scrubbed && <div className="mt-1 text-[10px] text-slate-400">Scrubbed (retention policy)</div>}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-slate-500">{new Date(d.created_at).toLocaleDateString()}</td>
+                <td className="px-4 py-3">
+                  {d.storage_path && !d.is_scrubbed ? (
+                    <a href={d.storage_path} target="_blank" rel="noreferrer" className="font-semibold text-brand-700 hover:underline">View</a>
+                  ) : (
+                    <span className="text-slate-400">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </AdminSidebarShell>
+  );
+}

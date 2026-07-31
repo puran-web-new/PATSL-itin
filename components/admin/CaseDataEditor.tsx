@@ -48,11 +48,32 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`/api/admin/applications/${applicationId}`, { headers: { 'x-admin-token': token } });
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.error || 'Failed to load application.');
+        const [appRes, firmRes] = await Promise.all([
+          fetch(`/api/admin/applications/${applicationId}`, { headers: { 'x-admin-token': token } }),
+          fetch('/api/admin/firm-profile', { headers: { 'x-admin-token': token } }),
+        ]);
+        const result = await appRes.json();
+        if (!appRes.ok) throw new Error(result.error || 'Failed to load application.');
         setApplication(result.application);
-        setData(hydrate(result.application));
+
+        let hydrated = hydrate(result.application);
+        if (firmRes.ok) {
+          const { firmProfile } = await firmRes.json();
+          // Only fill in firm/CAA fields if this case has never had them customized —
+          // never clobber something staff already typed for this specific case.
+          if (!hydrated.caaEin && !hydrated.caaPtin && !hydrated.caaOfficeCode) {
+            hydrated = {
+              ...hydrated,
+              caaBusinessName: hydrated.caaBusinessName || firmProfile.businessName,
+              caaEin: firmProfile.ein,
+              caaPtin: firmProfile.ptin,
+              caaOfficeCode: firmProfile.officeCode,
+              caaReviewerName: hydrated.caaReviewerName || firmProfile.reviewerName,
+              caaReviewerTitle: hydrated.caaReviewerTitle || firmProfile.reviewerTitle,
+            };
+          }
+        }
+        setData(hydrated);
       } catch (err: any) {
         setError(err.message || 'Failed to load application.');
       } finally {
@@ -147,7 +168,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
       <div className="space-y-6">
         {error && <div className="rounded-lg border border-red-900 bg-red-950 p-4 text-sm text-red-200">{error}</div>}
 
-        <Section title="Identity">
+        <Section title="Identity" usedOn={['W-7', 'COA', '1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="First name"><input className={input} value={data.firstName} onChange={(e) => set('firstName', e.target.value)} /></Field>
             <Field label="Middle name"><input className={input} value={data.middleName} onChange={(e) => set('middleName', e.target.value)} /></Field>
@@ -167,7 +188,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Reason for applying (Form W-7)">
+        <Section title="Reason for applying (Form W-7)" usedOn={['W-7']}>
           <div className="grid gap-2 sm:grid-cols-2">
             {Object.entries(REASON_LABELS).map(([code, text]) => (
               <label key={code} className="flex items-start gap-2 rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">
@@ -196,7 +217,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Mailing & foreign address">
+        <Section title="Mailing & foreign address" usedOn={['W-7', '1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Mailing street"><input className={input} value={data.mailingStreet} onChange={(e) => set('mailingStreet', e.target.value)} /></Field>
             <Field label="Apt / route"><input className={input} value={data.mailingAptOrRoute} onChange={(e) => set('mailingAptOrRoute', e.target.value)} /></Field>
@@ -212,7 +233,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Identification document">
+        <Section title="Identification document" usedOn={['W-7', 'COA']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Document type">
               <select className={input} value={data.idDocType} onChange={(e) => set('idDocType', e.target.value as CaseData['idDocType'])}>
@@ -235,7 +256,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Contact">
+        <Section title="Contact" usedOn={['W-7', '1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Phone"><input className={input} value={data.phone} onChange={(e) => set('phone', e.target.value)} /></Field>
             <Field label="Email"><input className={input} value={data.email} onChange={(e) => set('email', e.target.value)} /></Field>
@@ -243,7 +264,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Dependents">
+        <Section title="Dependents" usedOn={['1040']}>
           <div className="space-y-3">
             {data.dependents.map((dep, index) => (
               <div key={index} className="grid gap-3 rounded-lg border border-slate-800 bg-slate-950 p-3 sm:grid-cols-6">
@@ -275,7 +296,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Form 1040 — filing & income">
+        <Section title="Form 1040 — filing & income" usedOn={['1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Filing status">
               <select className={input} value={data.filingStatus} onChange={(e) => set('filingStatus', e.target.value as CaseData['filingStatus'])}>
@@ -303,7 +324,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Form 1040 — payments & refund">
+        <Section title="Form 1040 — payments & refund" usedOn={['1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Federal income tax withheld"><input inputMode="decimal" className={input} value={data.federalWithholding} onChange={(e) => set('federalWithholding', e.target.value)} /></Field>
             <Field label="Estimated tax payments"><input inputMode="decimal" className={input} value={data.estimatedTaxPayments} onChange={(e) => set('estimatedTaxPayments', e.target.value)} /></Field>
@@ -319,7 +340,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </Section>
 
-        <Section title="Certificate of Accuracy & signature">
+        <Section title="Certificate of Accuracy & signature" usedOn={['W-7', 'COA']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="CAA business name"><input className={input} value={data.caaBusinessName} onChange={(e) => set('caaBusinessName', e.target.value)} /></Field>
             <Field label="CAA EIN"><input className={input} value={data.caaEin} onChange={(e) => set('caaEin', e.target.value)} /></Field>
@@ -370,8 +391,8 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           <button onClick={() => generate('CAA_RECORD')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
             {generating === 'CAA_RECORD' ? 'Generating...' : 'Generate CAA record copy'}
           </button>
-          <Link href="/admin" className="block text-center text-xs text-slate-500 hover:text-slate-300">
-            &larr; Back to queue
+          <Link href={`/admin/clients/${applicationId}`} className="block text-center text-xs text-slate-500 hover:text-slate-300">
+            &larr; Back to client file
           </Link>
         </div>
       </aside>
@@ -379,10 +400,22 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, usedOn, children }: { title: string; usedOn?: string[]; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-      <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-300">{title}</h2>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-brand-300">{title}</h2>
+        {usedOn && usedOn.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-600">Used on:</span>
+            {usedOn.map((doc) => (
+              <span key={doc} className="rounded-full border border-slate-700 bg-slate-950 px-2 py-0.5 text-[9.5px] font-bold text-slate-400">
+                {doc}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
       {children}
     </section>
   );

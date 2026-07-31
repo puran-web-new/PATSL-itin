@@ -11,6 +11,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     const pool = getPool();
     const db = await pool.connect();
     let application: any;
+    let documents: any[] = [];
+    let timeline: any[] = [];
+    let invoices: any[] = [];
     try {
       const result = await db.query(
         `SELECT a.*, c.first_name, c.last_name, c.email, c.phone
@@ -20,6 +23,30 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
         [id]
       );
       application = result.rows[0];
+
+      if (application) {
+        const [docsResult, timelineResult, invoicesResult] = await Promise.all([
+          db.query(
+            `SELECT id, doc_type, document_number, issuing_country, expiration_date,
+                    ocr_confidence, storage_path, verification_status, is_scrubbed, created_at
+             FROM identity_documents WHERE application_id = $1 ORDER BY created_at DESC`,
+            [id]
+          ),
+          db.query(
+            `SELECT id, event_type, actor, metadata, created_at
+             FROM audit_events WHERE application_id = $1 ORDER BY created_at DESC LIMIT 50`,
+            [id]
+          ),
+          db.query(
+            `SELECT id, square_order_id, square_payment_link, amount_cents, currency, payment_status, created_at
+             FROM invoices WHERE application_id = $1 ORDER BY created_at DESC`,
+            [id]
+          ),
+        ]);
+        documents = docsResult.rows;
+        timeline = timelineResult.rows;
+        invoices = invoicesResult.rows;
+      }
     } finally {
       db.release();
     }
@@ -28,7 +55,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Application not found.' }, { status: 404 });
     }
 
-    return NextResponse.json({ application });
+    return NextResponse.json({ application, documents, timeline, invoices });
   } catch (error: any) {
     console.error('Admin application fetch failed:', error);
     return NextResponse.json({ error: error.message || 'Failed to load application.' }, { status: 500 });
