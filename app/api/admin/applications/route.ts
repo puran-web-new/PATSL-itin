@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
          d.document_number,
          d.ocr_confidence,
          d.verification_status,
+         d.storage_path,
          i.payment_status,
          i.square_payment_link
        FROM applications a
