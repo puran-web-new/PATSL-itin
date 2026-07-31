@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
 type Application = {
@@ -254,9 +255,17 @@ export default function AdminPage() {
                     )}
                   </td>
                   <td className="p-4 text-right">
-                    <button onClick={() => generatePackage(app.id, app.last_name)} className="rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-500">
-                      Generate IRS Package
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <Link
+                        href={`/admin/applications/${app.id}`}
+                        className="rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-500"
+                      >
+                        Prepare application
+                      </Link>
+                      <button onClick={() => generatePackage(app.id, app.last_name)} className="rounded-lg border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800">
+                        Quick IRS package
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

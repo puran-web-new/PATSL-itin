@@ -2,6 +2,39 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/security';
 
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+
+  try {
+    const { id } = await context.params;
+    const pool = getPool();
+    const db = await pool.connect();
+    let application: any;
+    try {
+      const result = await db.query(
+        `SELECT a.*, c.first_name, c.last_name, c.email, c.phone
+         FROM applications a
+         JOIN clients c ON c.id = a.client_id
+         WHERE a.id = $1`,
+        [id]
+      );
+      application = result.rows[0];
+    } finally {
+      db.release();
+    }
+
+    if (!application) {
+      return NextResponse.json({ error: 'Application not found.' }, { status: 404 });
+    }
+
+    return NextResponse.json({ application });
+  } catch (error: any) {
+    console.error('Admin application fetch failed:', error);
+    return NextResponse.json({ error: error.message || 'Failed to load application.' }, { status: 500 });
+  }
+}
+
 const ALLOWED_STATUSES = [
   'INTAKE_STARTED',
   'DOCUMENTS_RECEIVED',
