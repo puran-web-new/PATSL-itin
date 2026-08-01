@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useAdminAuth } from '../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../components/admin/AdminSidebarShell';
+import { viewDocument } from '../../../lib/viewDocument';
 
 type DocRow = {
   id: string;
@@ -129,8 +130,8 @@ export default function DocumentsPage() {
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">{new Date(d.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
-                  {d.storage_path && !d.is_scrubbed ? (
-                    <a href={d.storage_path} target="_blank" rel="noreferrer" className="font-semibold text-teal-700 hover:underline">View</a>
+                  {d.storage_path && !d.is_scrubbed && token ? (
+                    <button type="button" onClick={() => viewDocument(d.id, token)} className="font-semibold text-teal-700 hover:underline">View</button>
                   ) : (
                     <span className="text-slate-400">—</span>
                   )}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getPool } from '../../../../lib/db';
+import { notifyStatusChange } from '../../../../lib/notify';
 
 function verifySquareSignature(signature: string, bodyText: string) {
   const key = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
           [orderId]
         );
 
+        let notifyInfo: any = null;
         if (result.rows[0]?.application_id) {
           const applicationId = result.rows[0].application_id;
           await db.query(`UPDATE applications SET status = 'CAA_REVIEW', updated_at = NOW() WHERE id = $1`, [applicationId]);
@@ -46,8 +48,22 @@ export async function POST(req: NextRequest) {
              VALUES ($1, 'PAYMENT_PAID', 'square', $2)`,
             [applicationId, { orderId, paymentId: payment.id }]
           );
+          const clientResult = await db.query(
+            `SELECT c.email, c.phone, c.first_name FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
+            [applicationId]
+          );
+          if (clientResult.rows[0]) notifyInfo = { ...clientResult.rows[0], applicationId };
         }
         await db.query('COMMIT');
+        if (notifyInfo) {
+          notifyStatusChange({
+            email: notifyInfo.email,
+            phone: notifyInfo.phone,
+            firstName: notifyInfo.first_name,
+            applicationId: notifyInfo.applicationId,
+            status: 'CAA_REVIEW',
+          }).catch((err) => console.error('Payment notification failed:', err));
+        }
       } catch (error) {
         await db.query('ROLLBACK');
         throw error;

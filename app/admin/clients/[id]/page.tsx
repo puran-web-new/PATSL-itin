@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAdminAuth } from '../../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../../components/admin/AdminSidebarShell';
+import { viewDocument } from '../../../../lib/viewDocument';
 
 type Application = {
   id: string;
@@ -163,8 +164,8 @@ export default function ClientDetailPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold capitalize text-slate-600">{d.verification_status.toLowerCase().replace(/_/g, ' ')}</span>
-                      {d.storage_path && !d.is_scrubbed && (
-                        <a href={d.storage_path} target="_blank" rel="noreferrer" className="font-semibold text-teal-700 hover:underline">View</a>
+                      {d.storage_path && !d.is_scrubbed && token && (
+                        <button type="button" onClick={() => viewDocument(d.id, token)} className="font-semibold text-teal-700 hover:underline">View</button>
                       )}
                     </div>
                   </div>

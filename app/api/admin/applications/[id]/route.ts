@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/security';
+import { notifyStatusChange } from '../../../../../lib/notify';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const denied = requireAdmin(req);
@@ -86,6 +87,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 
     const pool = getPool();
     const db = await pool.connect();
+    let clientInfo: any = null;
     try {
       await db.query('BEGIN');
       const result = await db.query(
@@ -101,12 +103,23 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
          VALUES ($1, 'STATUS_UPDATED', 'admin', $2)`,
         [id, JSON.stringify({ status })]
       );
+      const clientResult = await db.query(
+        `SELECT c.email, c.phone, c.first_name FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
+        [id]
+      );
+      clientInfo = clientResult.rows[0] || null;
       await db.query('COMMIT');
     } catch (error) {
       await db.query('ROLLBACK');
       throw error;
     } finally {
       db.release();
+    }
+
+    if (clientInfo) {
+      notifyStatusChange({ email: clientInfo.email, phone: clientInfo.phone, firstName: clientInfo.first_name, applicationId: id, status }).catch((err) =>
+        console.error('Status-change notification failed:', err)
+      );
     }
 
     return NextResponse.json({ success: true });
