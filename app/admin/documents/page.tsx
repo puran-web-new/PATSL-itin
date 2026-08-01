@@ -110,7 +110,7 @@ export default function DocumentsPage() {
             {filtered.map((d) => (
               <tr key={d.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/clients/${d.application_id}`} className="font-semibold text-ink-900 hover:text-brand-700">
+                  <Link href={`/admin/clients/${d.application_id}`} className="font-semibold text-ink-900 hover:text-teal-700">
                     {d.first_name} {d.last_name}
                   </Link>
                   <div className="text-[10.5px] text-slate-500">{d.email}</div>
@@ -130,7 +130,7 @@ export default function DocumentsPage() {
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">{new Date(d.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   {d.storage_path && !d.is_scrubbed ? (
-                    <a href={d.storage_path} target="_blank" rel="noreferrer" className="font-semibold text-brand-700 hover:underline">View</a>
+                    <a href={d.storage_path} target="_blank" rel="noreferrer" className="font-semibold text-teal-700 hover:underline">View</a>
                   ) : (
                     <span className="text-slate-400">—</span>
                   )}

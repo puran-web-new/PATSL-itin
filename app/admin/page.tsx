@@ -33,7 +33,7 @@ export default function AdminSignInPage() {
   return (
     <section className="flex min-h-[70vh] items-center justify-center bg-ink-950 px-6 py-16">
       <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900/70 p-8 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">Staff access</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">Staff access</p>
         <h1 className="mt-2 text-2xl font-bold text-white">PATSL Admin Console</h1>
         <p className="mt-2 text-sm text-slate-400">Enter your admin access token to open the control center.</p>
 
@@ -53,7 +53,7 @@ export default function AdminSignInPage() {
             className="w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-sm text-white"
           />
           {error && <p className="text-left text-xs text-red-400">{error}</p>}
-          <button disabled={loading || !token} className="w-full rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white hover:bg-brand-500 disabled:bg-slate-700">
+          <button disabled={loading || !token} className="w-full rounded-lg bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-500 disabled:bg-slate-700">
             {loading ? 'Verifying...' : 'Sign in'}
           </button>
         </form>

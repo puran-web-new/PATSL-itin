@@ -69,7 +69,7 @@ export default function DashboardPage() {
                 className="flex items-center justify-between gap-3 border-t border-slate-100 py-2.5 text-xs first:border-t-0 hover:bg-slate-50"
               >
                 <span className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
                   {EVENT_LABELS[a.event_type] || a.event_type}
                   {a.first_name && <span className="text-slate-400">— {a.first_name} {a.last_name}</span>}
                 </span>
@@ -97,7 +97,7 @@ function StatCard({ label, value, note, warn }: { label: string; value: number |
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
       <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
       <p className="mt-1.5 text-2xl font-bold text-ink-900">{value === undefined ? '—' : value}</p>
-      {note && <p className={`mt-1 text-[11px] font-semibold ${warn ? 'text-amber-700' : 'text-brand-700'}`}>{note}</p>}
+      {note && <p className={`mt-1 text-[11px] font-semibold ${warn ? 'text-amber-700' : 'text-teal-700'}`}>{note}</p>}
     </div>
   );
 }

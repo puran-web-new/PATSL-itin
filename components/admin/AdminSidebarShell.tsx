@@ -31,7 +31,7 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
     <div className="grid min-h-screen grid-cols-[220px_1fr] bg-slate-100 text-ink-900">
       <aside className="flex flex-col bg-ink-950 p-3 text-slate-300">
         <Link href="/admin/dashboard" className="mb-3 flex items-center gap-2 border-b border-slate-800 px-2 pb-4">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-bold text-white">P</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-brand-500 text-sm font-bold text-white">P</span>
           <span>
             <span className="block text-xs font-bold text-white">PATSL Control Center</span>
             <span className="block text-[9px] uppercase tracking-widest text-slate-500">Staff portal</span>

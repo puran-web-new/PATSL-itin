@@ -288,7 +288,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
               <button
                 type="button"
                 onClick={() => setData((prev) => ({ ...prev, dependents: [...prev.dependents, { ...emptyDependent }] }))}
-                className="rounded-lg border border-dashed border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:border-brand-500 hover:text-brand-300"
+                className="rounded-lg border border-dashed border-slate-700 px-4 py-2 text-xs font-semibold text-slate-400 hover:border-teal-500 hover:text-teal-300"
               >
                 + Add dependent
               </button>
@@ -379,7 +379,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
         </div>
 
         <div className="space-y-2">
-          <button onClick={save} disabled={saving} className="w-full rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white hover:bg-brand-500 disabled:bg-slate-700">
+          <button onClick={save} disabled={saving} className="w-full rounded-lg bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-500 disabled:bg-slate-700">
             {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save case data'}
           </button>
           <button onClick={() => generate('IRS_MAIL')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
@@ -404,7 +404,7 @@ function Section({ title, usedOn, children }: { title: string; usedOn?: string[]
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-brand-300">{title}</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-teal-300">{title}</h2>
         {usedOn && usedOn.length > 0 && (
           <div className="flex items-center gap-1.5">
             <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-600">Used on:</span>
@@ -434,7 +434,7 @@ function Row({ label, value, highlight }: { label: string; value: number; highli
   return (
     <div className="flex items-center justify-between">
       <dt className="text-slate-400">{label}</dt>
-      <dd className={highlight ? 'font-bold text-brand-300' : 'text-slate-200'}>
+      <dd className={highlight ? 'font-bold text-teal-300' : 'text-slate-200'}>
         ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </dd>
     </div>

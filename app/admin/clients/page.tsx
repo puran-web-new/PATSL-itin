@@ -34,7 +34,7 @@ const STATUS_STYLES: Record<string, string> = {
   INTAKE_STARTED: 'bg-slate-100 text-slate-700',
   DOCUMENTS_RECEIVED: 'bg-blue-50 text-blue-700',
   PAYMENT_PENDING: 'bg-amber-50 text-amber-700',
-  CAA_REVIEW: 'bg-brand-50 text-brand-700',
+  CAA_REVIEW: 'bg-teal-50 text-teal-700',
   SUBMITTED_IRS: 'bg-emerald-50 text-emerald-700',
   ARCHIVED_PII_SCRUBBED: 'bg-slate-100 text-slate-500',
 };
@@ -140,7 +140,7 @@ function ClientsPageInner() {
             {filtered.map((r) => (
               <tr key={r.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/clients/${r.id}`} className="font-semibold text-ink-900 hover:text-brand-700">
+                  <Link href={`/admin/clients/${r.id}`} className="font-semibold text-ink-900 hover:text-teal-700">
                     {r.first_name} {r.last_name}
                   </Link>
                   <div className="text-[10.5px] text-slate-500">{r.email}</div>

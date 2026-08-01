@@ -58,7 +58,7 @@ export default function StatusPage() {
   return (
     <section className="container-page py-14 md:py-20">
       <div className="mx-auto max-w-2xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">Track My Case</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">Track My Case</p>
         <h1 className="mt-2 text-3xl font-bold text-ink-900">Check your application status</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
           Enter the application reference you received at intake along with your last name.
@@ -81,7 +81,7 @@ export default function StatusPage() {
           />
           <button
             disabled={loading}
-            className="rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700 disabled:bg-slate-400 sm:col-span-2"
+            className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-400 disabled:to-slate-400 disabled:text-white sm:col-span-2"
           >
             {loading ? 'Checking...' : 'Check status'}
           </button>
@@ -98,7 +98,7 @@ export default function StatusPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Reference</p>
                 <p className="font-mono text-sm text-ink-900">{result.id}</p>
               </div>
-              <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-bold text-teal-700">
                 {friendlyStatus(result.status)}
               </span>
             </div>
@@ -111,7 +111,7 @@ export default function StatusPage() {
                     <li key={step} className="flex items-center gap-3">
                       <span
                         className={`flex h-6 w-6 flex-none items-center justify-center rounded-full text-xs font-bold ${
-                          done ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-500'
+                          done ? 'bg-teal-500 text-ink-950' : 'bg-slate-200 text-slate-500'
                         }`}
                       >
                         {done ? '✓' : index + 1}

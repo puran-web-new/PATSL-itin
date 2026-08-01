@@ -56,7 +56,7 @@ export default function MarketingPage() {
     <>
       <section className="bg-ink-950 py-16 text-white md:py-20">
         <div className="container-page">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-300">PATSL ITIN Services</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-300">PATSL ITIN Services</p>
           <h1 className="mt-3 max-w-2xl text-4xl font-bold tracking-tight">Secure document automation for ITIN workflows</h1>
           <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">
             Pick the tier that fits your case. Every plan follows the same IRS-compliant review order and includes
@@ -71,29 +71,31 @@ export default function MarketingPage() {
             <div
               key={tier.id}
               className={`flex flex-col rounded-2xl border p-6 shadow-card ${
-                tier.featured ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-200'
+                tier.featured ? 'border-teal-500 ring-2 ring-teal-100' : 'border-slate-200'
               }`}
             >
               {tier.featured && (
-                <span className="mb-3 inline-block w-fit rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white">
+                <span className="mb-3 inline-block w-fit rounded-full bg-teal-500 px-3 py-1 text-xs font-bold text-ink-950">
                   Most popular
                 </span>
               )}
               <h2 className="text-lg font-bold text-ink-900">{tier.name}</h2>
-              <p className="mt-2 text-3xl font-bold text-brand-700">{tier.price}</p>
+              <p className="mt-2 text-3xl font-bold text-teal-700">{tier.price}</p>
               <p className="mt-4 text-sm leading-6 text-slate-600">{tier.description}</p>
               <ul className="mt-5 flex-1 space-y-2">
                 {tier.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
-                    <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-brand-500" />
+                    <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-teal-500" />
                     {feature}
                   </li>
                 ))}
               </ul>
               <Link
                 href={`/itin-intake?tier=${tier.id}`}
-                className={`mt-6 rounded-lg px-4 py-3 text-center text-sm font-semibold ${
-                  tier.featured ? 'bg-brand-600 text-white hover:bg-brand-700' : 'border border-slate-300 text-ink-900 hover:bg-ink-50'
+                className={`mt-6 rounded-lg px-4 py-3 text-center text-sm font-bold ${
+                  tier.featured
+                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-ink-950 hover:from-teal-400 hover:to-teal-500'
+                    : 'border border-slate-300 text-ink-900 hover:bg-ink-50'
                 }`}
               >
                 Choose {tier.name}
@@ -105,7 +107,7 @@ export default function MarketingPage() {
 
       <section className="bg-ink-50 py-16 md:py-20">
         <div className="container-page max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">FAQ</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">FAQ</p>
           <h2 className="mt-2 text-3xl font-bold text-ink-900">Common questions</h2>
           <div className="mt-8 space-y-4">
             {faqs.map((faq) => (

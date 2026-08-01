@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function NotFound() {
   return (
     <section className="container-page flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">404</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">404</p>
       <h1 className="mt-3 text-3xl font-bold text-ink-900">We couldn&apos;t find that page</h1>
       <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
         The page you&apos;re looking for may have moved. Head back home or jump straight into your application.

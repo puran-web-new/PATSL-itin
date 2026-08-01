@@ -207,7 +207,7 @@ export default function IntakeWizard() {
             <p className="mt-4 rounded-lg bg-white px-4 py-3 font-mono text-sm text-ink-900">{returnedApplicationId}</p>
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/status" className="rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-700">
+            <Link href="/status" className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 text-sm font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500">
               Track my case
             </Link>
             <Link href="/" className="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-ink-900 hover:bg-white">
@@ -222,7 +222,7 @@ export default function IntakeWizard() {
   return (
     <section className="container-page py-10 md:py-14">
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">Secure Intake</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">Secure Intake</p>
         <h1 className="mt-2 text-3xl font-bold text-ink-900">PATSL ITIN Application Portal</h1>
         <p className="mt-2 text-sm text-slate-600">
           Create your application record, verify identity, choose a service tier, and complete payment.
@@ -238,7 +238,7 @@ export default function IntakeWizard() {
                 key={label}
                 className={`rounded-lg border p-3 text-xs font-semibold ${
                   active
-                    ? 'border-brand-500 bg-brand-50 text-brand-700'
+                    ? 'border-teal-500 bg-teal-50 text-teal-700'
                     : done
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                     : 'border-slate-200 bg-white text-slate-400'
@@ -265,7 +265,7 @@ export default function IntakeWizard() {
               <input className="rounded-lg border border-slate-300 p-3" placeholder="Phone" value={personal.phone} onChange={(e) => updatePersonal('phone', e.target.value)} />
               <input type="date" className="rounded-lg border border-slate-300 p-3" value={personal.dateOfBirth} onChange={(e) => updatePersonal('dateOfBirth', e.target.value)} />
               <input className="rounded-lg border border-slate-300 p-3" placeholder="Country of citizenship" value={personal.countryOfCitizenship} onChange={(e) => updatePersonal('countryOfCitizenship', e.target.value)} />
-              <button disabled={!canContinueStep1} className="rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700 disabled:bg-slate-300 md:col-span-2">
+              <button disabled={!canContinueStep1} className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-500 md:col-span-2">
                 Continue
               </button>
             </form>
@@ -290,7 +290,7 @@ export default function IntakeWizard() {
                 <button type="button" onClick={() => setStep(1)} className="rounded-lg border border-slate-300 px-5 py-3 font-semibold text-ink-900 hover:bg-ink-50">
                   Back
                 </button>
-                <button disabled={creatingIntake} className="flex-1 rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700 disabled:bg-slate-400">
+                <button disabled={creatingIntake} className="flex-1 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-400 disabled:to-slate-400 disabled:text-white">
                   {creatingIntake ? 'Saving...' : 'Continue'}
                 </button>
               </div>
@@ -329,7 +329,7 @@ export default function IntakeWizard() {
                       className="mt-2 block w-full text-sm"
                     />
                   </div>
-                  <button disabled={!file || uploading} className="rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700 disabled:bg-slate-300 md:col-span-2">
+                  <button disabled={!file || uploading} className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-500 md:col-span-2">
                     {uploading ? 'Uploading...' : 'Upload document'}
                   </button>
                 </form>
@@ -345,7 +345,7 @@ export default function IntakeWizard() {
                     if (!uploadedUrl) setDocSkipped(true);
                     setStep(4);
                   }}
-                  className="flex-1 rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700"
+                  className="flex-1 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500"
                 >
                   {uploadedUrl ? 'Continue to review' : 'Skip for now & continue'}
                 </button>
@@ -386,7 +386,7 @@ export default function IntakeWizard() {
                   type="button"
                   onClick={submitPayment}
                   disabled={creatingPayment || !applicationId}
-                  className="flex-1 rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700 disabled:bg-slate-400"
+                  className="flex-1 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-400 disabled:to-slate-400 disabled:text-white"
                 >
                   {creatingPayment ? 'Preparing checkout...' : 'Proceed to secure payment'}
                 </button>

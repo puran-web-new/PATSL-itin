@@ -16,9 +16,9 @@ export default function PrepareApplicationPage() {
 
   return (
     <AdminSidebarShell title="Prepare application" subtitle="One case file, every document.">
-      <Link href={`/admin/clients/${params.id}`} className="mb-4 inline-block text-xs font-semibold text-slate-500 hover:text-brand-700">&larr; Client file</Link>
+      <Link href={`/admin/clients/${params.id}`} className="mb-4 inline-block text-xs font-semibold text-slate-500 hover:text-teal-700">&larr; Client file</Link>
 
-      <div className="mb-6 rounded-2xl border border-brand-100 bg-brand-50 p-4 text-xs text-brand-900">
+      <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50 p-4 text-xs text-teal-900">
         Fill this once — the same data automatically populates the W-7, Certificate of Accuracy, and Form 1040
         together. Each section below is tagged with which official document(s) it feeds, so you can review
         rather than retype.
