@@ -10,7 +10,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export default function PortalSignInPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="flex min-h-[70vh] items-center justify-center bg-ink-950 text-sm text-slate-400">Loading sign-in...</div>}>
       <PortalSignInInner />
     </Suspense>
   );
