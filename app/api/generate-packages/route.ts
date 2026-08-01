@@ -14,6 +14,16 @@ const INK = rgb(0.04, 0.05, 0.12);
 const SLATE = rgb(0.35, 0.39, 0.45);
 const BRAND = rgb(0.15, 0.32, 0.86);
 
+// Where every completed ITIN package gets mailed — the IRS's dedicated ITIN
+// Operation address (not a regular service center). Shared by the client cover
+// letter and the mailing label so the two can never drift apart.
+const IRS_MAILING_ADDRESS = {
+  name: 'Internal Revenue Service',
+  line1: 'ITIN Operation',
+  line2: 'P.O. Box 149342',
+  cityStateZip: 'Austin, TX 78714-9342',
+};
+
 async function fileExists(filePath: string) {
   try {
     await fs.access(filePath);
@@ -556,10 +566,10 @@ function buildClientCoverPage(app: any, caseData: CaseData) {
     page.drawText('Mailing the package to the IRS', { x: 50, y, size: 11, font: bold }); y -= 18;
     page.drawText('If you are mailing this yourself rather than through PATSL, send the signed originals to:', { x: 50, y, size: 9.5, font: regular, color: SLATE }); y -= 16;
     page.drawRectangle({ x: 50, y: y - 46, width: 300, height: 58, color: rgb(0.95, 0.96, 0.98) });
-    page.drawText('Internal Revenue Service', { x: 60, y: y - 12, size: 10, font: bold });
-    page.drawText('ITIN Operation', { x: 60, y: y - 26, size: 10, font: regular });
-    page.drawText('P.O. Box 149342', { x: 60, y: y - 40, size: 10, font: regular });
-    page.drawText('Austin, TX 78714-9342', { x: 60, y: y - 54, size: 10, font: regular });
+    page.drawText(IRS_MAILING_ADDRESS.name, { x: 60, y: y - 12, size: 10, font: bold });
+    page.drawText(IRS_MAILING_ADDRESS.line1, { x: 60, y: y - 26, size: 10, font: regular });
+    page.drawText(IRS_MAILING_ADDRESS.line2, { x: 60, y: y - 40, size: 10, font: regular });
+    page.drawText(IRS_MAILING_ADDRESS.cityStateZip, { x: 60, y: y - 54, size: 10, font: regular });
     y -= 74;
 
     page.drawText('Expected processing time: approximately 7-11 weeks from the date the IRS receives your', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 14;
@@ -589,6 +599,110 @@ function buildIrsCoverPage(app: any, caseData: CaseData) {
       page.drawText('Before mailing: write "Applied For" by hand in the SSN box on Form 1040 — the', { x: 50, y: 615, size: 9, font: regular, color: rgb(0.55, 0.1, 0.1) });
       page.drawText('printed field is limited to 9 digits and was left blank for this first-time applicant.', { x: 50, y: 602, size: 9, font: regular, color: rgb(0.55, 0.1, 0.1) });
     }
+    return doc;
+  };
+}
+
+function buildMailingLabel(app: any, caseData: CaseData) {
+  return async (): Promise<PDFDocument> => {
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([612, 792]);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const regular = await doc.embedFont(StandardFonts.Helvetica);
+    const italic = await doc.embedFont(StandardFonts.HelveticaOblique);
+
+    const firm = getFirmProfile();
+    const fromName = (caseData.caaBusinessName || firm.businessName || 'PATSL').toUpperCase();
+    const fromAddress = firm.address || 'Queens, NY';
+    const fromPhone = firm.phone || '';
+
+    page.drawRectangle({ x: 0, y: 742, width: 612, height: 50, color: INK });
+    page.drawText('IRS Mailing Label', { x: 50, y: 762, size: 16, font: bold, color: rgb(1, 1, 1) });
+    page.drawText(
+      `Reference ${String(app.id).slice(0, 8)} · Priority Mail Flat Rate Envelope`,
+      { x: 50, y: 748, size: 8, font: regular, color: rgb(0.85, 0.87, 0.94) }
+    );
+
+    let y = 705;
+    page.drawText('How to use this label', { x: 50, y, size: 11, font: bold }); y -= 18;
+    const howTo = [
+      'Print this page, then either insert it into the clear window pouch of a Priority Mail',
+      'Flat Rate Envelope, or cut along the dashed line below and tape the label to the front',
+      'of the envelope. A Legal-size Flat Rate Envelope is recommended — it comfortably fits',
+      'the full W-7 / COA / 1040 / ID-copy package without folding.',
+    ];
+    for (const line of howTo) {
+      page.drawText(line, { x: 50, y, size: 9, font: regular, color: SLATE });
+      y -= 13;
+    }
+
+    // Dashed cut line + label panel
+    y -= 18;
+    const panelTop = y;
+    const panelHeight = 300;
+    const panelWidth = 468;
+    const panelX = (612 - panelWidth) / 2;
+    const panelBottom = panelTop - panelHeight;
+
+    for (let dashX = panelX; dashX < panelX + panelWidth; dashX += 10) {
+      page.drawLine({ start: { x: dashX, y: panelTop + 14 }, end: { x: dashX + 5, y: panelTop + 14 }, thickness: 0.75, color: SLATE });
+    }
+    page.drawText('✂ cut here', { x: panelX + panelWidth - 60, y: panelTop + 18, size: 7, font: italic, color: SLATE });
+
+    page.drawRectangle({
+      x: panelX,
+      y: panelBottom,
+      width: panelWidth,
+      height: panelHeight,
+      borderColor: INK,
+      borderWidth: 1.25,
+      color: rgb(1, 1, 1),
+    });
+
+    // FROM block (top-left of the label panel)
+    let ly = panelTop - 22;
+    page.drawText('FROM', { x: panelX + 20, y: ly, size: 7.5, font: bold, color: SLATE });
+    ly -= 14;
+    page.drawText(fromName, { x: panelX + 20, y: ly, size: 10, font: bold, color: INK });
+    ly -= 13;
+    page.drawText(fromAddress, { x: panelX + 20, y: ly, size: 9.5, font: regular, color: INK });
+    if (fromPhone) {
+      ly -= 13;
+      page.drawText(fromPhone, { x: panelX + 20, y: ly, size: 9, font: regular, color: SLATE });
+    }
+
+    // Divider
+    ly -= 16;
+    page.drawLine({ start: { x: panelX + 20, y: ly }, end: { x: panelX + panelWidth - 20, y: ly }, thickness: 0.75, color: rgb(0.8, 0.82, 0.86) });
+
+    // TO block — large, USPS-convention all-caps delivery address
+    ly -= 30;
+    page.drawText('DELIVER TO', { x: panelX + 20, y: ly, size: 8.5, font: bold, color: SLATE });
+    ly -= 22;
+    page.drawText(IRS_MAILING_ADDRESS.name.toUpperCase(), { x: panelX + 20, y: ly, size: 15, font: bold, color: INK });
+    ly -= 20;
+    page.drawText(IRS_MAILING_ADDRESS.line1.toUpperCase(), { x: panelX + 20, y: ly, size: 15, font: bold, color: INK });
+    ly -= 20;
+    page.drawText(IRS_MAILING_ADDRESS.line2.toUpperCase(), { x: panelX + 20, y: ly, size: 15, font: bold, color: INK });
+    ly -= 20;
+    page.drawText(IRS_MAILING_ADDRESS.cityStateZip.toUpperCase(), { x: panelX + 20, y: ly, size: 15, font: bold, color: INK });
+
+    page.drawText(
+      `Applicant ref: ${String(app.id).slice(0, 8)} — for your records only, not part of the IRS address`,
+      { x: panelX + 20, y: panelBottom + 14, size: 7, font: italic, color: SLATE }
+    );
+
+    let footerY = panelBottom - 26;
+    const footerLines = [
+      'This is a preparer-generated label, not an official USPS-issued label. Purchase postage at usps.com,',
+      'a self-service kiosk, or a Post Office retail counter — Priority Mail Flat Rate pricing is flat regardless',
+      'of package weight up to 70 lbs, so a Legal Flat Rate Envelope is the recommended, cost-predictable option.',
+    ];
+    for (const line of footerLines) {
+      page.drawText(line, { x: 50, y: footerY, size: 8, font: regular, color: SLATE });
+      footerY -= 12;
+    }
+
     return doc;
   };
 }
@@ -683,6 +797,8 @@ export async function POST(req: NextRequest) {
       sequence = [await buildF1040(caseData)];
     } else if (packageType === 'INVOICE_ONLY') {
       sequence = [await buildInvoice(app, caseData, invoiceRow)()];
+    } else if (packageType === 'MAILING_LABEL_ONLY') {
+      sequence = [await buildMailingLabel(app, caseData)()];
     } else if (packageType === 'CAA_RECORD') {
       // Internal CAA file copy — cover sheet + W-7 + COA, for the office's own records.
       sequence = [await buildIrsCoverPage(app, caseData)(), await buildW7(caseData), await buildCOA(caseData)];
@@ -711,6 +827,13 @@ export async function POST(req: NextRequest) {
 
     if (appendSupportingDocs) {
       await embedSupportingDocuments(mergedDoc, documents);
+
+      // IRS_MAIL only: append the mailing label as the very last page, generated
+      // automatically once the package is complete — never reordered ahead of the
+      // W-7 / COA / 1040 / ID copies above.
+      const labelDoc = await buildMailingLabel(app, caseData)();
+      const labelPages = await mergedDoc.copyPages(labelDoc, labelDoc.getPageIndices());
+      labelPages.forEach((p) => mergedDoc.addPage(p));
     }
 
     applyPrintScaling(mergedDoc);

@@ -127,7 +127,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
     }
   }
 
-  async function generate(packageType: 'IRS_MAIL' | 'CLIENT_COPY' | 'CAA_RECORD' | 'W7_ONLY' | 'COA_ONLY' | 'F1040_ONLY' | 'INVOICE_ONLY') {
+  async function generate(packageType: 'IRS_MAIL' | 'CLIENT_COPY' | 'CAA_RECORD' | 'W7_ONLY' | 'COA_ONLY' | 'F1040_ONLY' | 'INVOICE_ONLY' | 'MAILING_LABEL_ONLY') {
     setGenerating(packageType);
     setError('');
     try {
@@ -426,6 +426,9 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           <button onClick={() => generate('IRS_MAIL')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
             {generating === 'IRS_MAIL' ? 'Generating...' : 'Generate IRS mail package'}
           </button>
+          <p className="px-1 text-[10.5px] text-slate-500">
+            Includes a printable USPS Flat Rate Envelope mailing label as the last page, generated automatically.
+          </p>
           <button onClick={() => generate('CLIENT_COPY')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
             {generating === 'CLIENT_COPY' ? 'Generating...' : 'Generate full client copy'}
           </button>
@@ -448,6 +451,9 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
             </button>
             <button onClick={() => generate('INVOICE_ONLY')} disabled={!!generating} className="rounded-lg border border-slate-700 px-2 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-900 disabled:opacity-50">
               {generating === 'INVOICE_ONLY' ? '...' : 'Invoice only'}
+            </button>
+            <button onClick={() => generate('MAILING_LABEL_ONLY')} disabled={!!generating} className="col-span-2 rounded-lg border border-slate-700 px-2 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-900 disabled:opacity-50">
+              {generating === 'MAILING_LABEL_ONLY' ? '...' : 'Mailing label only (USPS Flat Rate)'}
             </button>
           </div>
         </div>
