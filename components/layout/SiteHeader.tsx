@@ -8,6 +8,12 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/marketing', label: 'Services & Pricing' },
   { href: '/status', label: 'Track My Case' },
+  { href: '/patsl-org', label: 'PATSL Network' },
+];
+
+const EXTERNAL_LINKS = [
+  { href: 'https://www.patsl.org', label: 'Nexus CAA Training' },
+  { href: 'https://www.puranaccounting.com', label: 'Puran Accounting Profile' },
 ];
 
 export default function SiteHeader() {
@@ -40,6 +46,17 @@ export default function SiteHeader() {
             >
               {link.label}
             </Link>
+          ))}
+          {EXTERNAL_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              {link.label} <span aria-hidden className="text-[10px]">&#8599;</span>
+            </a>
           ))}
         </nav>
 
@@ -87,6 +104,18 @@ export default function SiteHeader() {
               >
                 {link.label}
               </Link>
+            ))}
+            {EXTERNAL_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-300"
+              >
+                {link.label} &#8599;
+              </a>
             ))}
             <Link href="/admin" onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-400">
               Staff Sign-In
