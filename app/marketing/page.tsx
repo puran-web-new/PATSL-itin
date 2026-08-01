@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import FaqAccordion from '../../components/marketing/FaqAccordion';
 
 export const metadata: Metadata = {
   title: 'Services & Pricing',
@@ -109,14 +110,7 @@ export default function MarketingPage() {
         <div className="container-page max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">FAQ</p>
           <h2 className="mt-2 text-3xl font-bold text-ink-900">Common questions</h2>
-          <div className="mt-8 space-y-4">
-            {faqs.map((faq) => (
-              <div key={faq.q} className="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
-                <h3 className="text-sm font-bold text-ink-900">{faq.q}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{faq.a}</p>
-              </div>
-            ))}
-          </div>
+          <FaqAccordion faqs={faqs} />
         </div>
       </section>
     </>

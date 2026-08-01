@@ -1,13 +1,16 @@
 import Link from 'next/link';
+import { getFirmProfile } from '../../lib/firmProfile';
 
 export default function SiteFooter() {
+  const firm = getFirmProfile();
+
   return (
     <footer className="border-t border-ink-800/10 bg-ink-950 text-slate-300">
-      <div className="container-page grid gap-10 py-14 md:grid-cols-4">
+      <div className="container-page grid gap-10 py-14 md:grid-cols-5">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-sm font-bold text-ink-900">P</span>
-            <span className="text-sm font-bold tracking-wide text-white">PATSL Developer LLC</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-brand-500 text-sm font-bold text-white">P</span>
+            <span className="text-sm font-bold tracking-wide text-white">{firm.businessName || 'PATSL Developer LLC'}</span>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">
             Secure ITIN intake, identity verification, payment, and IRS package preparation for individuals,
@@ -29,6 +32,16 @@ export default function SiteFooter() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Staff</p>
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link href="/admin" className="hover:text-white">Admin Console</Link></li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Contact</p>
+          <ul className="mt-4 space-y-2 text-sm text-slate-400">
+            {firm.address && <li>{firm.address}</li>}
+            {firm.phone && <li>{firm.phone}</li>}
+            {firm.email && <li>{firm.email}</li>}
+            {!firm.address && !firm.phone && !firm.email && <li className="text-slate-500">Queens, NY</li>}
           </ul>
           <p className="mt-6 text-xs leading-5 text-slate-500">
             PATSL is not affiliated with, or endorsed by, the Internal Revenue Service. All submissions are
