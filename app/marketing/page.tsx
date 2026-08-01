@@ -55,49 +55,44 @@ const faqs = [
 export default function MarketingPage() {
   return (
     <>
-      <section className="bg-ink-950 py-16 text-white md:py-20">
-        <div className="container-page">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-300">PATSL ITIN Services</p>
+      <section className="relative overflow-hidden bg-abyss py-16 text-white md:py-20">
+        <div className="bg-dot-grid absolute inset-0 opacity-50" />
+        <div className="container-page relative">
+          <p className="label-mono text-[12px] font-semibold uppercase text-mint-400">PATSL ITIN Services</p>
           <h1 className="mt-3 max-w-2xl text-4xl font-bold tracking-tight">Secure document automation for ITIN workflows</h1>
-          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300">
+          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400">
             Pick the tier that fits your case. Every plan follows the same IRS-compliant review order and includes
             case tracking.
           </p>
         </div>
       </section>
 
-      <section className="container-page py-16 md:py-20">
-        <div className="grid gap-6 md:grid-cols-3">
+      <section className="bg-abyss py-16 md:py-20">
+        <div className="container-page grid gap-6 md:grid-cols-3">
           {tiers.map((tier) => (
             <div
               key={tier.id}
-              className={`flex flex-col rounded-2xl border p-6 shadow-card ${
-                tier.featured ? 'border-teal-500 ring-2 ring-teal-100' : 'border-slate-200'
-              }`}
+              className={`glass-card flex flex-col p-6 ${tier.featured ? 'border-mint-500/50 shadow-glow-mint' : ''}`}
             >
               {tier.featured && (
-                <span className="mb-3 inline-block w-fit rounded-full bg-teal-500 px-3 py-1 text-xs font-bold text-ink-950">
+                <span className="mb-3 inline-block w-fit rounded-full bg-mint-500 px-3 py-1 text-xs font-bold text-ink-950">
                   Most popular
                 </span>
               )}
-              <h2 className="text-lg font-bold text-ink-900">{tier.name}</h2>
-              <p className="mt-2 text-3xl font-bold text-teal-700">{tier.price}</p>
-              <p className="mt-4 text-sm leading-6 text-slate-600">{tier.description}</p>
+              <h2 className="text-lg font-bold text-white">{tier.name}</h2>
+              <p className="mt-2 text-3xl font-bold text-mint-400">{tier.price}</p>
+              <p className="mt-4 text-sm leading-6 text-slate-400">{tier.description}</p>
               <ul className="mt-5 flex-1 space-y-2">
                 {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
-                    <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-teal-500" />
+                  <li key={feature} className="flex items-start gap-2 text-sm text-slate-300">
+                    <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-teal-400" />
                     {feature}
                   </li>
                 ))}
               </ul>
               <Link
                 href={`/itin-intake?tier=${tier.id}`}
-                className={`mt-6 rounded-lg px-4 py-3 text-center text-sm font-bold ${
-                  tier.featured
-                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-ink-950 hover:from-teal-400 hover:to-teal-500'
-                    : 'border border-slate-300 text-ink-900 hover:bg-ink-50'
-                }`}
+                className={`mt-6 text-center ${tier.featured ? 'btn-pill-primary' : 'btn-pill-ghost'}`}
               >
                 Choose {tier.name}
               </Link>
@@ -106,10 +101,11 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      <section className="bg-ink-50 py-16 md:py-20">
-        <div className="container-page max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">FAQ</p>
-          <h2 className="mt-2 text-3xl font-bold text-ink-900">Common questions</h2>
+      <section className="relative overflow-hidden bg-abyss-raised py-16 md:py-20">
+        <div className="bg-dot-grid absolute inset-0 opacity-30" />
+        <div className="container-page relative max-w-3xl">
+          <p className="label-mono text-[12px] font-semibold uppercase text-mint-400">FAQ</p>
+          <h2 className="mt-2 text-3xl font-bold text-white">Common questions</h2>
           <FaqAccordion faqs={faqs} />
         </div>
       </section>

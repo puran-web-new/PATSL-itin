@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { FormEvent, ReactNode, useState } from 'react';
+import GoldCrest from '../layout/GoldCrest';
 
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '▣' },
@@ -28,13 +29,13 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-[220px_1fr] bg-slate-100 text-ink-900">
-      <aside className="flex flex-col bg-ink-950 p-3 text-slate-300">
-        <Link href="/admin/dashboard" className="mb-3 flex items-center gap-2 border-b border-slate-800 px-2 pb-4">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-brand-500 text-sm font-bold text-white">P</span>
+    <div className="grid min-h-screen grid-cols-[220px_1fr] bg-abyss text-white">
+      <aside className="flex flex-col border-r border-teal-500/10 bg-abyss-raised p-3 text-slate-300">
+        <Link href="/admin/dashboard" className="mb-3 flex items-center gap-2 border-b border-white/10 px-2 pb-4">
+          <GoldCrest className="h-8 w-8" />
           <span>
             <span className="block text-xs font-bold text-white">PATSL Control Center</span>
-            <span className="block text-[9px] uppercase tracking-widest text-slate-500">Staff portal</span>
+            <span className="label-mono block text-[9px] uppercase text-mint-400">Staff portal</span>
           </span>
         </Link>
 
@@ -86,17 +87,17 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search clients, references, documents..."
-              className="w-80 rounded-lg border border-slate-200 bg-white p-2.5 text-xs"
+              className="w-80 rounded-full border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500"
             />
           </form>
           <div className="flex items-center gap-2.5">
             <span className="text-xs text-slate-500">Staff session</span>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-900 text-[10px] font-bold text-white">PR</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-mint-500 to-teal-400 text-[10px] font-bold text-ink-950">PR</span>
           </div>
         </div>
         {title && (
           <div className="mb-5">
-            <h1 className="text-xl font-bold text-ink-900">{title}</h1>
+            <h1 className="text-xl font-bold text-white">{title}</h1>
             {subtitle && <p className="mt-1 text-xs text-slate-500">{subtitle}</p>}
           </div>
         )}

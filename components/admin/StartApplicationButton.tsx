@@ -71,27 +71,27 @@ export default function StartApplicationButton({ token }: { token: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-2.5 text-xs font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500"
+        className="rounded-lg bg-gradient-to-r from-mint-500 to-teal-400 px-4 py-2.5 text-xs font-bold text-ink-950 hover:from-mint-400 hover:to-teal-300"
       >
         + Start new application
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-2xl bg-abyss-panel p-6 shadow-xl">
             {!generatedLink ? (
               <>
-                <h2 className="text-sm font-bold text-ink-900">Start a new application</h2>
+                <h2 className="text-sm font-bold text-white">Start a new application</h2>
                 <p className="mt-1 text-xs text-slate-500">
                   Enter the client's basic contact info, then choose how to continue: fill the full case yourself
                   (walk-in), or generate a secure link for the client to complete their own intake remotely.
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2.5">
-                  <input className="col-span-1 rounded-lg border border-slate-300 p-2.5 text-xs" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                  <input className="col-span-1 rounded-lg border border-slate-300 p-2.5 text-xs" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                  <input className="col-span-2 rounded-lg border border-slate-300 p-2.5 text-xs" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <input className="col-span-2 rounded-lg border border-slate-300 p-2.5 text-xs" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                  <select className="col-span-2 rounded-lg border border-slate-300 p-2.5 text-xs" value={serviceTier} onChange={(e) => setServiceTier(e.target.value)}>
+                  <input className="col-span-1 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                  <input className="col-span-1 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                  <input className="col-span-2 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <input className="col-span-2 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  <select className="col-span-2 rounded-lg border border-white/10 p-2.5 text-xs" value={serviceTier} onChange={(e) => setServiceTier(e.target.value)}>
                     <option value="EXPRESS_SELF_SERVICE">Express Self-Service — $149</option>
                     <option value="CAA_CONCIERGE">CAA Concierge — $349</option>
                     <option value="B2B_PORTAL">B2B Wholesale — $99</option>
@@ -109,24 +109,24 @@ export default function StartApplicationButton({ token }: { token: string }) {
                   <button
                     disabled={!valid || !!creating}
                     onClick={handleGenerateLink}
-                    className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-2.5 text-xs font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:opacity-40"
+                    className="rounded-lg bg-gradient-to-r from-mint-500 to-teal-400 px-4 py-2.5 text-xs font-bold text-ink-950 hover:from-mint-400 hover:to-teal-300 disabled:opacity-40"
                   >
                     {creating === 'LINK' ? 'Creating...' : 'Generate client link'}
                   </button>
                 </div>
-                <button type="button" onClick={reset} className="mt-3 w-full text-center text-[11px] text-slate-400 hover:text-slate-600">
+                <button type="button" onClick={reset} className="mt-3 w-full text-center text-[11px] text-slate-400 hover:text-slate-400">
                   Cancel
                 </button>
               </>
             ) : (
               <>
-                <h2 className="text-sm font-bold text-ink-900">Client intake link ready</h2>
+                <h2 className="text-sm font-bold text-white">Client intake link ready</h2>
                 <p className="mt-1 text-xs text-slate-500">
                   Send this link to {firstName} — it opens the intake wizard pre-filled with their name and email,
                   ready to complete the rest themselves.
                 </p>
-                <div className="mt-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-                  <input readOnly value={generatedLink} className="flex-1 truncate bg-transparent text-xs text-slate-700" onFocus={(e) => e.target.select()} />
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-white/10 bg-slate-50 p-2.5">
+                  <input readOnly value={generatedLink} className="flex-1 truncate bg-transparent text-xs text-slate-300" onFocus={(e) => e.target.select()} />
                   <button
                     type="button"
                     onClick={() => {
@@ -138,7 +138,7 @@ export default function StartApplicationButton({ token }: { token: string }) {
                     {copied ? 'Copied ✓' : 'Copy'}
                   </button>
                 </div>
-                <button type="button" onClick={reset} className="mt-5 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-xs font-semibold text-ink-900 hover:bg-slate-50">
+                <button type="button" onClick={reset} className="mt-5 w-full rounded-lg border border-white/10 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/5">
                   Done
                 </button>
               </>

@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Space Grotesk', ui-monospace, SFMono-Regular, monospace;
 }
 
 html {
@@ -12,13 +13,69 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-inter);
+  font-family: var(--font-display);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  background-color: #080e14;
 }
 
 @layer utilities {
   .container-page {
     @apply mx-auto w-full max-w-6xl px-6;
+  }
+
+  /* Subtle dark cyan dot-grid overlay used behind hero/section backgrounds. */
+  .bg-dot-grid {
+    background-image: radial-gradient(rgba(45, 212, 191, 0.16) 1px, transparent 1.5px);
+    background-size: 20px 20px;
+  }
+
+  /* Soft ambient glow blob, positioned by the parent + given a size via inline style or w/h classes. */
+  .glow-blob {
+    filter: blur(70px);
+    pointer-events: none;
+  }
+
+  .label-mono {
+    font-family: var(--font-mono);
+    letter-spacing: 0.15em;
+  }
+
+  /* Glassmorphism card: dark, translucent, subtle teal border + inset highlight. */
+  .glass-card {
+    background: rgba(11, 19, 27, 0.6);
+    border: 1px solid rgba(45, 212, 191, 0.15);
+    border-radius: 24px;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+      0 20px 40px -20px rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Primary pill CTA: solid neon mint, dark text, glow + scale on hover. */
+  .btn-pill-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-mint-500 px-6 py-3 text-sm font-bold text-ink-950 transition-all duration-200;
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 8px 24px -6px rgba(16, 185, 129, 0.55);
+  }
+  .btn-pill-primary:hover {
+    @apply scale-105 bg-mint-400;
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.55), 0 10px 32px -4px rgba(16, 185, 129, 0.7);
+  }
+
+  /* Secondary ghost pill: transparent, thin outline, subtle glow on hover. */
+  .btn-pill-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-slate-700 bg-transparent px-6 py-3 text-sm font-semibold text-slate-200 transition-all duration-200;
+  }
+  .btn-pill-ghost:hover {
+    @apply border-teal-400/50 text-white;
+    box-shadow: 0 0 24px -8px rgba(45, 212, 191, 0.45);
+  }
+
+  .status-dot {
+    @apply relative inline-flex h-1.5 w-1.5 rounded-full bg-mint-500;
+  }
+  .status-dot::after {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-mint-500 animate-pulse-dot;
   }
 }

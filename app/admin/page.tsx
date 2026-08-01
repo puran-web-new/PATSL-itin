@@ -50,10 +50,10 @@ export default function AdminSignInPage() {
             placeholder="Admin access token"
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-sm text-white"
+            className="w-full rounded-lg border border-white/10 bg-abyss-panel p-3 text-sm text-white"
           />
           {error && <p className="text-left text-xs text-red-400">{error}</p>}
-          <button disabled={loading || !token} className="w-full rounded-lg bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-500 disabled:bg-slate-700">
+          <button disabled={loading || !token} className="btn-pill-primary w-full disabled:opacity-40">
             {loading ? 'Verifying...' : 'Sign in'}
           </button>
         </form>

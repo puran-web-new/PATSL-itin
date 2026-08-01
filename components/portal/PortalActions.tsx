@@ -40,11 +40,11 @@ export function DownloadClientCopyButton({ applicationId }: { applicationId: str
       <button
         onClick={download}
         disabled={loading}
-        className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-2.5 text-xs font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:opacity-50"
+        className="btn-pill-primary px-4 py-2.5 text-xs disabled:opacity-50"
       >
         {loading ? 'Preparing...' : 'Download my client copy'}
       </button>
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
     </div>
   );
 }
@@ -90,7 +90,7 @@ export function UploadDocumentForm({ applicationId }: { applicationId: string })
 
   return (
     <form onSubmit={submit} className="space-y-2.5">
-      <select value={docType} onChange={(e) => setDocType(e.target.value)} className="w-full rounded-lg border border-slate-300 p-2.5 text-xs">
+      <select value={docType} onChange={(e) => setDocType(e.target.value)} className="w-full rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white">
         <option value="PASSPORT">Passport</option>
         <option value="NATIONAL_ID">National ID</option>
         <option value="DRIVERS_LICENSE">Driver's license / State ID</option>
@@ -101,11 +101,11 @@ export function UploadDocumentForm({ applicationId }: { applicationId: string })
         type="file"
         accept="image/jpeg,image/png,image/webp,application/pdf"
         onChange={(e) => setFile(e.target.files?.[0] || null)}
-        className="w-full text-xs"
+        className="w-full text-xs text-slate-400"
       />
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      {done && <p className="text-xs font-semibold text-teal-700">Uploaded — your preparer will review it shortly.</p>}
-      <button disabled={!file || uploading} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-xs font-semibold text-ink-900 hover:bg-slate-50 disabled:opacity-50">
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      {done && <p className="text-xs font-semibold text-mint-400">Uploaded — your preparer will review it shortly.</p>}
+      <button disabled={!file || uploading} className="btn-pill-ghost w-full px-4 py-2.5 text-xs disabled:opacity-50">
         {uploading ? 'Uploading...' : 'Upload document'}
       </button>
     </form>

@@ -128,7 +128,7 @@ export default function ClientDetailPage() {
       title={application ? `${application.first_name} ${application.last_name}` : 'Client'}
       subtitle={application ? `Reference ${application.id}` : undefined}
     >
-      <Link href="/admin/clients" className="mb-4 inline-block text-xs font-semibold text-slate-500 hover:text-teal-700">&larr; All clients</Link>
+      <Link href="/admin/clients" className="mb-4 inline-block text-xs font-semibold text-slate-500 hover:text-mint-300">&larr; All clients</Link>
 
       {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
@@ -137,35 +137,35 @@ export default function ClientDetailPage() {
       ) : (
         <div className="grid grid-cols-[2fr_1fr] gap-4">
           <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-ink-900">Case overview</h3>
+            <div className="glass-card p-5">
+              <h3 className="mb-3 text-sm font-bold text-white">Case overview</h3>
               <dl className="grid grid-cols-2 gap-3 text-xs">
-                <div><dt className="text-slate-500">Email</dt><dd className="font-semibold text-ink-900">{application.email}</dd></div>
-                <div><dt className="text-slate-500">Phone</dt><dd className="font-semibold text-ink-900">{application.phone || '—'}</dd></div>
-                <div><dt className="text-slate-500">Service tier</dt><dd className="font-semibold capitalize text-ink-900">{application.service_tier?.toLowerCase().replace(/_/g, ' ')}</dd></div>
-                <div><dt className="text-slate-500">Reason / exception</dt><dd className="font-semibold capitalize text-ink-900">{application.exception_type?.toLowerCase().replace(/_/g, ' ') || '—'}</dd></div>
-                <div><dt className="text-slate-500">Received</dt><dd className="font-semibold text-ink-900">{new Date(application.created_at).toLocaleString()}</dd></div>
-                <div><dt className="text-slate-500">Last updated</dt><dd className="font-semibold text-ink-900">{new Date(application.updated_at).toLocaleString()}</dd></div>
+                <div><dt className="text-slate-500">Email</dt><dd className="font-semibold text-white">{application.email}</dd></div>
+                <div><dt className="text-slate-500">Phone</dt><dd className="font-semibold text-white">{application.phone || '—'}</dd></div>
+                <div><dt className="text-slate-500">Service tier</dt><dd className="font-semibold capitalize text-white">{application.service_tier?.toLowerCase().replace(/_/g, ' ')}</dd></div>
+                <div><dt className="text-slate-500">Reason / exception</dt><dd className="font-semibold capitalize text-white">{application.exception_type?.toLowerCase().replace(/_/g, ' ') || '—'}</dd></div>
+                <div><dt className="text-slate-500">Received</dt><dd className="font-semibold text-white">{new Date(application.created_at).toLocaleString()}</dd></div>
+                <div><dt className="text-slate-500">Last updated</dt><dd className="font-semibold text-white">{new Date(application.updated_at).toLocaleString()}</dd></div>
               </dl>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-ink-900">Identity documents ({documents.length})</h3>
+            <div className="glass-card p-5">
+              <h3 className="mb-3 text-sm font-bold text-white">Identity documents ({documents.length})</h3>
               {documents.length === 0 && <p className="text-xs text-slate-500">No identity documents uploaded yet.</p>}
               <div className="space-y-2">
                 {documents.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-xs">
+                  <div key={d.id} className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-xs">
                     <div>
-                      <p className="font-semibold text-ink-900">{d.doc_type.replace(/_/g, ' ')} {d.document_number ? `#${d.document_number}` : ''}</p>
+                      <p className="font-semibold text-white">{d.doc_type.replace(/_/g, ' ')} {d.document_number ? `#${d.document_number}` : ''}</p>
                       <p className="text-[10.5px] text-slate-500">
                         {d.issuing_country || 'Unknown issuer'} · uploaded {new Date(d.created_at).toLocaleDateString()}
                         {d.is_scrubbed && ' · scrubbed (retention policy)'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold capitalize text-slate-600">{d.verification_status.toLowerCase().replace(/_/g, ' ')}</span>
+                      <span className="rounded-full bg-white/5 px-2 py-1 text-[10px] font-bold capitalize text-slate-400">{d.verification_status.toLowerCase().replace(/_/g, ' ')}</span>
                       {d.storage_path && !d.is_scrubbed && token && (
-                        <button type="button" onClick={() => viewDocument(d.id, token)} className="font-semibold text-teal-700 hover:underline">View</button>
+                        <button type="button" onClick={() => viewDocument(d.id, token)} className="font-semibold text-mint-300 hover:underline">View</button>
                       )}
                     </div>
                   </div>
@@ -173,14 +173,14 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-ink-900">Case timeline</h3>
+            <div className="glass-card p-5">
+              <h3 className="mb-3 text-sm font-bold text-white">Case timeline</h3>
               {timeline.length === 0 && <p className="text-xs text-slate-500">No activity recorded yet.</p>}
               <div className="space-y-0">
                 {timeline.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between gap-3 border-t border-slate-100 py-2.5 text-xs first:border-t-0">
+                  <div key={t.id} className="flex items-center justify-between gap-3 border-t border-white/10 py-2.5 text-xs first:border-t-0">
                     <span className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-mint-500" />
                       {EVENT_LABELS[t.event_type] || t.event_type}
                       <span className="text-slate-400">({t.actor})</span>
                     </span>
@@ -192,13 +192,13 @@ export default function ClientDetailPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-ink-900">Status</h3>
+            <div className="glass-card p-5">
+              <h3 className="mb-3 text-sm font-bold text-white">Status</h3>
               <select
                 value={application.status}
                 disabled={statusSaving}
                 onChange={(e) => changeStatus(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white p-2.5 text-xs font-semibold"
+                className="w-full rounded-lg glass-card p-2.5 text-xs font-semibold"
               >
                 {Object.entries(STATUS_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -206,10 +206,10 @@ export default function ClientDetailPage() {
               </select>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-ink-900">Quick actions</h3>
+            <div className="glass-card p-5">
+              <h3 className="mb-3 text-sm font-bold text-white">Quick actions</h3>
               <div className="space-y-1">
-                <Link href={`/admin/applications/${application.id}`} className="block rounded-lg bg-teal-600 px-3 py-2.5 text-center text-xs font-semibold text-white hover:bg-teal-500">
+                <Link href={`/admin/applications/${application.id}`} className="btn-pill-primary block px-3 py-2.5 text-center text-xs">
                   Prepare application &amp; generate documents
                 </Link>
                 <p className="px-1 pt-1 text-[10.5px] text-slate-500">
@@ -218,16 +218,16 @@ export default function ClientDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <h3 className="mb-3 text-sm font-bold text-ink-900">Payments</h3>
+            <div className="glass-card p-5">
+              <h3 className="mb-3 text-sm font-bold text-white">Payments</h3>
               {invoices.length === 0 && <p className="text-xs text-slate-500">No payment link created yet.</p>}
               <div className="space-y-2">
                 {invoices.map((inv) => (
-                  <div key={inv.id} className="rounded-lg border border-slate-100 px-3 py-2 text-xs">
-                    <p className="font-semibold text-ink-900">${(inv.amount_cents / 100).toFixed(2)} {inv.currency}</p>
+                  <div key={inv.id} className="rounded-lg border border-white/10 px-3 py-2 text-xs">
+                    <p className="font-semibold text-white">${(inv.amount_cents / 100).toFixed(2)} {inv.currency}</p>
                     <p className="text-[10.5px] capitalize text-slate-500">{inv.payment_status.toLowerCase()} · {new Date(inv.created_at).toLocaleDateString()}</p>
                     {inv.square_payment_link && (
-                      <a href={inv.square_payment_link} target="_blank" rel="noreferrer" className="text-[10.5px] font-semibold text-teal-700 hover:underline">View payment link</a>
+                      <a href={inv.square_payment_link} target="_blank" rel="noreferrer" className="text-[10.5px] font-semibold text-mint-300 hover:underline">View payment link</a>
                     )}
                   </div>
                 ))}

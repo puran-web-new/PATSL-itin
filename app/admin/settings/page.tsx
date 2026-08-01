@@ -70,19 +70,19 @@ export default function SettingsPage() {
       {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       <div className="grid grid-cols-[1.4fr_1fr] gap-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h3 className="mb-1 text-sm font-bold text-ink-900">Integration status</h3>
+        <div className="glass-card p-5">
+          <h3 className="mb-1 text-sm font-bold text-white">Integration status</h3>
           <p className="mb-3 text-[11px] text-slate-500">Live checks — no secret values are ever shown, only whether each is configured.</p>
           {!integrations ? (
             <p className="text-xs text-slate-500">Checking integrations...</p>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-white/10">
               {(Object.keys(INTEGRATION_LABELS) as (keyof Integrations)[]).map((key) => (
                 <div key={key} className="flex items-center justify-between gap-3 py-2.5">
                   <div className="flex items-center gap-2.5">
                     <StatusDot on={integrations[key]} />
                     <div>
-                      <p className="text-xs font-semibold text-ink-900">{INTEGRATION_LABELS[key].label}</p>
+                      <p className="text-xs font-semibold text-white">{INTEGRATION_LABELS[key].label}</p>
                       <p className="text-[10.5px] text-slate-500">{INTEGRATION_LABELS[key].note}</p>
                     </div>
                   </div>
@@ -95,21 +95,21 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h3 className="mb-1 text-sm font-bold text-ink-900">Firm profile</h3>
+        <div className="glass-card p-5">
+          <h3 className="mb-1 text-sm font-bold text-white">Firm profile</h3>
           <p className="mb-3 text-[11px] text-slate-500">Auto-filled onto the Acceptance Agent section of every W-7 and Certificate of Accuracy.</p>
           {!firmProfile ? (
             <p className="text-xs text-slate-500">Loading firm profile...</p>
           ) : (
             <dl className="space-y-2.5 text-xs">
-              <div><dt className="text-slate-500">Business name</dt><dd className="font-semibold text-ink-900">{firmProfile.businessName}</dd></div>
-              <div><dt className="text-slate-500">Reviewer</dt><dd className="font-semibold text-ink-900">{firmProfile.reviewerName} — {firmProfile.reviewerTitle}</dd></div>
-              <div><dt className="text-slate-500">EIN</dt><dd className="font-semibold text-ink-900">{firmProfile.ein || '— set CAA_EIN'}</dd></div>
-              <div><dt className="text-slate-500">PTIN</dt><dd className="font-semibold text-ink-900">{firmProfile.ptin || '— set CAA_PTIN'}</dd></div>
-              <div><dt className="text-slate-500">Office code</dt><dd className="font-semibold text-ink-900">{firmProfile.officeCode || '— set CAA_OFFICE_CODE'}</dd></div>
-              <div><dt className="text-slate-500">Phone</dt><dd className="font-semibold text-ink-900">{firmProfile.phone || '— set CAA_PHONE'}</dd></div>
-              <div><dt className="text-slate-500">Email</dt><dd className="font-semibold text-ink-900">{firmProfile.email || '— set CAA_EMAIL'}</dd></div>
-              <div><dt className="text-slate-500">Address</dt><dd className="font-semibold text-ink-900">{firmProfile.address || '— set CAA_ADDRESS'}</dd></div>
+              <div><dt className="text-slate-500">Business name</dt><dd className="font-semibold text-white">{firmProfile.businessName}</dd></div>
+              <div><dt className="text-slate-500">Reviewer</dt><dd className="font-semibold text-white">{firmProfile.reviewerName} — {firmProfile.reviewerTitle}</dd></div>
+              <div><dt className="text-slate-500">EIN</dt><dd className="font-semibold text-white">{firmProfile.ein || '— set CAA_EIN'}</dd></div>
+              <div><dt className="text-slate-500">PTIN</dt><dd className="font-semibold text-white">{firmProfile.ptin || '— set CAA_PTIN'}</dd></div>
+              <div><dt className="text-slate-500">Office code</dt><dd className="font-semibold text-white">{firmProfile.officeCode || '— set CAA_OFFICE_CODE'}</dd></div>
+              <div><dt className="text-slate-500">Phone</dt><dd className="font-semibold text-white">{firmProfile.phone || '— set CAA_PHONE'}</dd></div>
+              <div><dt className="text-slate-500">Email</dt><dd className="font-semibold text-white">{firmProfile.email || '— set CAA_EMAIL'}</dd></div>
+              <div><dt className="text-slate-500">Address</dt><dd className="font-semibold text-white">{firmProfile.address || '— set CAA_ADDRESS'}</dd></div>
             </dl>
           )}
           <p className="mt-4 text-[10.5px] text-slate-400">

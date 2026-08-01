@@ -47,22 +47,23 @@ export default async function PortalDashboardPage() {
   }
 
   return (
-    <section className="min-h-screen bg-ink-50 py-10">
-      <div className="container-page">
+    <section className="relative min-h-screen overflow-hidden bg-abyss py-10">
+      <div className="bg-dot-grid absolute inset-0 opacity-30" />
+      <div className="container-page relative">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-600">Client Portal</p>
-            <h1 className="mt-1 text-2xl font-bold text-ink-900">Welcome back, {session!.email}</h1>
+            <p className="label-mono text-[11px] font-semibold uppercase text-mint-400">Client Portal</p>
+            <h1 className="mt-1 text-2xl font-bold text-white">Welcome back, {session!.email}</h1>
           </div>
           <form action="/api/portal/auth/sign-out" method="POST">
-            <button className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-ink-900 hover:bg-slate-50">Sign out</button>
+            <button className="btn-pill-ghost px-4 py-2 text-xs">Sign out</button>
           </form>
         </div>
 
         {applications.length === 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-card">
-            <p className="text-sm text-slate-600">No applications found for this account yet.</p>
-            <Link href="/itin-intake" className="mt-4 inline-block rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-2.5 text-sm font-bold text-ink-950">
+          <div className="glass-card p-8 text-center">
+            <p className="text-sm text-slate-400">No applications found for this account yet.</p>
+            <Link href="/itin-intake" className="btn-pill-primary mt-4 inline-flex">
               Start an application
             </Link>
           </div>
@@ -74,17 +75,27 @@ export default async function PortalDashboardPage() {
             const archived = app.status === 'ARCHIVED_PII_SCRUBBED';
             const appDocs = documents.filter((d) => d.application_id === app.id);
             const appInvoice = invoices.find((i) => i.application_id === app.id);
+            const progressPct = archived ? 100 : activeIndex >= 0 ? Math.round(((activeIndex + 1) / STEP_ORDER.length) * 100) : 0;
 
             return (
-              <div key={app.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
+              <div key={app.id} className="glass-card p-6">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-xs text-slate-500">Reference {app.id.slice(0, 8)}</p>
-                    <p className="text-sm font-bold capitalize text-ink-900">{app.service_tier?.toLowerCase().replace(/_/g, ' ')}</p>
+                    <p className="text-sm font-bold capitalize text-white">{app.service_tier?.toLowerCase().replace(/_/g, ' ')}</p>
                   </div>
-                  <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-bold text-teal-700">
+                  <span className="rounded-full border border-mint-500/30 bg-mint-500/10 px-3 py-1 text-xs font-bold text-mint-300">
                     {STEP_LABELS[app.status] || app.status}
                   </span>
+                </div>
+
+                <div className="mb-5">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-mint-500 to-teal-400"
+                      style={{ width: `${progressPct}%`, boxShadow: '0 0 10px 1px rgba(16,185,129,0.55)' }}
+                    />
+                  </div>
                 </div>
 
                 {!archived ? (
@@ -92,7 +103,7 @@ export default async function PortalDashboardPage() {
                     {STEP_ORDER.map((step, index) => {
                       const done = activeIndex >= 0 && index <= activeIndex;
                       return (
-                        <li key={step} className={`rounded-lg border p-2 text-center text-[10.5px] font-semibold ${done ? 'border-teal-500 bg-teal-50 text-teal-700' : 'border-slate-200 text-slate-400'}`}>
+                        <li key={step} className={`rounded-lg border p-2 text-center text-[10.5px] font-semibold ${done ? 'border-mint-500/50 bg-mint-500/10 text-mint-300' : 'border-white/10 text-slate-500'}`}>
                           {STEP_LABELS[step]}
                         </li>
                       );
@@ -104,14 +115,14 @@ export default async function PortalDashboardPage() {
 
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
-                    <p className="mb-2 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">Documents</p>
+                    <p className="label-mono mb-2 text-[10px] font-bold uppercase text-slate-500">Documents</p>
                     <div className="space-y-1.5">
-                      {appDocs.length === 0 && <p className="text-xs text-slate-400">None uploaded yet.</p>}
+                      {appDocs.length === 0 && <p className="text-xs text-slate-500">None uploaded yet.</p>}
                       {appDocs.map((d) => (
-                        <div key={d.id} className="flex items-center justify-between rounded-lg border border-slate-100 px-2.5 py-2 text-xs">
+                        <div key={d.id} className="flex items-center justify-between rounded-lg border border-white/10 px-2.5 py-2 text-xs text-slate-300">
                           <span>{d.doc_type.replace(/_/g, ' ')}</span>
                           {!d.is_scrubbed && (
-                            <a href={`/api/documents/${d.id}/file`} target="_blank" rel="noreferrer" className="font-semibold text-teal-700 hover:underline">View</a>
+                            <a href={`/api/documents/${d.id}/file`} target="_blank" rel="noreferrer" className="font-semibold text-mint-400 hover:underline">View</a>
                           )}
                         </div>
                       ))}
@@ -122,19 +133,19 @@ export default async function PortalDashboardPage() {
                   </div>
 
                   <div>
-                    <p className="mb-2 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">Payment</p>
+                    <p className="label-mono mb-2 text-[10px] font-bold uppercase text-slate-500">Payment</p>
                     {appInvoice ? (
-                      <div className="rounded-lg border border-slate-100 p-3 text-xs">
-                        <p className="font-bold text-ink-900">${(appInvoice.amount_cents / 100).toFixed(2)} {appInvoice.currency}</p>
+                      <div className="rounded-lg border border-white/10 p-3 text-xs">
+                        <p className="font-bold text-white">${(appInvoice.amount_cents / 100).toFixed(2)} {appInvoice.currency}</p>
                         <p className="mt-1 capitalize text-slate-500">{appInvoice.payment_status.toLowerCase()}</p>
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-400">No invoice yet.</p>
+                      <p className="text-xs text-slate-500">No invoice yet.</p>
                     )}
                   </div>
 
                   <div>
-                    <p className="mb-2 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">Your documents</p>
+                    <p className="label-mono mb-2 text-[10px] font-bold uppercase text-slate-500">Your documents</p>
                     <DownloadClientCopyButton applicationId={app.id} />
                   </div>
                 </div>

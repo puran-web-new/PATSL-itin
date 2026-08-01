@@ -161,7 +161,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
   if (!application) return <p className="text-red-400">{error || 'Application not found.'}</p>;
 
   const totals = deriveFinancials(data);
-  const input = 'w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-white placeholder:text-slate-600';
+  const input = 'w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-white placeholder:text-slate-400';
   const label = 'mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500';
 
   return (
@@ -255,7 +255,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
             <Field label="Visa expiration"><input type="date" className={input} value={data.visaExpirationDate} onChange={(e) => set('visaExpirationDate', e.target.value)} /></Field>
             <Field label="Previous ITIN / IRSN (if any)"><input className={input} value={data.previousItinOrIrsn} onChange={(e) => set('previousItinOrIrsn', e.target.value)} /></Field>
           </div>
-          <p className="mb-2 mt-5 text-[10.5px] font-semibold uppercase tracking-wider text-slate-600">School / sponsor (line 6g — F/J/M/Q visa holders)</p>
+          <p className="mb-2 mt-5 text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">School / sponsor (line 6g — F/J/M/Q visa holders)</p>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="School or company name"><input className={input} value={data.schoolOrCompanyName} onChange={(e) => set('schoolOrCompanyName', e.target.value)} /></Field>
             <Field label="City and state"><input className={input} value={data.schoolCityState} onChange={(e) => set('schoolCityState', e.target.value)} /></Field>
@@ -378,7 +378,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Applicant</p>
           <p className="mt-1 text-sm font-bold text-white">{application.first_name} {application.last_name}</p>
           <p className="text-xs text-slate-500">{application.email}</p>
-          <p className="mt-2 font-mono text-[10px] text-slate-600">{application.id}</p>
+          <p className="mt-2 font-mono text-[10px] text-slate-400">{application.id}</p>
         </div>
 
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-300">
@@ -400,7 +400,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
           <button type="button" onClick={() => setShowReview((v) => !v)} className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
             Review &amp; validate
-            <span className="text-slate-600">{showReview ? '−' : '+'}</span>
+            <span className="text-slate-400">{showReview ? '−' : '+'}</span>
           </button>
           {showReview && (
             <dl className="mt-3 space-y-1.5 text-xs text-slate-300">
@@ -420,7 +420,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
         </div>
 
         <div className="space-y-2">
-          <button onClick={save} disabled={saving} className="w-full rounded-lg bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-500 disabled:bg-slate-700">
+          <button onClick={save} disabled={saving} className="btn-pill-primary w-full disabled:opacity-40">
             {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save case data'}
           </button>
           <button onClick={() => generate('IRS_MAIL')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
@@ -473,7 +473,7 @@ function Section({ title, usedOn, children }: { title: string; usedOn?: string[]
         <h2 className="text-sm font-bold uppercase tracking-wide text-teal-300">{title}</h2>
         {usedOn && usedOn.length > 0 && (
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-600">Used on:</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Used on:</span>
             {usedOn.map((doc) => (
               <span key={doc} className="rounded-full border border-slate-700 bg-slate-950 px-2 py-0.5 text-[9.5px] font-bold text-slate-400">
                 {doc}

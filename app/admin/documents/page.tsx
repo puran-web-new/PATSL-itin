@@ -26,7 +26,7 @@ type DocRow = {
 
 const VERIFICATION_STYLES: Record<string, string> = {
   PENDING_REVIEW: 'bg-amber-50 text-amber-700',
-  VERIFIED: 'bg-emerald-50 text-emerald-700',
+  VERIFIED: 'bg-mint-500/10 text-mint-300',
   REJECTED: 'bg-red-50 text-red-700',
 };
 
@@ -78,12 +78,12 @@ export default function DocumentsPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by client name, email, or document number..."
-          className="w-80 rounded-lg border border-slate-200 bg-white p-2.5 text-xs"
+          className="w-80 rounded-lg glass-card p-2.5 text-xs"
         />
         <select
           value={docTypeFilter}
           onChange={(e) => setDocTypeFilter(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white p-2.5 text-xs font-semibold"
+          className="rounded-lg glass-card p-2.5 text-xs font-semibold"
         >
           <option value="ALL">All document types</option>
           {docTypes.map((t) => (
@@ -92,7 +92,7 @@ export default function DocumentsPage() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="overflow-hidden glass-card">
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             <tr>
@@ -109,9 +109,9 @@ export default function DocumentsPage() {
             {loading && <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">Loading documents...</td></tr>}
             {!loading && filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No documents match this search.</td></tr>}
             {filtered.map((d) => (
-              <tr key={d.id} className="border-t border-slate-100 hover:bg-slate-50">
+              <tr key={d.id} className="border-t border-white/10 hover:bg-white/5">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/clients/${d.application_id}`} className="font-semibold text-ink-900 hover:text-teal-700">
+                  <Link href={`/admin/clients/${d.application_id}`} className="font-semibold text-white hover:text-mint-300">
                     {d.first_name} {d.last_name}
                   </Link>
                   <div className="text-[10.5px] text-slate-500">{d.email}</div>
@@ -123,7 +123,7 @@ export default function DocumentsPage() {
                 <td className="px-4 py-3">{d.issuing_country || '—'}</td>
                 <td className="px-4 py-3">{d.expiration_date ? new Date(d.expiration_date).toLocaleDateString() : '—'}</td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${VERIFICATION_STYLES[d.verification_status] || 'bg-slate-100 text-slate-600'}`}>
+                  <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${VERIFICATION_STYLES[d.verification_status] || 'bg-white/5 text-slate-400'}`}>
                     {d.verification_status.toLowerCase().replace(/_/g, ' ')}
                   </span>
                   {d.is_scrubbed && <div className="mt-1 text-[10px] text-slate-400">Scrubbed (retention policy)</div>}
@@ -131,7 +131,7 @@ export default function DocumentsPage() {
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">{new Date(d.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   {d.storage_path && !d.is_scrubbed && token ? (
-                    <button type="button" onClick={() => viewDocument(d.id, token)} className="font-semibold text-teal-700 hover:underline">View</button>
+                    <button type="button" onClick={() => viewDocument(d.id, token)} className="font-semibold text-mint-300 hover:underline">View</button>
                   ) : (
                     <span className="text-slate-400">—</span>
                   )}

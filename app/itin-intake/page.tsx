@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ITINIntakePage() {
   return (
-    <Suspense fallback={<div className="container-page py-20 text-center text-sm text-slate-500">Loading application form...</div>}>
+    <Suspense fallback={<div className="bg-abyss py-20 text-center text-sm text-slate-500">Loading application form...</div>}>
       <IntakeWizard />
     </Suspense>
   );

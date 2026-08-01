@@ -40,6 +40,8 @@ const emptyCase: CaseDetails = {
   serviceTier: 'CAA_CONCIERGE',
 };
 
+const inputClass = 'rounded-lg border border-white/10 bg-abyss-panel p-3 text-white placeholder:text-slate-500';
+
 export default function IntakeWizard() {
   const searchParams = useSearchParams();
   const successReturn = searchParams.get('success') === 'true';
@@ -218,21 +220,22 @@ export default function IntakeWizard() {
 
   if (successReturn) {
     return (
-      <section className="container-page py-16 text-center md:py-24">
-        <div className="mx-auto max-w-lg rounded-2xl border border-emerald-200 bg-emerald-50 p-8">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-xl text-white">✓</span>
-          <h1 className="mt-4 text-2xl font-bold text-ink-900">Payment received</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+      <section className="relative overflow-hidden bg-abyss py-16 text-center md:py-24">
+        <div className="bg-dot-grid absolute inset-0 opacity-40" />
+        <div className="glass-card relative mx-auto max-w-lg border-mint-500/30 p-8 shadow-glow-mint">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mint-500 text-xl text-ink-950">✓</span>
+          <h1 className="mt-4 text-2xl font-bold text-white">Payment received</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-400">
             Your case is now in CAA review. Save your reference ID to track progress any time.
           </p>
           {returnedApplicationId && (
-            <p className="mt-4 rounded-lg bg-white px-4 py-3 font-mono text-sm text-ink-900">{returnedApplicationId}</p>
+            <p className="mt-4 rounded-lg bg-abyss-panel px-4 py-3 font-mono text-sm text-white">{returnedApplicationId}</p>
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/status" className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 text-sm font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500">
+            <Link href="/status" className="btn-pill-primary">
               Track my case
             </Link>
-            <Link href="/" className="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-ink-900 hover:bg-white">
+            <Link href="/" className="btn-pill-ghost">
               Back to home
             </Link>
           </div>
@@ -242,21 +245,22 @@ export default function IntakeWizard() {
   }
 
   return (
-    <section className="container-page py-10 md:py-14">
-      <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">Secure Intake</p>
-        <h1 className="mt-2 text-3xl font-bold text-ink-900">PATSL ITIN Application Portal</h1>
-        <p className="mt-2 text-sm text-slate-600">
+    <section className="relative overflow-hidden bg-abyss py-10 md:py-14">
+      <div className="bg-dot-grid absolute inset-0 opacity-30" />
+      <div className="container-page relative mx-auto max-w-3xl">
+        <p className="label-mono text-[12px] font-semibold uppercase text-mint-400">Secure Intake</p>
+        <h1 className="mt-2 text-3xl font-bold text-white">PATSL ITIN Application Portal</h1>
+        <p className="mt-2 text-sm text-slate-400">
           Create your application record, verify identity, choose a service tier, and complete payment.
         </p>
 
         {resumingLink && (
-          <div className="mt-4 rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800">
+          <div className="mt-4 rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 text-sm text-teal-200">
             Loading the application your preparer started for you...
           </div>
         )}
         {resumeError && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{resumeError}</div>
+          <div className="mt-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{resumeError}</div>
         )}
 
         <ol className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -269,10 +273,10 @@ export default function IntakeWizard() {
                 key={label}
                 className={`rounded-lg border p-3 text-xs font-semibold ${
                   active
-                    ? 'border-teal-500 bg-teal-50 text-teal-700'
+                    ? 'border-mint-500/60 bg-mint-500/10 text-mint-300'
                     : done
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                    : 'border-slate-200 bg-white text-slate-400'
+                    ? 'border-teal-400/30 bg-teal-500/10 text-teal-300'
+                    : 'border-white/10 bg-abyss-panel text-slate-500'
                 }`}
               >
                 Step {stepNumber} &middot; {label}
@@ -281,7 +285,7 @@ export default function IntakeWizard() {
           })}
         </ol>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-card">
+        <div className="glass-card mt-8 p-8">
           {step === 1 && (
             <form
               onSubmit={(e) => {
@@ -290,13 +294,13 @@ export default function IntakeWizard() {
               }}
               className="grid gap-4 md:grid-cols-2"
             >
-              <input required className="rounded-lg border border-slate-300 p-3" placeholder="First name" value={personal.firstName} onChange={(e) => updatePersonal('firstName', e.target.value)} />
-              <input required className="rounded-lg border border-slate-300 p-3" placeholder="Last name" value={personal.lastName} onChange={(e) => updatePersonal('lastName', e.target.value)} />
-              <input required type="email" className="rounded-lg border border-slate-300 p-3" placeholder="Email" value={personal.email} onChange={(e) => updatePersonal('email', e.target.value)} />
-              <input className="rounded-lg border border-slate-300 p-3" placeholder="Phone" value={personal.phone} onChange={(e) => updatePersonal('phone', e.target.value)} />
-              <input type="date" className="rounded-lg border border-slate-300 p-3" value={personal.dateOfBirth} onChange={(e) => updatePersonal('dateOfBirth', e.target.value)} />
-              <input className="rounded-lg border border-slate-300 p-3" placeholder="Country of citizenship" value={personal.countryOfCitizenship} onChange={(e) => updatePersonal('countryOfCitizenship', e.target.value)} />
-              <button disabled={!canContinueStep1} className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-500 md:col-span-2">
+              <input required className={inputClass} placeholder="First name" value={personal.firstName} onChange={(e) => updatePersonal('firstName', e.target.value)} />
+              <input required className={inputClass} placeholder="Last name" value={personal.lastName} onChange={(e) => updatePersonal('lastName', e.target.value)} />
+              <input required type="email" className={inputClass} placeholder="Email" value={personal.email} onChange={(e) => updatePersonal('email', e.target.value)} />
+              <input className={inputClass} placeholder="Phone" value={personal.phone} onChange={(e) => updatePersonal('phone', e.target.value)} />
+              <input type="date" className={inputClass} value={personal.dateOfBirth} onChange={(e) => updatePersonal('dateOfBirth', e.target.value)} />
+              <input className={inputClass} placeholder="Country of citizenship" value={personal.countryOfCitizenship} onChange={(e) => updatePersonal('countryOfCitizenship', e.target.value)} />
+              <button disabled={!canContinueStep1} className="btn-pill-primary disabled:opacity-40 md:col-span-2">
                 Continue
               </button>
             </form>
@@ -304,24 +308,24 @@ export default function IntakeWizard() {
 
           {step === 2 && (
             <form onSubmit={submitStep2} className="grid gap-4 md:grid-cols-2">
-              {intakeError && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 md:col-span-2">{intakeError}</div>}
-              <select className="rounded-lg border border-slate-300 p-3 md:col-span-2" value={caseDetails.exceptionType} onChange={(e) => updateCase('exceptionType', e.target.value)}>
+              {intakeError && <div className="rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300 md:col-span-2">{intakeError}</div>}
+              <select className={`${inputClass} md:col-span-2`} value={caseDetails.exceptionType} onChange={(e) => updateCase('exceptionType', e.target.value)}>
                 <option value="STANDARD_RETURN">Standard filing with tax return</option>
                 <option value="EXCEPTION_1A_PARTNERSHIP">Exception 1(a) partnership or U.S. LLC</option>
                 <option value="TAX_TREATY">Tax treaty claim</option>
               </select>
-              <select className="rounded-lg border border-slate-300 p-3 md:col-span-2" value={caseDetails.serviceTier} onChange={(e) => updateCase('serviceTier', e.target.value)}>
+              <select className={`${inputClass} md:col-span-2`} value={caseDetails.serviceTier} onChange={(e) => updateCase('serviceTier', e.target.value)}>
                 <option value="EXPRESS_SELF_SERVICE">Express Self-Service - $149</option>
                 <option value="CAA_CONCIERGE">CAA Concierge - $349</option>
                 <option value="B2B_PORTAL">B2B Wholesale - $99</option>
               </select>
-              <textarea className="rounded-lg border border-slate-300 p-3 md:col-span-2" rows={3} placeholder="U.S. mailing address" value={caseDetails.mailingAddress} onChange={(e) => updateCase('mailingAddress', e.target.value)} />
-              <textarea className="rounded-lg border border-slate-300 p-3 md:col-span-2" rows={3} placeholder="Foreign address" value={caseDetails.foreignAddress} onChange={(e) => updateCase('foreignAddress', e.target.value)} />
+              <textarea className={`${inputClass} md:col-span-2`} rows={3} placeholder="U.S. mailing address" value={caseDetails.mailingAddress} onChange={(e) => updateCase('mailingAddress', e.target.value)} />
+              <textarea className={`${inputClass} md:col-span-2`} rows={3} placeholder="Foreign address" value={caseDetails.foreignAddress} onChange={(e) => updateCase('foreignAddress', e.target.value)} />
               <div className="flex gap-3 md:col-span-2">
-                <button type="button" onClick={() => setStep(1)} className="rounded-lg border border-slate-300 px-5 py-3 font-semibold text-ink-900 hover:bg-ink-50">
+                <button type="button" onClick={() => setStep(1)} className="btn-pill-ghost">
                   Back
                 </button>
-                <button disabled={creatingIntake} className="flex-1 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-400 disabled:to-slate-400 disabled:text-white">
+                <button disabled={creatingIntake} className="btn-pill-primary flex-1 disabled:opacity-40">
                   {creatingIntake ? 'Saving...' : 'Continue'}
                 </button>
               </div>
@@ -331,43 +335,43 @@ export default function IntakeWizard() {
           {step === 3 && (
             <div>
               {applicationId && (
-                <p className="mb-4 rounded-lg bg-ink-50 px-4 py-3 text-xs text-slate-600">
-                  Application reference: <span className="font-mono font-semibold text-ink-900">{applicationId}</span> — save this to track your case later.
+                <p className="mb-4 rounded-lg bg-abyss-panel px-4 py-3 text-xs text-slate-400">
+                  Application reference: <span className="font-mono font-semibold text-white">{applicationId}</span> — save this to track your case later.
                 </p>
               )}
 
               {uploadedUrl ? (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                <div className="rounded-lg border border-mint-500/30 bg-mint-500/10 p-4 text-sm text-mint-200">
                   Identity document received. You can continue to review &amp; payment.
                 </div>
               ) : (
                 <form onSubmit={uploadDocument} className="grid gap-4 md:grid-cols-2">
-                  {docError && <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 md:col-span-2">{docError}</div>}
-                  <select className="rounded-lg border border-slate-300 p-3" value={docType} onChange={(e) => setDocType(e.target.value)}>
+                  {docError && <div className="rounded-lg border border-gold-500/30 bg-gold-500/10 p-3 text-sm text-gold-300 md:col-span-2">{docError}</div>}
+                  <select className={inputClass} value={docType} onChange={(e) => setDocType(e.target.value)}>
                     <option value="PASSPORT">Passport (bio page)</option>
                     <option value="NATIONAL_ID">National ID card</option>
                     <option value="BIRTH_CERTIFICATE">Birth certificate</option>
                   </select>
-                  <input className="rounded-lg border border-slate-300 p-3" placeholder="Document number" value={documentNumber} onChange={(e) => setDocumentNumber(e.target.value)} />
-                  <input className="rounded-lg border border-slate-300 p-3" placeholder="Issuing country" value={issuingCountry} onChange={(e) => setIssuingCountry(e.target.value)} />
-                  <input type="date" className="rounded-lg border border-slate-300 p-3" placeholder="Expiration date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
+                  <input className={inputClass} placeholder="Document number" value={documentNumber} onChange={(e) => setDocumentNumber(e.target.value)} />
+                  <input className={inputClass} placeholder="Issuing country" value={issuingCountry} onChange={(e) => setIssuingCountry(e.target.value)} />
+                  <input type="date" className={inputClass} placeholder="Expiration date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">Upload a clear photo or scan (JPG, PNG, or PDF, up to 10MB)</label>
+                    <label className="label-mono block text-[10.5px] font-semibold uppercase text-slate-500">Upload a clear photo or scan (JPG, PNG, or PDF, up to 10MB)</label>
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp,application/pdf"
                       onChange={(e) => setFile(e.target.files?.[0] || null)}
-                      className="mt-2 block w-full text-sm"
+                      className="mt-2 block w-full text-sm text-slate-400"
                     />
                   </div>
-                  <button disabled={!file || uploading} className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-500 md:col-span-2">
+                  <button disabled={!file || uploading} className="btn-pill-primary disabled:opacity-40 md:col-span-2">
                     {uploading ? 'Uploading...' : 'Upload document'}
                   </button>
                 </form>
               )}
 
               <div className="mt-6 flex gap-3">
-                <button type="button" onClick={() => setStep(2)} className="rounded-lg border border-slate-300 px-5 py-3 font-semibold text-ink-900 hover:bg-ink-50">
+                <button type="button" onClick={() => setStep(2)} className="btn-pill-ghost">
                   Back
                 </button>
                 <button
@@ -376,7 +380,7 @@ export default function IntakeWizard() {
                     if (!uploadedUrl) setDocSkipped(true);
                     setStep(4);
                   }}
-                  className="flex-1 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500"
+                  className="btn-pill-primary flex-1"
                 >
                   {uploadedUrl ? 'Continue to review' : 'Skip for now & continue'}
                 </button>
@@ -386,14 +390,14 @@ export default function IntakeWizard() {
 
           {step === 4 && (
             <div>
-              <dl className="grid gap-3 rounded-lg bg-ink-50 p-4 text-sm sm:grid-cols-2">
-                <div><dt className="text-xs uppercase tracking-wider text-slate-500">Name</dt><dd className="font-medium text-ink-900">{personal.firstName} {personal.lastName}</dd></div>
-                <div><dt className="text-xs uppercase tracking-wider text-slate-500">Email</dt><dd className="font-medium text-ink-900">{personal.email}</dd></div>
-                <div><dt className="text-xs uppercase tracking-wider text-slate-500">Service tier</dt><dd className="font-medium text-ink-900">{tierLabel}</dd></div>
-                <div><dt className="text-xs uppercase tracking-wider text-slate-500">Identity document</dt><dd className="font-medium text-ink-900">{uploadedUrl ? 'Received' : docSkipped ? 'Pending — you can email it later' : 'Not uploaded'}</dd></div>
+              <dl className="grid gap-3 rounded-lg bg-abyss-panel p-4 text-sm sm:grid-cols-2">
+                <div><dt className="label-mono text-[10px] uppercase text-slate-500">Name</dt><dd className="font-medium text-white">{personal.firstName} {personal.lastName}</dd></div>
+                <div><dt className="label-mono text-[10px] uppercase text-slate-500">Email</dt><dd className="font-medium text-white">{personal.email}</dd></div>
+                <div><dt className="label-mono text-[10px] uppercase text-slate-500">Service tier</dt><dd className="font-medium text-white">{tierLabel}</dd></div>
+                <div><dt className="label-mono text-[10px] uppercase text-slate-500">Identity document</dt><dd className="font-medium text-white">{uploadedUrl ? 'Received' : docSkipped ? 'Pending — you can email it later' : 'Not uploaded'}</dd></div>
               </dl>
 
-              {paymentError && <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{paymentError}</div>}
+              {paymentError && <div className="mt-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{paymentError}</div>}
 
               {!paymentAttempted && (
                 <p className="mt-4 text-xs text-slate-500">
@@ -403,21 +407,21 @@ export default function IntakeWizard() {
               )}
 
               {paymentAttempted && !creatingPayment && !checkoutUrl && !paymentError && (
-                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <div className="mt-4 rounded-lg border border-gold-500/30 bg-gold-500/10 p-3 text-sm text-gold-300">
                   Your application is saved. Online payment isn&apos;t configured for this deployment yet, so our team
                   will follow up directly to collect payment.
                 </div>
               )}
 
               <div className="mt-6 flex gap-3">
-                <button type="button" onClick={() => setStep(3)} className="rounded-lg border border-slate-300 px-5 py-3 font-semibold text-ink-900 hover:bg-ink-50">
+                <button type="button" onClick={() => setStep(3)} className="btn-pill-ghost">
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={submitPayment}
                   disabled={creatingPayment || !applicationId}
-                  className="flex-1 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 font-bold text-ink-950 hover:from-teal-400 hover:to-teal-500 disabled:from-slate-400 disabled:to-slate-400 disabled:text-white"
+                  className="btn-pill-primary flex-1 disabled:opacity-40"
                 >
                   {creatingPayment ? 'Preparing checkout...' : 'Proceed to secure payment'}
                 </button>

@@ -32,17 +32,17 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  INTAKE_STARTED: 'bg-slate-100 text-slate-700',
+  INTAKE_STARTED: 'bg-white/5 text-slate-300',
   DOCUMENTS_RECEIVED: 'bg-blue-50 text-blue-700',
   PAYMENT_PENDING: 'bg-amber-50 text-amber-700',
-  CAA_REVIEW: 'bg-teal-50 text-teal-700',
-  SUBMITTED_IRS: 'bg-emerald-50 text-emerald-700',
-  ARCHIVED_PII_SCRUBBED: 'bg-slate-100 text-slate-500',
+  CAA_REVIEW: 'bg-mint-500/10 text-mint-300',
+  SUBMITTED_IRS: 'bg-mint-500/10 text-mint-300',
+  ARCHIVED_PII_SCRUBBED: 'bg-white/5 text-slate-500',
 };
 
 function StatusPill({ status }: { status: string }) {
   return (
-    <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10.5px] font-bold ${STATUS_STYLES[status] || 'bg-slate-100 text-slate-600'}`}>
+    <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10.5px] font-bold ${STATUS_STYLES[status] || 'bg-white/5 text-slate-400'}`}>
       {STATUS_LABELS[status] || status.replace(/_/g, ' ')}
     </span>
   );
@@ -106,12 +106,12 @@ function ClientsPageInner() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter by name, email, phone, or reference ID..."
-            className="w-80 rounded-lg border border-slate-200 bg-white p-2.5 text-xs"
+            className="w-80 rounded-lg glass-card p-2.5 text-xs"
           />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white p-2.5 text-xs font-semibold"
+            className="rounded-lg glass-card p-2.5 text-xs font-semibold"
           >
             <option value="ALL">All statuses</option>
             {Object.entries(STATUS_LABELS).map(([value, label]) => (
@@ -120,7 +120,7 @@ function ClientsPageInner() {
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold">
+          <div className="flex rounded-lg glass-card p-0.5 text-xs font-semibold">
             <button type="button" onClick={() => setView('TABLE')} className={`rounded-md px-3 py-1.5 ${view === 'TABLE' ? 'bg-ink-900 text-white' : 'text-slate-500'}`}>Table</button>
             <button type="button" onClick={() => setView('KANBAN')} className={`rounded-md px-3 py-1.5 ${view === 'KANBAN' ? 'bg-ink-900 text-white' : 'text-slate-500'}`}>Kanban</button>
           </div>
@@ -133,16 +133,16 @@ function ClientsPageInner() {
           {Object.entries(STATUS_LABELS).map(([status, label]) => {
             const cards = filtered.filter((r) => r.status === status);
             return (
-              <div key={status} className="w-64 flex-none rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div key={status} className="w-64 flex-none rounded-2xl border border-white/10 bg-slate-50 p-3">
                 <div className="mb-3 flex items-center justify-between">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-600">{label}</p>
-                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">{cards.length}</span>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-400">{cards.length}</span>
                 </div>
                 <div className="space-y-2">
                   {cards.length === 0 && <p className="text-[11px] text-slate-400">No cases</p>}
                   {cards.map((r) => (
-                    <Link key={r.id} href={`/admin/clients/${r.id}`} className="block rounded-xl border border-slate-200 bg-white p-3 shadow-card hover:border-teal-300">
-                      <p className="text-xs font-bold text-ink-900">{r.first_name} {r.last_name}</p>
+                    <Link key={r.id} href={`/admin/clients/${r.id}`} className="block glass-card p-3 hover:border-teal-300">
+                      <p className="text-xs font-bold text-white">{r.first_name} {r.last_name}</p>
                       <p className="mt-0.5 text-[10.5px] capitalize text-slate-500">{r.service_tier?.toLowerCase().replace(/_/g, ' ')}</p>
                       <p className="mt-1.5 font-mono text-[9.5px] text-slate-400">{r.id.slice(0, 8)}</p>
                     </Link>
@@ -153,7 +153,7 @@ function ClientsPageInner() {
           })}
         </div>
       ) : (
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="overflow-hidden glass-card">
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             <tr>
@@ -174,9 +174,9 @@ function ClientsPageInner() {
               <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No clients match this search.</td></tr>
             )}
             {filtered.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100 hover:bg-slate-50">
+              <tr key={r.id} className="border-t border-white/10 hover:bg-white/5">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/clients/${r.id}`} className="font-semibold text-ink-900 hover:text-teal-700">
+                  <Link href={`/admin/clients/${r.id}`} className="font-semibold text-white hover:text-mint-300">
                     {r.first_name} {r.last_name}
                   </Link>
                   <div className="text-[10.5px] text-slate-500">{r.email}</div>

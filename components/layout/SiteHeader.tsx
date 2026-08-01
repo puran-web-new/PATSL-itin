@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import GoldCrest from './GoldCrest';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -23,15 +24,13 @@ export default function SiteHeader() {
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname?.startsWith(href));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-ink-950/95 backdrop-blur supports-[backdrop-filter]:bg-ink-950/90">
+    <header className="sticky top-0 z-50 border-b border-teal-500/10 bg-abyss/95 backdrop-blur supports-[backdrop-filter]:bg-abyss/90">
       <div className="container-page flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-brand-500 text-sm font-extrabold text-white shadow-[0_4px_14px_rgba(20,184,166,0.35)]">
-            P
-          </span>
+          <GoldCrest className="h-9 w-9" />
           <span className="flex flex-col leading-tight">
             <span className="text-sm font-bold tracking-wide text-white">PATSL</span>
-            <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-teal-200">Accuracy Meets Integrity</span>
+            <span className="label-mono text-[9px] font-medium uppercase text-mint-400">Accuracy Meets Integrity</span>
           </span>
         </Link>
 
@@ -40,8 +39,8 @@ export default function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                isActive(link.href) ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+              className={`rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+                isActive(link.href) ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               {link.label}
@@ -53,7 +52,7 @@ export default function SiteHeader() {
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="rounded-full px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
             >
               {link.label} <span aria-hidden className="text-[10px]">&#8599;</span>
             </a>
@@ -61,16 +60,13 @@ export default function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
-          <Link href="/portal/sign-in" className="text-sm font-medium text-slate-400 hover:text-white">
+          <Link href="/portal/sign-in" className="text-sm font-medium text-slate-500 hover:text-white">
             Client Sign-In
           </Link>
-          <Link href="/admin" className="text-sm font-medium text-slate-400 hover:text-white">
+          <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-white">
             Staff Sign-In
           </Link>
-          <Link
-            href="/itin-intake"
-            className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-2.5 text-sm font-bold text-ink-950 shadow-[0_6px_16px_rgba(20,184,166,0.3)] transition-colors hover:from-teal-400 hover:to-teal-500"
-          >
+          <Link href="/itin-intake" className="btn-pill-primary">
             Start Application
           </Link>
         </div>
@@ -79,7 +75,7 @@ export default function SiteHeader() {
           type="button"
           aria-label="Toggle navigation menu"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-md border border-white/15 text-slate-200 md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-slate-200 md:hidden"
         >
           {open ? (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -94,15 +90,15 @@ export default function SiteHeader() {
       </div>
 
       {open && (
-        <div className="border-t border-white/10 bg-ink-950 px-6 pb-4 md:hidden">
+        <div className="border-t border-teal-500/10 bg-abyss px-6 pb-4 md:hidden">
           <nav className="flex flex-col gap-1 pt-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className={`rounded-md px-3 py-2.5 text-sm font-medium ${
-                  isActive(link.href) ? 'bg-white/10 text-white' : 'text-slate-300'
+                className={`rounded-full px-3 py-2.5 text-sm font-medium ${
+                  isActive(link.href) ? 'bg-white/10 text-white' : 'text-slate-400'
                 }`}
               >
                 {link.label}
@@ -115,22 +111,18 @@ export default function SiteHeader() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-300"
+                className="rounded-full px-3 py-2.5 text-sm font-medium text-slate-400"
               >
                 {link.label} &#8599;
               </a>
             ))}
-            <Link href="/portal/sign-in" onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-400">
+            <Link href="/portal/sign-in" onClick={() => setOpen(false)} className="rounded-full px-3 py-2.5 text-sm font-medium text-slate-500">
               Client Sign-In
             </Link>
-            <Link href="/admin" onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-400">
+            <Link href="/admin" onClick={() => setOpen(false)} className="rounded-full px-3 py-2.5 text-sm font-medium text-slate-500">
               Staff Sign-In
             </Link>
-            <Link
-              href="/itin-intake"
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-3 text-center text-sm font-bold text-ink-950"
-            >
+            <Link href="/itin-intake" onClick={() => setOpen(false)} className="btn-pill-primary mt-2 w-full">
               Start Application
             </Link>
           </nav>
