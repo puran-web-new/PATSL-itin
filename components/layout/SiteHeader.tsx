@@ -61,6 +61,9 @@ export default function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
+          <Link href="/portal/sign-in" className="text-sm font-medium text-slate-400 hover:text-white">
+            Client Sign-In
+          </Link>
           <Link href="/admin" className="text-sm font-medium text-slate-400 hover:text-white">
             Staff Sign-In
           </Link>
@@ -117,6 +120,9 @@ export default function SiteHeader() {
                 {link.label} &#8599;
               </a>
             ))}
+            <Link href="/portal/sign-in" onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-400">
+              Client Sign-In
+            </Link>
             <Link href="/admin" onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-400">
               Staff Sign-In
             </Link>

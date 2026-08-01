@@ -6,6 +6,7 @@ import { getPool } from '../../../lib/db';
 import { requireAdmin } from '../../../lib/security';
 import { CaseData, deriveFinancials, hydrateCaseData, REASON_LABELS } from '../../../lib/caseData';
 import { getFirmProfile } from '../../../lib/firmProfile';
+import { getClientSession } from '../../../lib/clientAuth';
 import { F1040_FIELDS, W7_FIELD_MAP, COA_FIELD_MAP, coaRowField } from '../../../lib/pdfFieldMaps';
 import { tierFor } from '../../../lib/pricing';
 
@@ -593,13 +594,28 @@ function buildIrsCoverPage(app: any, caseData: CaseData) {
 }
 
 export async function POST(req: NextRequest) {
-  const denied = requireAdmin(req);
-  if (denied) return denied;
-
   try {
     const { applicationId, packageType = 'IRS_MAIL' } = await req.json();
     if (!applicationId) {
       return NextResponse.json({ error: 'Application ID is required.' }, { status: 400 });
+    }
+
+    // Staff (admin token) can generate any package type. A signed-in client may
+    // only ever pull their own client-copy package for their own case — every
+    // other package/route stays admin-only.
+    let actorLabel = 'admin';
+    const adminDenied = requireAdmin(req);
+    if (adminDenied) {
+      if (packageType !== 'CLIENT_COPY') {
+        return adminDenied;
+      }
+      const session = await getClientSession(req);
+      if (!session) return adminDenied;
+      const ownership = await getPool().query(`SELECT 1 FROM applications WHERE id = $1 AND client_id = $2`, [applicationId, session.clientId]);
+      if (!ownership.rows[0]) {
+        return NextResponse.json({ error: 'Not authorized for this application.' }, { status: 403 });
+      }
+      actorLabel = 'client';
     }
 
     const pool = getPool();
@@ -701,8 +717,8 @@ export async function POST(req: NextRequest) {
     const bytes = await mergedDoc.save();
     await getPool().query(
       `INSERT INTO audit_events (application_id, event_type, actor, metadata)
-       VALUES ($1, 'PACKAGE_GENERATED', 'admin', $2)`,
-      [applicationId, JSON.stringify({ packageType })]
+       VALUES ($1, 'PACKAGE_GENERATED', $2, $3)`,
+      [applicationId, actorLabel, JSON.stringify({ packageType })]
     );
 
     return new NextResponse(Buffer.from(bytes), {
