@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAdminAuth } from '../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../components/admin/AdminSidebarShell';
+import StartApplicationButton from '../../../components/admin/StartApplicationButton';
 
 type Stats = { totalClients: number; activeCases: number; paymentPending: number; packagesThisMonth: number };
 type ActivityRow = { id: string; event_type: string; actor: string; created_at: string; application_id: string | null; first_name: string | null; last_name: string | null };
@@ -81,6 +82,7 @@ export default function DashboardPage() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <h3 className="mb-3 text-sm font-bold text-ink-900">Quick tools</h3>
+          <div className="mb-3">{token && <StartApplicationButton token={token} />}</div>
           <div className="space-y-1">
             <Link href="/admin/clients" className="block rounded-lg px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">👤 View all clients</Link>
             <Link href="/admin/documents" className="block rounded-lg px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">📄 Review documents</Link>

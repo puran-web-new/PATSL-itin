@@ -69,21 +69,43 @@ export default function IntakeWizard() {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [paymentAttempted, setPaymentAttempted] = useState(false);
 
+  const [resumeError, setResumeError] = useState('');
+  const [resumingLink, setResumingLink] = useState(false);
+
   useEffect(() => {
     if (tierParam) {
       setCaseDetails((prev) => ({ ...prev, serviceTier: tierParam }));
     }
     const raw = window.sessionStorage.getItem(DRAFT_KEY);
+    let resumedFromLocalDraft = false;
     if (raw) {
       try {
         const draft = JSON.parse(raw);
         if (draft.personal) setPersonal(draft.personal);
         if (draft.caseDetails) setCaseDetails((prev) => ({ ...prev, ...draft.caseDetails, ...(tierParam ? { serviceTier: tierParam } : {}) }));
-        if (draft.applicationId) setApplicationId(draft.applicationId);
+        if (draft.applicationId) { setApplicationId(draft.applicationId); resumedFromLocalDraft = true; }
         if (draft.step) setStep(draft.step);
       } catch {
         // ignore malformed draft
       }
+    }
+
+    // A staff-generated "Mode B" client intake link (?applicationId=...) with no
+    // matching local draft yet — fetch the minimal prefill data staff already
+    // entered (name/email/phone/tier) so the client isn't asked to re-type it.
+    if (!resumedFromLocalDraft && !successReturn && returnedApplicationId) {
+      setResumingLink(true);
+      fetch(`/api/applications/resume?applicationId=${encodeURIComponent(returnedApplicationId)}`)
+        .then(async (res) => {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'This application link is no longer valid.');
+          const app = data.application;
+          setPersonal((prev) => ({ ...prev, firstName: app.first_name || '', lastName: app.last_name || '', email: app.email || '', phone: app.phone || '' }));
+          setCaseDetails((prev) => ({ ...prev, serviceTier: tierParam || app.service_tier || prev.serviceTier }));
+          setApplicationId(app.id);
+        })
+        .catch((err) => setResumeError(err.message || 'This application link is no longer valid.'))
+        .finally(() => setResumingLink(false));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -227,6 +249,15 @@ export default function IntakeWizard() {
         <p className="mt-2 text-sm text-slate-600">
           Create your application record, verify identity, choose a service tier, and complete payment.
         </p>
+
+        {resumingLink && (
+          <div className="mt-4 rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800">
+            Loading the application your preparer started for you...
+          </div>
+        )}
+        {resumeError && (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{resumeError}</div>
+        )}
 
         <ol className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {STEP_LABELS.map((label, index) => {
