@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getPool } from '../../../../lib/db';
-
-const prices: Record<string, { amount: number; name: string }> = {
-  EXPRESS_SELF_SERVICE: { amount: 14900, name: 'Express ITIN Prep - Self Service' },
-  CAA_CONCIERGE: { amount: 34900, name: 'CAA Concierge ITIN Package' },
-  B2B_PORTAL: { amount: 9900, name: 'Partner Portal Wholesale ITIN Filing' },
-};
+import { SERVICE_TIERS } from '../../../../lib/pricing';
 
 function squareBaseUrl() {
   return process.env.SQUARE_ENVIRONMENT === 'production'
@@ -21,8 +16,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Application ID is required.' }, { status: 400 });
     }
 
-    const tier = prices[serviceTier] ? serviceTier : 'CAA_CONCIERGE';
-    const selected = prices[tier];
+    const tier = SERVICE_TIERS[serviceTier] ? serviceTier : 'CAA_CONCIERGE';
+    const selected = SERVICE_TIERS[tier];
     const pool = getPool();
     const db = await pool.connect();
 
@@ -41,7 +36,7 @@ export async function POST(req: NextRequest) {
           idempotency_key: crypto.randomUUID(),
           quick_pay: {
             name: selected.name,
-            price_money: { amount: selected.amount, currency: 'USD' },
+            price_money: { amount: selected.amountCents, currency: 'USD' },
             location_id: process.env.SQUARE_LOCATION_ID,
           },
           checkout_options: {
@@ -65,7 +60,7 @@ export async function POST(req: NextRequest) {
         `INSERT INTO invoices (application_id, square_order_id, square_payment_link, amount_cents, payment_status)
          VALUES ($1, $2, $3, $4, 'PENDING')
          RETURNING id`,
-        [applicationId, squareOrderId, checkoutUrl, selected.amount]
+        [applicationId, squareOrderId, checkoutUrl, selected.amountCents]
       );
       await db.query(`UPDATE applications SET status = 'PAYMENT_PENDING', updated_at = NOW() WHERE id = $1`, [applicationId]);
       await db.query(
@@ -81,7 +76,7 @@ export async function POST(req: NextRequest) {
       db.release();
     }
 
-    return NextResponse.json({ checkoutUrl, squareOrderId, amountCents: selected.amount });
+    return NextResponse.json({ checkoutUrl, squareOrderId, amountCents: selected.amountCents });
   } catch (error: any) {
     console.error('Payment link route failed:', error);
     return NextResponse.json({ error: error.message || 'Failed to create payment link.' }, { status: 500 });

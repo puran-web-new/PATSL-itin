@@ -56,6 +56,11 @@ export type CaseData = {
   visaExpirationDate: string;
   previousItinOrIrsn: string;
 
+  // --- School / sponsor (Form W-7 line 6g — for F/J/M/Q visa holders) ---
+  schoolOrCompanyName: string;
+  schoolCityState: string;
+  lengthOfStay: string;
+
   // --- Contact ---
   phone: string;
   email: string;
@@ -89,6 +94,12 @@ export type CaseData = {
 
   // --- Signature ---
   signatureDate: string;
+
+  // --- Invoice & payment (defaults to the real Square order on file; override
+  //     only for cases paid outside Square, e.g. cash/check walk-ins) ---
+  invoiceNumber: string;
+  paymentMethod: string;
+  serviceFeeOverride: string;
 };
 
 export const emptyCaseData: CaseData = {
@@ -104,6 +115,8 @@ export const emptyCaseData: CaseData = {
   idDocType: 'PASSPORT', idIssuedBy: '', idNumber: '', idExpirationDate: '', dateOfEntryUs: '',
   foreignTaxId: '', visaType: '', visaNumber: '', visaExpirationDate: '', previousItinOrIrsn: '',
 
+  schoolOrCompanyName: '', schoolCityState: '', lengthOfStay: '',
+
   phone: '', email: '', occupation: '',
 
   caaBusinessName: 'Puran Accounting & Tax Solution Lab', caaEin: '', caaPtin: '', caaOfficeCode: '',
@@ -116,6 +129,8 @@ export const emptyCaseData: CaseData = {
   refundRoutingNumber: '', refundAccountNumber: '', refundAccountType: '',
 
   signatureDate: '',
+
+  invoiceNumber: '', paymentMethod: '', serviceFeeOverride: '',
 };
 
 const STANDARD_DEDUCTION_2024: Record<string, number> = {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFFont, PDFName, PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import fs from 'fs/promises';
 import path from 'path';
 import { getPool } from '../../../lib/db';
@@ -7,6 +7,7 @@ import { requireAdmin } from '../../../lib/security';
 import { CaseData, deriveFinancials, hydrateCaseData, REASON_LABELS } from '../../../lib/caseData';
 import { getFirmProfile } from '../../../lib/firmProfile';
 import { F1040_FIELDS, W7_FIELD_MAP, COA_FIELD_MAP, coaRowField } from '../../../lib/pdfFieldMaps';
+import { tierFor } from '../../../lib/pricing';
 
 const INK = rgb(0.04, 0.05, 0.12);
 const SLATE = rgb(0.35, 0.39, 0.45);
@@ -218,6 +219,10 @@ async function buildW7(caseData: CaseData): Promise<PDFDocument> {
     setText(form, M.foreignTaxId, caseData.foreignTaxId);
     setText(form, M.visaInfo, combine(caseData.visaType, caseData.visaNumber, caseData.visaExpirationDate));
 
+    setText(form, M.schoolOrCompanyName, caseData.schoolOrCompanyName);
+    setText(form, M.schoolCityState, caseData.schoolCityState);
+    setText(form, M.lengthOfStay, caseData.lengthOfStay);
+
     if (caseData.idDocType === 'PASSPORT') setCheck(form, M.idDoc.passport);
     else if (caseData.idDocType === 'DRIVERS_LICENSE') setCheck(form, M.idDoc.driversLicense);
     else if (caseData.idDocType === 'USCIS') setCheck(form, M.idDoc.uscis);
@@ -337,6 +342,137 @@ async function buildCOA(caseData: CaseData): Promise<PDFDocument> {
   ]);
 }
 
+// ---------------------------------------------------------------------------
+// PDF hygiene helpers: force Letter-size actual-size printing (no auto-scaling
+// or "fit to page" shrinking that would throw off an official form's margins),
+// and format cents-based currency for the invoice.
+// ---------------------------------------------------------------------------
+function applyPrintScaling(doc: PDFDocument) {
+  doc.catalog.set(PDFName.of('ViewerPreferences'), doc.context.obj({ PrintScaling: PDFName.of('None') }));
+}
+
+function formatCurrency(cents: number, currency = 'USD') {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency });
+}
+
+// ---------------------------------------------------------------------------
+// Supporting ID copies — the identity documents a client uploaded during intake
+// (stored in Vercel Blob) get appended as the final pages of the IRS mail bundle,
+// per standard CAA practice of including certified copies of the identity
+// document reviewed. Images are embedded onto a Letter page; PDFs are copied
+// page-for-page. Any document that fails to fetch (missing/expired URL, already
+// scrubbed per the 90-day retention policy, network hiccup) is skipped rather
+// than failing the whole package — staff can always attach it manually.
+// ---------------------------------------------------------------------------
+async function embedSupportingDocuments(mergedDoc: PDFDocument, documents: { storage_path: string | null; is_scrubbed: boolean; doc_type: string }[]) {
+  for (const docRow of documents) {
+    if (!docRow.storage_path || docRow.is_scrubbed) continue;
+    try {
+      const res = await fetch(docRow.storage_path);
+      if (!res.ok) continue;
+      const contentType = res.headers.get('content-type') || '';
+      const bytes = new Uint8Array(await res.arrayBuffer());
+
+      if (contentType.includes('pdf')) {
+        const srcDoc = await PDFDocument.load(bytes);
+        const pages = await mergedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+        pages.forEach((p) => mergedDoc.addPage(p));
+      } else {
+        const image = contentType.includes('png') ? await mergedDoc.embedPng(bytes) : await mergedDoc.embedJpg(bytes);
+        const page = mergedDoc.addPage([612, 792]);
+        const margin = 40;
+        const maxWidth = 612 - margin * 2;
+        const maxHeight = 792 - margin * 2 - 30;
+        const scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1);
+        const w = image.width * scale;
+        const h = image.height * scale;
+        const font = await mergedDoc.embedFont(StandardFonts.HelveticaBold);
+        page.drawText(`Supporting identity document — ${docRow.doc_type.replace(/_/g, ' ')}`, {
+          x: margin,
+          y: 792 - margin,
+          size: 10,
+          font,
+          color: SLATE,
+        });
+        page.drawImage(image, { x: (612 - w) / 2, y: (792 - h - margin - 20), width: w, height: h });
+      }
+    } catch (err) {
+      console.error('Skipping supporting document (fetch/embed failed):', docRow.storage_path, err);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Itemized invoice / receipt. Pulls the real amount and payment status from the
+// Square-backed `invoices` table whenever one exists for this case (single
+// source of truth — no re-typing a fee that was already charged); staff can
+// override the fee, payment method, or invoice number in the case editor only
+// for payments taken outside Square (cash/check walk-ins).
+// ---------------------------------------------------------------------------
+function buildInvoice(app: any, caseData: CaseData, invoiceRow: { amount_cents: number; currency: string; payment_status: string; square_order_id: string | null; created_at: string } | null) {
+  return async (): Promise<PDFDocument> => {
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([612, 792]);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const regular = await doc.embedFont(StandardFonts.Helvetica);
+
+    const tier = tierFor(app.service_tier);
+    const amountCents = invoiceRow?.amount_cents ?? (caseData.serviceFeeOverride ? Math.round(Number(caseData.serviceFeeOverride) * 100) : tier.amountCents);
+    const currency = invoiceRow?.currency || 'USD';
+    const invoiceNumber = caseData.invoiceNumber || `INV-${String(app.id).slice(0, 8).toUpperCase()}`;
+    const invoiceDate = invoiceRow?.created_at ? new Date(invoiceRow.created_at) : new Date();
+    const paymentMethod = caseData.paymentMethod || (invoiceRow ? 'Square (card)' : 'Not recorded');
+    const paymentStatus = invoiceRow?.payment_status || 'PENDING';
+
+    page.drawRectangle({ x: 0, y: 742, width: 612, height: 50, color: INK });
+    page.drawText('Invoice & Receipt', { x: 50, y: 762, size: 18, font: bold, color: rgb(1, 1, 1) });
+
+    let y = 700;
+    page.drawText(caseData.caaBusinessName || 'PATSL Developer LLC', { x: 50, y, size: 12, font: bold }); y -= 16;
+    const firm = getFirmProfile();
+    if (firm.address) { page.drawText(firm.address, { x: 50, y, size: 9, font: regular, color: SLATE }); y -= 13; }
+    if (firm.phone || firm.email) { page.drawText([firm.phone, firm.email].filter(Boolean).join(' · '), { x: 50, y, size: 9, font: regular, color: SLATE }); y -= 13; }
+
+    page.drawText(`Invoice #: ${invoiceNumber}`, { x: 380, y: 700, size: 10, font: bold });
+    page.drawText(`Date: ${invoiceDate.toLocaleDateString()}`, { x: 380, y: 686, size: 9, font: regular, color: SLATE });
+    page.drawText(`Reference: ${String(app.id).slice(0, 8)}`, { x: 380, y: 672, size: 9, font: regular, color: SLATE });
+
+    y -= 20;
+    page.drawText('Bill to', { x: 50, y, size: 9, font: bold, color: SLATE }); y -= 15;
+    page.drawText(`${app.first_name} ${app.last_name}`, { x: 50, y, size: 11, font: bold }); y -= 15;
+    if (app.email) { page.drawText(app.email, { x: 50, y, size: 9, font: regular, color: SLATE }); y -= 13; }
+    if (app.phone) { page.drawText(app.phone, { x: 50, y, size: 9, font: regular, color: SLATE }); y -= 13; }
+
+    y -= 20;
+    page.drawRectangle({ x: 50, y: y - 4, width: 512, height: 22, color: rgb(0.94, 0.95, 0.97) });
+    page.drawText('Description', { x: 58, y: y + 2, size: 9, font: bold, color: SLATE });
+    page.drawText('Amount', { x: 500, y: y + 2, size: 9, font: bold, color: SLATE });
+    y -= 30;
+    page.drawText(`${tier.name} — ITIN Preparation & CAA Certification`, { x: 58, y, size: 10, font: regular });
+    page.drawText(formatCurrency(amountCents, currency), { x: 500, y, size: 10, font: regular });
+    y -= 24;
+    page.drawLine({ start: { x: 50, y }, end: { x: 562, y }, thickness: 0.5, color: rgb(0.85, 0.86, 0.9) });
+    y -= 22;
+    page.drawText('Tax', { x: 58, y, size: 10, font: regular, color: SLATE });
+    page.drawText(formatCurrency(0, currency), { x: 500, y, size: 10, font: regular, color: SLATE });
+    y -= 24;
+    page.drawText('Total', { x: 58, y, size: 12, font: bold });
+    page.drawText(formatCurrency(amountCents, currency), { x: 500, y, size: 12, font: bold });
+
+    y -= 40;
+    page.drawText(`Payment method: ${paymentMethod}`, { x: 50, y, size: 9, font: regular, color: SLATE }); y -= 15;
+    page.drawText(`Payment status: ${paymentStatus.replace(/_/g, ' ')}`, { x: 50, y, size: 9, font: bold, color: paymentStatus === 'PAID' ? rgb(0.02, 0.4, 0.25) : rgb(0.6, 0.4, 0.05) }); y -= 15;
+    if (invoiceRow?.square_order_id) {
+      page.drawText(`Square order: ${invoiceRow.square_order_id}`, { x: 50, y, size: 8, font: regular, color: SLATE }); y -= 13;
+    }
+
+    y -= 20;
+    page.drawText('Thank you for choosing PATSL. This receipt is for your records.', { x: 50, y, size: 9, font: regular, color: SLATE });
+
+    return doc;
+  };
+}
+
 function drawCenteredNote(page: PDFPage, font: PDFFont, text: string, y: number) {
   page.drawText(text, { x: 50, y, size: 9, font, color: SLATE });
 }
@@ -381,30 +517,58 @@ function buildClientCoverPage(app: any, caseData: CaseData) {
     const page = doc.addPage([612, 792]);
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
     const regular = await doc.embedFont(StandardFonts.Helvetica);
+    const boldItalic = await doc.embedFont(StandardFonts.HelveticaBoldOblique);
 
-    page.drawRectangle({ x: 0, y: 692, width: 612, height: 100, color: INK });
-    page.drawText('PATSL Client Record File', { x: 50, y: 752, size: 22, font: bold, color: rgb(1, 1, 1) });
-    page.drawText('Keep this package for your records', { x: 50, y: 728, size: 11, font: regular, color: rgb(0.8, 0.85, 0.95) });
+    page.drawRectangle({ x: 0, y: 712, width: 612, height: 80, color: INK });
+    page.drawText('Your ITIN Application — Next Steps', { x: 50, y: 758, size: 20, font: bold, color: rgb(1, 1, 1) });
+    page.drawText(`Prepared for ${app.first_name} ${app.last_name} · Reference ${String(app.id).slice(0, 8)}`, { x: 50, y: 736, size: 10, font: regular, color: rgb(0.8, 0.85, 0.95) });
 
-    let y = 650;
-    page.drawText(`Applicant: ${app.first_name} ${app.last_name}`, { x: 50, y, size: 12, font: bold }); y -= 20;
-    page.drawText(`Reference: ${app.id}`, { x: 50, y, size: 10, font: regular, color: SLATE }); y -= 30;
-
-    page.drawText('This package includes:', { x: 50, y, size: 11, font: bold }); y -= 20;
+    let y = 685;
+    page.drawText('What\'s enclosed', { x: 50, y, size: 11, font: bold }); y -= 20;
     const items = [
-      '1. Form W-7 — Application for IRS Individual Taxpayer Identification Number',
-      '2. Certificate of Accuracy, completed by your Certified Acceptance Agent',
-      '3. Copy of your associated federal tax return (Form 1040), if applicable',
+      'Form W-7 — Application for IRS Individual Taxpayer Identification Number',
+      'Certificate of Accuracy (Form W-7-COA), completed by your Certified Acceptance Agent',
+      'Copy of your associated federal tax return (Form 1040), if applicable',
+      'A copy of the identity document your CAA certified as part of this application',
     ];
     for (const item of items) {
-      page.drawText(item, { x: 60, y, size: 10, font: regular, color: rgb(0.15, 0.17, 0.22) });
-      y -= 18;
+      page.drawText('•', { x: 52, y, size: 10, font: bold, color: INK });
+      page.drawText(item, { x: 64, y, size: 10, font: regular, color: rgb(0.15, 0.17, 0.22) });
+      y -= 17;
     }
-    y -= 12;
-    page.drawText('Review every page for accuracy before it is mailed to the IRS. Contact PATSL immediately', { x: 50, y, size: 9, font: regular, color: SLATE }); y -= 13;
-    page.drawText('if any name, date, or identification detail needs correction.', { x: 50, y, size: 9, font: regular, color: SLATE }); y -= 26;
 
-    page.drawText(`Prepared by ${caseData.caaBusinessName}`, { x: 50, y, size: 9, font: regular, color: SLATE });
+    y -= 14;
+    page.drawText('Where to sign', { x: 50, y, size: 11, font: bold }); y -= 18;
+    const signLines = [
+      'Form W-7: sign and date the "Sign Here" block at the bottom of the form.',
+      'Form 1040: sign and date next to "Sign Here" on page 1, in the signature box.',
+      caseData.previousItinOrIrsn && /^\d{9}$/.test(digitsOnly(caseData.previousItinOrIrsn))
+        ? ''
+        : 'Form 1040 SSN/ITIN box: write "Applied For" by hand — it prints blank for first-time applicants.',
+    ].filter(Boolean);
+    for (const line of signLines) {
+      page.drawText(line, { x: 60, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) });
+      y -= 16;
+    }
+
+    y -= 14;
+    page.drawText('Mailing the package to the IRS', { x: 50, y, size: 11, font: bold }); y -= 18;
+    page.drawText('If you are mailing this yourself rather than through PATSL, send the signed originals to:', { x: 50, y, size: 9.5, font: regular, color: SLATE }); y -= 16;
+    page.drawRectangle({ x: 50, y: y - 46, width: 300, height: 58, color: rgb(0.95, 0.96, 0.98) });
+    page.drawText('Internal Revenue Service', { x: 60, y: y - 12, size: 10, font: bold });
+    page.drawText('ITIN Operation', { x: 60, y: y - 26, size: 10, font: regular });
+    page.drawText('P.O. Box 149342', { x: 60, y: y - 40, size: 10, font: regular });
+    page.drawText('Austin, TX 78714-9342', { x: 60, y: y - 54, size: 10, font: regular });
+    y -= 74;
+
+    page.drawText('Expected processing time: approximately 7-11 weeks from the date the IRS receives your', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 14;
+    page.drawText('application (longer during peak filing season, Jan-Apr). Track status any time at', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 14;
+    page.drawText('patsl-itin-final.vercel.app/status with your reference ID above.', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 22;
+
+    page.drawText('Review every page for accuracy before mailing. Contact PATSL immediately if any name, date,', { x: 50, y, size: 8.5, font: regular, color: SLATE }); y -= 12;
+    page.drawText('or identification detail needs correction.', { x: 50, y, size: 8.5, font: regular, color: SLATE }); y -= 20;
+
+    page.drawText(`Prepared by ${caseData.caaBusinessName}`, { x: 50, y, size: 9, font: boldItalic, color: SLATE });
     return doc;
   };
 }
@@ -441,6 +605,8 @@ export async function POST(req: NextRequest) {
     const pool = getPool();
     const db = await pool.connect();
     let app: any;
+    let documents: any[] = [];
+    let invoiceRow: any = null;
     try {
       const result = await db.query(
         `SELECT a.*, c.first_name, c.last_name, c.email, c.phone
@@ -450,6 +616,23 @@ export async function POST(req: NextRequest) {
         [applicationId]
       );
       app = result.rows[0];
+
+      if (app) {
+        const [docsResult, invoiceResult] = await Promise.all([
+          db.query(
+            `SELECT storage_path, doc_type, is_scrubbed FROM identity_documents
+             WHERE application_id = $1 ORDER BY created_at DESC`,
+            [applicationId]
+          ),
+          db.query(
+            `SELECT amount_cents, currency, payment_status, square_order_id, created_at FROM invoices
+             WHERE application_id = $1 ORDER BY created_at DESC LIMIT 1`,
+            [applicationId]
+          ),
+        ]);
+        documents = docsResult.rows;
+        invoiceRow = invoiceResult.rows[0] || null;
+      }
     } finally {
       db.release();
     }
@@ -472,19 +655,37 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    const w7Doc = await buildW7(caseData);
-    const coaDoc = await buildCOA(caseData);
-    const f1040Doc = await buildF1040(caseData);
-
     const mergedDoc = await PDFDocument.create();
     let sequence: PDFDocument[] = [];
+    let appendSupportingDocs = false;
 
-    if (packageType === 'CAA_RECORD') {
-      sequence = [await buildIrsCoverPage(app, caseData)(), w7Doc, coaDoc];
+    if (packageType === 'W7_ONLY') {
+      sequence = [await buildW7(caseData)];
+    } else if (packageType === 'COA_ONLY') {
+      sequence = [await buildCOA(caseData)];
+    } else if (packageType === 'F1040_ONLY') {
+      sequence = [await buildF1040(caseData)];
+    } else if (packageType === 'INVOICE_ONLY') {
+      sequence = [await buildInvoice(app, caseData, invoiceRow)()];
+    } else if (packageType === 'CAA_RECORD') {
+      // Internal CAA file copy — cover sheet + W-7 + COA, for the office's own records.
+      sequence = [await buildIrsCoverPage(app, caseData)(), await buildW7(caseData), await buildCOA(caseData)];
     } else if (packageType === 'CLIENT_COPY') {
-      sequence = [await buildClientCoverPage(app, caseData)(), w7Doc, coaDoc, f1040Doc];
+      // Page 1: cover/next-steps letter · Page 2: itemized invoice · Page 3+: client copies of W-7, COA, 1040.
+      sequence = [
+        await buildClientCoverPage(app, caseData)(),
+        await buildInvoice(app, caseData, invoiceRow)(),
+        await buildW7(caseData),
+        await buildCOA(caseData),
+        await buildF1040(caseData),
+      ];
     } else {
-      sequence = [await buildIrsCoverPage(app, caseData)(), w7Doc, coaDoc, f1040Doc];
+      // IRS_MAIL — the package that actually gets mailed: Page 1 Form W-7, Page 2 Certificate
+      // of Accuracy, Page 3+ Form 1040, then certified copies of the identity document(s)
+      // reviewed. No cover sheet — nothing goes into the envelope that isn't an official form
+      // or a certified ID copy.
+      sequence = [await buildW7(caseData), await buildCOA(caseData), await buildF1040(caseData)];
+      appendSupportingDocs = true;
     }
 
     for (const pdf of sequence) {
@@ -492,6 +693,11 @@ export async function POST(req: NextRequest) {
       pages.forEach((p) => mergedDoc.addPage(p));
     }
 
+    if (appendSupportingDocs) {
+      await embedSupportingDocuments(mergedDoc, documents);
+    }
+
+    applyPrintScaling(mergedDoc);
     const bytes = await mergedDoc.save();
     await getPool().query(
       `INSERT INTO audit_events (application_id, event_type, actor, metadata)

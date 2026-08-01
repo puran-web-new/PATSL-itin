@@ -44,6 +44,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
+  const [showReview, setShowReview] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -126,7 +127,7 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
     }
   }
 
-  async function generate(packageType: 'IRS_MAIL' | 'CLIENT_COPY' | 'CAA_RECORD') {
+  async function generate(packageType: 'IRS_MAIL' | 'CLIENT_COPY' | 'CAA_RECORD' | 'W7_ONLY' | 'COA_ONLY' | 'F1040_ONLY' | 'INVOICE_ONLY') {
     setGenerating(packageType);
     setError('');
     try {
@@ -254,6 +255,12 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
             <Field label="Visa expiration"><input type="date" className={input} value={data.visaExpirationDate} onChange={(e) => set('visaExpirationDate', e.target.value)} /></Field>
             <Field label="Previous ITIN / IRSN (if any)"><input className={input} value={data.previousItinOrIrsn} onChange={(e) => set('previousItinOrIrsn', e.target.value)} /></Field>
           </div>
+          <p className="mb-2 mt-5 text-[10.5px] font-semibold uppercase tracking-wider text-slate-600">School / sponsor (line 6g — F/J/M/Q visa holders)</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="School or company name"><input className={input} value={data.schoolOrCompanyName} onChange={(e) => set('schoolOrCompanyName', e.target.value)} /></Field>
+            <Field label="City and state"><input className={input} value={data.schoolCityState} onChange={(e) => set('schoolCityState', e.target.value)} /></Field>
+            <Field label="Length of stay"><input className={input} value={data.lengthOfStay} onChange={(e) => set('lengthOfStay', e.target.value)} placeholder="e.g. 08/2026 - 05/2028" /></Field>
+          </div>
         </Section>
 
         <Section title="Contact" usedOn={['W-7', '1040']}>
@@ -352,6 +359,18 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
             <Field label="Signature date"><input type="date" className={input} value={data.signatureDate} onChange={(e) => set('signatureDate', e.target.value)} /></Field>
           </div>
         </Section>
+
+        <Section title="Invoice & payment" usedOn={['Invoice']}>
+          <p className="mb-3 text-[11px] text-slate-500">
+            Leave these blank to use the real Square order on file automatically. Only fill them in for a
+            payment taken outside Square (cash, check, or a manual override of the fee).
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Invoice number (auto if blank)"><input className={input} value={data.invoiceNumber} onChange={(e) => set('invoiceNumber', e.target.value)} placeholder={`INV-${applicationId.slice(0, 8).toUpperCase()}`} /></Field>
+            <Field label="Payment method override"><input className={input} value={data.paymentMethod} onChange={(e) => set('paymentMethod', e.target.value)} placeholder="e.g. Cash, Check, Zelle" /></Field>
+            <Field label="Service fee override ($)"><input inputMode="decimal" className={input} value={data.serviceFeeOverride} onChange={(e) => set('serviceFeeOverride', e.target.value)} placeholder="Uses service tier price if blank" /></Field>
+          </div>
+        </Section>
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -378,6 +397,28 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </p>
         </div>
 
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+          <button type="button" onClick={() => setShowReview((v) => !v)} className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Review &amp; validate
+            <span className="text-slate-600">{showReview ? '−' : '+'}</span>
+          </button>
+          {showReview && (
+            <dl className="mt-3 space-y-1.5 text-xs text-slate-300">
+              <ReviewRow label="Name" value={[data.firstName, data.middleName, data.lastName].filter(Boolean).join(' ') || '—'} />
+              <ReviewRow label="Date of birth" value={data.dateOfBirth || '—'} />
+              <ReviewRow label="Reason for applying" value={data.reasonCodes.length ? data.reasonCodes.join(', ') : '—'} />
+              <ReviewRow label="Mailing address" value={[data.mailingStreet, data.mailingCity, data.mailingState, data.mailingZip].filter(Boolean).join(', ') || '—'} />
+              <ReviewRow label="Foreign address" value={[data.foreignStreet, data.foreignCity, data.foreignCountry].filter(Boolean).join(', ') || '—'} />
+              <ReviewRow label="ID document" value={data.idNumber ? `${data.idDocType.replace(/_/g, ' ')} #${data.idNumber}` : '—'} />
+              <ReviewRow label="ID expires" value={data.idExpirationDate || '—'} />
+              <ReviewRow label="Filing status" value={data.filingStatus || 'Not set'} />
+              <ReviewRow label="Dependents" value={String(data.dependents.length)} />
+              <ReviewRow label="CAA reviewer" value={data.caaReviewerName || '—'} />
+              <ReviewRow label="CAA EIN / PTIN" value={`${data.caaEin || '—'} / ${data.caaPtin || '—'}`} />
+            </dl>
+          )}
+        </div>
+
         <div className="space-y-2">
           <button onClick={save} disabled={saving} className="w-full rounded-lg bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-500 disabled:bg-slate-700">
             {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save case data'}
@@ -391,10 +432,29 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           <button onClick={() => generate('CAA_RECORD')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
             {generating === 'CAA_RECORD' ? 'Generating...' : 'Generate CAA record copy'}
           </button>
-          <Link href={`/admin/clients/${applicationId}`} className="block text-center text-xs text-slate-500 hover:text-slate-300">
-            &larr; Back to client file
-          </Link>
         </div>
+
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Individual documents</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => generate('W7_ONLY')} disabled={!!generating} className="rounded-lg border border-slate-700 px-2 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-900 disabled:opacity-50">
+              {generating === 'W7_ONLY' ? '...' : 'W-7 only'}
+            </button>
+            <button onClick={() => generate('COA_ONLY')} disabled={!!generating} className="rounded-lg border border-slate-700 px-2 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-900 disabled:opacity-50">
+              {generating === 'COA_ONLY' ? '...' : 'COA only'}
+            </button>
+            <button onClick={() => generate('F1040_ONLY')} disabled={!!generating} className="rounded-lg border border-slate-700 px-2 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-900 disabled:opacity-50">
+              {generating === 'F1040_ONLY' ? '...' : '1040 only'}
+            </button>
+            <button onClick={() => generate('INVOICE_ONLY')} disabled={!!generating} className="rounded-lg border border-slate-700 px-2 py-2 text-[11px] font-semibold text-slate-300 hover:bg-slate-900 disabled:opacity-50">
+              {generating === 'INVOICE_ONLY' ? '...' : 'Invoice only'}
+            </button>
+          </div>
+        </div>
+
+        <Link href={`/admin/clients/${applicationId}`} className="block text-center text-xs text-slate-500 hover:text-slate-300">
+          &larr; Back to client file
+        </Link>
       </aside>
     </div>
   );
@@ -437,6 +497,15 @@ function Row({ label, value, highlight }: { label: string; value: number; highli
       <dd className={highlight ? 'font-bold text-teal-300' : 'text-slate-200'}>
         ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </dd>
+    </div>
+  );
+}
+
+function ReviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <dt className="flex-none text-[10.5px] text-slate-500">{label}</dt>
+      <dd className="text-right text-[11px] text-slate-200">{value}</dd>
     </div>
   );
 }
