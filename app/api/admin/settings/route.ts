@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   const integrations = {
     database: databaseConnected,
     squarePayments: Boolean(process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID),
-    documentStorage: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    documentStorage: Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID),
     adminAuth: Boolean(process.env.ADMIN_ACCESS_TOKEN),
     cronScrub: Boolean(process.env.CRON_SECRET),
     w7Template,

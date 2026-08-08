@@ -356,7 +356,7 @@ export default function IntakeWizard() {
                   <input className={inputClass} placeholder="Issuing country" value={issuingCountry} onChange={(e) => setIssuingCountry(e.target.value)} />
                   <input type="date" className={inputClass} placeholder="Expiration date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
                   <div className="md:col-span-2">
-                    <label className="label-mono block text-[10.5px] font-semibold uppercase text-slate-500">Upload a clear photo or scan (JPG, PNG, or PDF, up to 10MB)</label>
+                    <label className="label-mono block text-[10.5px] font-semibold uppercase text-slate-500">Upload a clear photo or scan (JPG, PNG, or PDF, up to 4MB)</label>
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp,application/pdf"

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, PDFFont, PDFName, PDFPage, StandardFonts, rgb } from 'pdf-lib';
+import { get } from '@vercel/blob';
 import fs from 'fs/promises';
 import path from 'path';
 import { getPool } from '../../../lib/db';
@@ -379,10 +380,12 @@ async function embedSupportingDocuments(mergedDoc: PDFDocument, documents: { sto
   for (const docRow of documents) {
     if (!docRow.storage_path || docRow.is_scrubbed) continue;
     try {
-      const res = await fetch(docRow.storage_path);
-      if (!res.ok) continue;
-      const contentType = res.headers.get('content-type') || '';
-      const bytes = new Uint8Array(await res.arrayBuffer());
+      // Identity documents live in a private Blob store — the SDK's authenticated
+      // get() is required here too, the same as the client-facing document proxy.
+      const result = await get(docRow.storage_path, { access: 'private' });
+      if (!result || !result.stream) continue;
+      const contentType = result.blob.contentType || '';
+      const bytes = new Uint8Array(await new Response(result.stream).arrayBuffer());
 
       if (contentType.includes('pdf')) {
         const srcDoc = await PDFDocument.load(bytes);

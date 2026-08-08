@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { get } from '@vercel/blob';
 import { query } from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/security';
 import { getClientSession } from '../../../../../lib/clientAuth';
@@ -32,15 +33,17 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     }
   }
 
-  const upstream = await fetch(doc.storage_path);
-  if (!upstream.ok || !upstream.body) {
+  // Documents are stored in a private Blob store — reading them requires the
+  // SDK's authenticated get() (OIDC or BLOB_READ_WRITE_TOKEN), not a plain fetch.
+  const result = await get(doc.storage_path, { access: 'private' });
+  if (!result || !result.stream) {
     return NextResponse.json({ error: 'Could not retrieve the document right now.' }, { status: 502 });
   }
 
-  return new NextResponse(upstream.body, {
+  return new NextResponse(result.stream, {
     status: 200,
     headers: {
-      'Content-Type': upstream.headers.get('content-type') || 'application/octet-stream',
+      'Content-Type': result.blob.contentType || 'application/octet-stream',
       'Content-Disposition': `inline; filename="${doc.doc_type || 'document'}"`,
       'Cache-Control': 'private, no-store',
     },

@@ -30,7 +30,7 @@ type FirmProfile = {
 const INTEGRATION_LABELS: Record<keyof Integrations, { label: string; note: string }> = {
   database: { label: 'Neon Postgres database', note: 'Client, application, document, and audit records' },
   squarePayments: { label: 'Square payments', note: 'SQUARE_ACCESS_TOKEN + SQUARE_LOCATION_ID' },
-  documentStorage: { label: 'Identity document storage', note: 'Vercel Blob — BLOB_READ_WRITE_TOKEN' },
+  documentStorage: { label: 'Identity document storage', note: 'Vercel Blob — BLOB_READ_WRITE_TOKEN or BLOB_STORE_ID (OIDC)' },
   adminAuth: { label: 'Admin access token', note: 'ADMIN_ACCESS_TOKEN' },
   cronScrub: { label: 'Scheduled PII scrub', note: 'CRON_SECRET for the 90-day retention job' },
   w7Template: { label: 'Form W-7 template', note: 'public/templates/fW7.pdf (official IRS form)' },
