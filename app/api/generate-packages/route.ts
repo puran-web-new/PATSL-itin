@@ -650,7 +650,7 @@ function buildMailingLabel(app: any, caseData: CaseData) {
     for (let dashX = panelX; dashX < panelX + panelWidth; dashX += 10) {
       page.drawLine({ start: { x: dashX, y: panelTop + 14 }, end: { x: dashX + 5, y: panelTop + 14 }, thickness: 0.75, color: SLATE });
     }
-    page.drawText('✂ cut here', { x: panelX + panelWidth - 60, y: panelTop + 18, size: 7, font: italic, color: SLATE });
+    page.drawText('- - cut here', { x: panelX + panelWidth - 66, y: panelTop + 18, size: 7, font: italic, color: SLATE });
 
     page.drawRectangle({
       x: panelX,
