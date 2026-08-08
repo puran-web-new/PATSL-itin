@@ -13,6 +13,7 @@ import {
 
 type ApplicationRow = {
   id: string;
+  client_id: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -36,7 +37,15 @@ const emptyDependent: Dependent = {
   creditForOtherDependents: false,
 };
 
-export default function CaseDataEditor({ applicationId, token }: { applicationId: string; token: string }) {
+export default function CaseDataEditor({
+  applicationId,
+  token,
+  onLoaded,
+}: {
+  applicationId: string;
+  token: string;
+  onLoaded?: (info: { clientId: string; firstName: string; lastName: string }) => void;
+}) {
   const [application, setApplication] = useState<ApplicationRow | null>(null);
   const [data, setData] = useState<CaseData>(emptyCaseData);
   const [loading, setLoading] = useState(true);
@@ -56,6 +65,11 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
         const result = await appRes.json();
         if (!appRes.ok) throw new Error(result.error || 'Failed to load application.');
         setApplication(result.application);
+        onLoaded?.({
+          clientId: result.application.client_id,
+          firstName: result.application.first_name,
+          lastName: result.application.last_name,
+        });
 
         let hydrated = hydrate(result.application);
         if (firmRes.ok) {
@@ -458,9 +472,6 @@ export default function CaseDataEditor({ applicationId, token }: { applicationId
           </div>
         </div>
 
-        <Link href={`/admin/clients/${applicationId}`} className="block text-center text-xs text-slate-500 hover:text-slate-300">
-          &larr; Back to client file
-        </Link>
       </aside>
     </div>
   );

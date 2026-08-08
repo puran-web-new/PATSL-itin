@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
          d.is_scrubbed,
          d.created_at,
          a.status AS application_status,
+         a.client_id,
          c.first_name,
          c.last_name,
          c.email

@@ -19,6 +19,7 @@ type DocRow = {
   is_scrubbed: boolean;
   created_at: string;
   application_status: string;
+  client_id: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -111,7 +112,7 @@ export default function DocumentsPage() {
             {filtered.map((d) => (
               <tr key={d.id} className="border-t border-white/10 hover:bg-white/5">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/clients/${d.application_id}`} className="font-semibold text-white hover:text-mint-300">
+                  <Link href={`/admin/clients/${d.client_id}`} className="font-semibold text-white hover:text-mint-300">
                     {d.first_name} {d.last_name}
                   </Link>
                   <div className="text-[10.5px] text-slate-500">{d.email}</div>
