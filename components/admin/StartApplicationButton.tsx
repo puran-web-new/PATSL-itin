@@ -87,22 +87,22 @@ export default function StartApplicationButton({ token }: { token: string }) {
                   (walk-in), or generate a secure link for the client to complete their own intake remotely.
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2.5">
-                  <input className="col-span-1 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                  <input className="col-span-1 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                  <input className="col-span-2 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <input className="col-span-2 rounded-lg border border-white/10 p-2.5 text-xs" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                  <select className="col-span-2 rounded-lg border border-white/10 p-2.5 text-xs" value={serviceTier} onChange={(e) => setServiceTier(e.target.value)}>
+                  <input className="col-span-1 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                  <input className="col-span-1 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                  <input className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <input className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  <select className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white" value={serviceTier} onChange={(e) => setServiceTier(e.target.value)}>
                     <option value="EXPRESS_SELF_SERVICE">Express Self-Service — $149</option>
                     <option value="CAA_CONCIERGE">CAA Concierge — $349</option>
                     <option value="B2B_PORTAL">B2B Wholesale — $99</option>
                   </select>
                 </div>
-                {error && <p className="mt-3 text-xs font-medium text-red-600">{error}</p>}
+                {error && <p className="mt-3 text-xs font-medium text-red-400">{error}</p>}
                 <div className="mt-5 grid grid-cols-2 gap-2.5">
                   <button
                     disabled={!valid || !!creating}
                     onClick={handleFillMyself}
-                    className="rounded-lg bg-ink-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-ink-800 disabled:opacity-40"
+                    className="btn-pill-ghost text-white disabled:opacity-40"
                   >
                     {creating === 'SELF' ? 'Creating...' : 'Fill it myself'}
                   </button>
@@ -125,15 +125,15 @@ export default function StartApplicationButton({ token }: { token: string }) {
                   Send this link to {firstName} — it opens the intake wizard pre-filled with their name and email,
                   ready to complete the rest themselves.
                 </p>
-                <div className="mt-4 flex items-center gap-2 rounded-lg border border-white/10 bg-slate-50 p-2.5">
-                  <input readOnly value={generatedLink} className="flex-1 truncate bg-transparent text-xs text-slate-300" onFocus={(e) => e.target.select()} />
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5">
+                  <input readOnly value={generatedLink} className="flex-1 truncate bg-transparent text-xs text-white" onFocus={(e) => e.target.select()} />
                   <button
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(generatedLink);
                       setCopied(true);
                     }}
-                    className="rounded-md bg-ink-900 px-3 py-1.5 text-[11px] font-bold text-white"
+                    className="rounded-md bg-mint-500 px-3 py-1.5 text-[11px] font-bold text-ink-950"
                   >
                     {copied ? 'Copied ✓' : 'Copy'}
                   </button>
