@@ -1,27 +1,32 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import FaqAccordion from '../../components/marketing/FaqAccordion';
+import '../meridian.css';
+import MeridianNav from '../../components/meridian/MeridianNav';
+import MeridianFooter from '../../components/meridian/MeridianFooter';
 
 export const metadata: Metadata = {
-  title: 'Services & Pricing',
+  title: 'Pricing',
   description: 'Compare PATSL ITIN service tiers and pricing for self-service, CAA concierge, and partner filings.',
 };
 
-const tiers = [
+const TIERS = [
   {
     id: 'EXPRESS_SELF_SERVICE',
     name: 'Express Self-Service',
     price: '$149',
     description: 'Guided W-7 intake and draft package generation for self-service clients.',
     features: ['Guided online intake', 'Draft W-7 package for self-filing', 'Email support'],
+    featured: false,
   },
   {
     id: 'CAA_CONCIERGE',
     name: 'CAA Concierge',
-    price: '$349',
-    description: 'Document review, payment workflow, admin verification queue, and IRS-ready package generation.',
+    price: '$180',
+    wasPrice: '$349',
+    note: 'Introductory CAA rate — save $169',
+    description: 'Document pre-review, an in-person CAA verification appointment, payment workflow, and IRS-ready package generation.',
     features: [
-      'Certified Acceptance Agent identity review',
+      'In-person Certified Acceptance Agent identity review',
       'Full document verification queue',
       'IRS-ready mailing package',
       'Priority case tracking',
@@ -34,81 +39,102 @@ const tiers = [
     price: '$99',
     description: 'Partner intake flow for law firms, CPAs, and formation partners.',
     features: ['Bulk-friendly intake', 'Partner billing', 'Volume pricing available'],
+    featured: false,
   },
 ];
 
-const faqs = [
-  {
-    q: 'Do I need to mail my passport to the IRS?',
-    a: 'No. As a Certified Acceptance Agent, PATSL can verify your identity documents directly, so your originals never leave your hands.',
-  },
-  {
-    q: 'How long does processing take?',
-    a: 'Most CAA Concierge cases move to IRS-ready status within 3-5 business days of document verification and payment.',
-  },
-  {
-    q: 'Can I check my case status?',
-    a: 'Yes — use the Track My Case page with your application reference to see real-time status updates.',
-  },
-];
-
-export default function MarketingPage() {
+export default function MeridianPricingPage() {
   return (
-    <>
-      <section className="relative overflow-hidden bg-abyss py-16 text-white md:py-20">
-        <div className="bg-dot-grid absolute inset-0 opacity-50" />
-        <div className="container-page relative">
-          <p className="label-mono text-[12px] font-semibold uppercase text-mint-400">PATSL ITIN Services</p>
-          <h1 className="mt-3 max-w-2xl text-4xl font-bold tracking-tight">Secure document automation for ITIN workflows</h1>
-          <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400">
-            Pick the tier that fits your case. Every plan follows the same IRS-compliant review order and includes
-            case tracking.
+    <div className="mrd-root min-h-screen">
+      <MeridianNav cta={{ label: 'Book Appointment', href: '/appointment' }} />
+
+      <section className="relative px-6 pb-24 pt-16 sm:px-10">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="mx-auto mb-12 max-w-xl text-center">
+            <span className="mb-3 inline-flex w-full justify-center text-[.78rem] uppercase tracking-[.16em] mrd-accent-green">
+              PATSL ITIN Services
+            </span>
+            <h1 className="mb-3 font-extrabold" style={{ fontSize: 'clamp(1.9rem, 3.4vw, 2.6rem)' }}>
+              Secure document automation for ITIN workflows
+            </h1>
+            <p className="mrd-muted text-[.95rem] leading-[1.6]">
+              Pick the tier that fits your case. Every plan follows the same IRS-compliant review order, includes an
+              in-person CAA verification appointment, and full case tracking.
+            </p>
+          </div>
+
+          <div className="grid items-stretch gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))' }}>
+            {TIERS.map((tier) => (
+              <div
+                key={tier.id}
+                className={tier.featured ? 'relative flex flex-col gap-1 rounded-[18px] p-8' : 'mrd-card flex flex-col gap-1 p-8'}
+                style={
+                  tier.featured
+                    ? { background: 'linear-gradient(160deg, #0c2038, #081627)', border: '1.5px solid #1de9c2', boxShadow: '0 0 30px rgba(29,233,194,.25)' }
+                    : undefined
+                }
+              >
+                {tier.featured && (
+                  <span className="mb-2 w-fit rounded-full px-3 py-1.5 text-[.7rem] font-extrabold" style={{ background: 'linear-gradient(135deg,#1de9c2,#39e08a)', color: '#04241c' }}>
+                    Most popular
+                  </span>
+                )}
+                <h3 className="text-[1.1rem] font-bold">{tier.name}</h3>
+                {tier.wasPrice ? (
+                  <div className="mt-1 flex items-baseline gap-2.5">
+                    <span className="text-[1rem] font-semibold text-[#5b7285] line-through">{tier.wasPrice}</span>
+                    <span className="mrd-gradient-text text-[1.8rem] font-extrabold">{tier.price}</span>
+                  </div>
+                ) : (
+                  <p className="mrd-gradient-text mt-1 text-[1.8rem] font-extrabold">{tier.price}</p>
+                )}
+                {tier.note && <p className="mt-0.5 text-[.8rem] font-semibold mrd-accent-green">{tier.note}</p>}
+                <p className="mrd-muted mt-2.5 text-[.88rem] leading-[1.6]">{tier.description}</p>
+                <div className="mt-2.5 flex flex-1 flex-col gap-2">
+                  {tier.features.map((f) => (
+                    <div key={f} className="flex items-start gap-2 text-[.85rem]">
+                      <span className="mt-1.5 h-[5px] w-[5px] flex-none rounded-full" style={{ background: '#1de9c2' }} />
+                      {f}
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href={`/itin-intake?tier=${tier.id}`}
+                  className={tier.featured ? 'mrd-btn-primary mt-5 w-full' : 'mrd-btn-ghost mt-5 w-full'}
+                  style={tier.featured ? { padding: '.85rem 1.2rem', boxShadow: '0 0 20px rgba(29,233,194,.35)' } : { padding: '.8rem 1.2rem' }}
+                >
+                  Choose {tier.name}
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <div className="mrd-card mt-7 p-8">
+            <span className="mb-2.5 block text-[.75rem] font-bold uppercase tracking-[.08em] mrd-accent-green">
+              Why the CAA Concierge rate is discounted — and why PATSL is different
+            </span>
+            <p className="max-w-[80ch] text-[.92rem] leading-[1.7]" style={{ color: '#c7dae6' }}>
+              Most ITIN applications require mailing your original passport to the IRS — or paying for a certified copy
+              from your embassy or consulate first, which costs extra time and money. As an IRS-authorized Certified
+              Acceptance Agent, PATSL verifies your identity documents in person at our office: no original documents
+              in the mail, no embassy or consulate appointment, no certified-copy fees. Your only in-person step is a
+              short verification appointment with us — after that, we submit your Form W-7 to the IRS on your behalf
+              with a simple reviewed copy, handled with full professionalism and compliance. And unlike many preparers,
+              we never require you to file back taxes before your ITIN application can move forward. Eliminating that
+              overhead is exactly why we can pass the $180 introductory rate on to you.
+            </p>
+          </div>
+
+          <p className="mrd-muted mt-8 text-center text-[.85rem]">
+            Have more questions?{' '}
+            <Link href="/faq" className="font-semibold mrd-accent-teal hover:underline">
+              Read the FAQ
+            </Link>
           </p>
         </div>
       </section>
 
-      <section className="bg-abyss py-16 md:py-20">
-        <div className="container-page grid gap-6 md:grid-cols-3">
-          {tiers.map((tier) => (
-            <div
-              key={tier.id}
-              className={`glass-card flex flex-col p-6 ${tier.featured ? 'border-mint-500/50 shadow-glow-mint' : ''}`}
-            >
-              {tier.featured && (
-                <span className="mb-3 inline-block w-fit rounded-full bg-mint-500 px-3 py-1 text-xs font-bold text-ink-950">
-                  Most popular
-                </span>
-              )}
-              <h2 className="text-lg font-bold text-white">{tier.name}</h2>
-              <p className="mt-2 text-3xl font-bold text-mint-400">{tier.price}</p>
-              <p className="mt-4 text-sm leading-6 text-slate-400">{tier.description}</p>
-              <ul className="mt-5 flex-1 space-y-2">
-                {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm text-slate-300">
-                    <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-teal-400" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={`/itin-intake?tier=${tier.id}`}
-                className={`mt-6 text-center ${tier.featured ? 'btn-pill-primary' : 'btn-pill-ghost'}`}
-              >
-                Choose {tier.name}
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden bg-abyss-raised py-16 md:py-20">
-        <div className="bg-dot-grid absolute inset-0 opacity-30" />
-        <div className="container-page relative max-w-3xl">
-          <p className="label-mono text-[12px] font-semibold uppercase text-mint-400">FAQ</p>
-          <h2 className="mt-2 text-3xl font-bold text-white">Common questions</h2>
-          <FaqAccordion faqs={faqs} />
-        </div>
-      </section>
-    </>
+      <MeridianFooter />
+    </div>
   );
 }

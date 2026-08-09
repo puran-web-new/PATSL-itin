@@ -17,8 +17,14 @@ const NETWORK_LINKS = [
   { href: 'https://www.puranaccounting.com', label: 'Puran Accounting Profile', description: "Puran Ramratan's accounting practice", external: true },
 ];
 
+const MERIDIAN_ROUTES = new Set(['/', '/marketing', '/appointment', '/about', '/faq']);
+
 export default function SiteHeader() {
   const pathname = usePathname();
+
+  // The public marketing pages (Home, Pricing, Appointment, About, FAQ) render their
+  // own Meridian-themed nav — skip the dark cyber-forensic header there so they don't stack.
+  if (pathname && MERIDIAN_ROUTES.has(pathname)) return null;
   const [open, setOpen] = useState(false);
   const [networkOpen, setNetworkOpen] = useState(false);
   const networkRef = useRef<HTMLDivElement>(null);

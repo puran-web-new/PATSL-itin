@@ -1,0 +1,236 @@
+/* Meridian design system — used only on the public marketing pages
+   (Home, Pricing, Appointment, About, FAQ). Scoped with an "mrd-" prefix
+   so it never collides with the admin/portal dark cyber-forensic theme
+   defined in tailwind.config.ts / globals.css. */
+
+.mrd-root {
+  background: #071223;
+  color: #eaf6f6;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+  overflow-x: clip;
+  position: relative;
+}
+
+.mrd-muted { color: #8fa8bc; }
+.mrd-accent-teal { color: #1de9c2; }
+.mrd-accent-green { color: #39e08a; }
+
+.mrd-gradient-text {
+  background: linear-gradient(90deg, #1de9c2, #39e08a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mrd-gold-filter {
+  filter: grayscale(1) sepia(1) saturate(2) hue-rotate(-6deg) brightness(0.98) contrast(0.72);
+}
+
+@keyframes mrd-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes mrd-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+@keyframes mrd-drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(3vmax, -3vmax) scale(1.08); } }
+@keyframes mrd-floaty { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-14px) rotate(6deg); } }
+@keyframes mrd-float-glow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes mrd-nav-gradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes mrd-nav-underline { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@keyframes mrd-shimmer-sweep { 0%, 20% { transform: translateX(-20%) rotate(12deg); } 50% { transform: translateX(220%) rotate(12deg); } 100% { transform: translateX(220%) rotate(12deg); } }
+@keyframes mrd-icon-fade { 0%, 100% { opacity: .55; } 50% { opacity: .95; } }
+@keyframes mrd-cta-ring { 0% { transform: scale(.9); opacity: .8; } 100% { transform: scale(1.25); opacity: 0; } }
+@keyframes mrd-scroll-pulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+@keyframes mrd-card-float { 0%, 100% { transform: translateY(0) rotate(var(--mrd-rot, 0deg)); } 50% { transform: translateY(-14px) rotate(var(--mrd-rot, 0deg)); } }
+@keyframes mrd-cta-glow { from { opacity: .6; } to { opacity: 1; } }
+@keyframes mrd-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mrd-root, .mrd-root * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* The recurring "spinning rim-light ring" motif: an absolutely-positioned
+   element with a conic-gradient background, masked down to a thin ring via
+   the padding + mask-composite:exclude trick, then spun. Supply the actual
+   gradient/duration/direction per instance via inline style. */
+.mrd-ring-el {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation-name: mrd-spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Sticky nav shell shared by every Meridian page */
+.mrd-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.8rem;
+  padding: 1.1rem 2.5rem;
+  background: linear-gradient(120deg, #071223, #0b2036, #0d2b3f, #0b2036, #071223);
+  background-size: 300% 300%;
+  animation: mrd-nav-gradient 12s ease-in-out infinite;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  position: sticky;
+}
+.mrd-nav::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #1de9c2, #39e08a, #1de9c2, transparent);
+  background-size: 200% 100%;
+  animation: mrd-nav-underline 6s linear infinite;
+  pointer-events: none;
+}
+
+.mrd-nav-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  background: radial-gradient(120% 140% at 30% 20%, rgba(21, 60, 96, .85), rgba(10, 28, 48, .9) 70%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  transition: background .3s, transform .25s, box-shadow .3s;
+  text-decoration: none;
+  color: #eaf6f6;
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .85;
+}
+.mrd-nav-pill:hover {
+  background: radial-gradient(120% 140% at 30% 20%, rgba(29, 233, 194, .22), rgba(10, 28, 48, .92) 72%);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .4), 0 0 22px rgba(29, 233, 194, .25);
+  opacity: 1;
+}
+.mrd-nav-pill.mrd-active {
+  background: radial-gradient(120% 140% at 30% 20%, rgba(29, 233, 194, .18), rgba(10, 28, 48, .92) 72%);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .4), 0 0 22px rgba(29, 233, 194, .2);
+  opacity: 1;
+}
+
+.mrd-btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .7rem 1.5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1de9c2, #39e08a);
+  color: #04241c;
+  font-weight: 700;
+  font-size: .85rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(29, 233, 194, .35);
+  transition: transform .2s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.mrd-btn-primary:hover { transform: translateY(-2px); }
+
+.mrd-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .9rem 1.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 246, 246, .25);
+  color: #eaf6f6;
+  text-decoration: none;
+  transition: border-color .2s, background .2s;
+  font-weight: 600;
+}
+.mrd-btn-ghost:hover { border-color: #1de9c2; background: rgba(29, 233, 194, .08); }
+
+.mrd-card {
+  background: linear-gradient(160deg, #0c2038, #081627);
+  border: 1px solid rgba(29, 233, 194, .12);
+  border-radius: 18px;
+  transition: transform .25s, border-color .25s;
+}
+.mrd-card:hover { transform: translateY(-6px); border-color: rgba(29, 233, 194, .4); }
+
+.mrd-badge-icon {
+  position: relative;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #153c60, #0a1c30 78%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .4), inset 0 0 0 1px rgba(255, 255, 255, .05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mrd-dot-field {
+  background-image: radial-gradient(rgba(159, 184, 201, .35) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 0%, #000 40%, transparent 95%);
+  mask-image: radial-gradient(120% 100% at 50% 0%, #000 40%, transparent 95%);
+}
+
+.mrd-pill-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem 1.2rem;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 600;
+}
+
+.mrd-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex: none;
+  margin-top: 1px;
+}
+
+.mrd-faq summary { list-style: none; cursor: pointer; }
+.mrd-faq summary::-webkit-details-marker { display: none; }
+.mrd-faq[open] .mrd-chevron { transform: rotate(180deg); }
+.mrd-chevron { transition: transform .2s; }
+
+.mrd-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  font-size: .9rem;
+  color: #eaf6f6;
+  background: #071223;
+  border: 1px solid rgba(234, 246, 246, .15);
+  border-radius: 10px;
+}
+.mrd-input:focus { outline: none; border-color: #1de9c2; }
+
+.mrd-tier-radio {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 8px;
+  font-size: .75rem;
+  cursor: pointer;
+  color: #eaf6f6;
+}

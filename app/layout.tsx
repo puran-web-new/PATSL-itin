@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 import SiteHeader from '../components/layout/SiteHeader';
 import SiteFooter from '../components/layout/SiteFooter';
 import FloatingAssistant from '../components/layout/FloatingAssistant';
+import ChromeGate from '../components/layout/ChromeGate';
 import { getFirmProfile } from '../lib/firmProfile';
 
 export const metadata: Metadata = {
@@ -35,8 +36,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col bg-abyss text-slate-300">
         <SiteHeader />
         <main className="flex-1">{children}</main>
-        <SiteFooter />
-        <FloatingAssistant phone={firm.phone} email={firm.email} />
+        <ChromeGate>
+          <SiteFooter />
+        </ChromeGate>
+        <ChromeGate>
+          <FloatingAssistant phone={firm.phone} email={firm.email} />
+        </ChromeGate>
       </body>
     </html>
   );

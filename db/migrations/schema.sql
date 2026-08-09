@@ -68,3 +68,18 @@ CREATE INDEX IF NOT EXISTS idx_identity_documents_retention ON identity_document
 CREATE INDEX IF NOT EXISTS idx_invoices_app_id ON invoices(application_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_square_order_id ON invoices(square_order_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_app_id ON audit_events(application_id);
+
+CREATE TABLE IF NOT EXISTS appointments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  full_name VARCHAR(200) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  preferred_date DATE,
+  preferred_time TIME,
+  service_tier VARCHAR(80),
+  status VARCHAR(40) DEFAULT 'REQUESTED',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
+CREATE INDEX IF NOT EXISTS idx_appointments_created_at ON appointments(created_at);
