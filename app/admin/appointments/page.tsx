@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAdminAuth } from '../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../components/admin/AdminSidebarShell';
 
@@ -22,6 +22,16 @@ const STATUS_STYLES: Record<string, string> = {
   COMPLETED: 'bg-white/5 text-slate-400',
   CANCELLED: 'bg-red-500/10 text-red-300',
 };
+
+function StatCard({ label, value, note, warn }: { label: string; value: number; note?: string; warn?: boolean }) {
+  return (
+    <div className="glass-card p-4">
+      <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
+      <p className="mt-1.5 text-2xl font-bold text-white">{value}</p>
+      {note && <p className={`mt-1 text-[11px] font-semibold ${warn ? 'text-gold-400' : 'text-slate-400'}`}>{note}</p>}
+    </div>
+  );
+}
 
 export default function AdminAppointmentsPage() {
   const { token, ready } = useAdminAuth();
@@ -66,11 +76,24 @@ export default function AdminAppointmentsPage() {
     }
   }
 
+  const stats = useMemo(() => {
+    const counts: Record<string, number> = { REQUESTED: 0, CONFIRMED: 0, COMPLETED: 0, CANCELLED: 0 };
+    for (const a of rows) counts[a.status] = (counts[a.status] || 0) + 1;
+    return counts;
+  }, [rows]);
+
   if (!ready) return <div className="flex min-h-screen items-center justify-center bg-ink-950 text-sm text-slate-400">Checking staff session...</div>;
 
   return (
     <AdminSidebarShell title="Appointments" subtitle="In-person CAA verification requests from the public Appointment page.">
       {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{error}</div>}
+
+      <div className="mb-6 grid grid-cols-4 gap-3">
+        <StatCard label="Awaiting confirmation" value={stats.REQUESTED} note={stats.REQUESTED > 0 ? 'Needs a response' : undefined} warn />
+        <StatCard label="Confirmed" value={stats.CONFIRMED} />
+        <StatCard label="Completed" value={stats.COMPLETED} />
+        <StatCard label="Cancelled" value={stats.CANCELLED} />
+      </div>
 
       <div className="overflow-hidden glass-card">
         <table className="w-full text-left text-xs">

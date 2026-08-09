@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FormEvent, ReactNode, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import GoldCrest from '../layout/GoldCrest';
+import { useAdminAuth } from '../../lib/useAdminAuth';
 
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '▣' },
@@ -14,10 +15,40 @@ const NAV = [
 
 const NAV_SYSTEM = [{ href: '/admin/settings', label: 'Settings & tools', icon: '⚙' }];
 
+const POLL_INTERVAL_MS = 30000;
+
 export default function AdminSidebarShell({ children, title, subtitle }: { children: ReactNode; title?: string; subtitle?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const { token } = useAdminAuth();
+  const [pendingAppointments, setPendingAppointments] = useState(0);
+  const [bellOpen, setBellOpen] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+
+    async function poll() {
+      try {
+        const res = await fetch('/api/admin/appointments', { headers: { 'x-admin-token': token as string } });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const pending = (data.appointments || []).filter((a: { status: string }) => a.status === 'REQUESTED').length;
+        setPendingAppointments(pending);
+      } catch {
+        // silent — the notification bell is a convenience, not a critical path
+      }
+    }
+
+    poll();
+    const id = setInterval(poll, POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [token]);
 
   function signOut() {
     window.sessionStorage.removeItem('patsl-admin-token');
@@ -45,12 +76,19 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-xs font-semibold ${
+              className={`flex items-center justify-between gap-2.5 rounded-lg px-2.5 py-2.5 text-xs font-semibold ${
                 pathname?.startsWith(item.href) ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <span className="w-4 text-center text-[11px]">{item.icon}</span>
-              {item.label}
+              <span className="flex items-center gap-2.5">
+                <span className="w-4 text-center text-[11px]">{item.icon}</span>
+                {item.label}
+              </span>
+              {item.href === '/admin/appointments' && pendingAppointments > 0 && (
+                <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gold-500 px-1 text-[9px] font-extrabold text-ink-950">
+                  {pendingAppointments}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -91,7 +129,41 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
               className="w-80 rounded-full border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500"
             />
           </form>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setBellOpen((v) => !v)}
+                aria-label="Notifications"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-abyss-panel text-slate-300 hover:bg-white/5 hover:text-white"
+              >
+                <span aria-hidden className="text-sm">&#128276;</span>
+                {pendingAppointments > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gold-500 px-1 text-[9px] font-extrabold text-ink-950">
+                    {pendingAppointments}
+                  </span>
+                )}
+              </button>
+
+              {bellOpen && (
+                <div className="glass-card absolute right-0 top-full z-10 mt-2 w-72 overflow-hidden p-2 shadow-glow-cyan">
+                  {pendingAppointments > 0 ? (
+                    <Link
+                      href="/admin/appointments"
+                      onClick={() => setBellOpen(false)}
+                      className="block rounded-lg px-3 py-2.5 transition-colors hover:bg-white/5"
+                    >
+                      <span className="text-sm font-semibold text-white">
+                        {pendingAppointments} appointment{pendingAppointments === 1 ? '' : 's'} awaiting confirmation
+                      </span>
+                      <span className="mt-0.5 block text-xs text-slate-500">Requested via the public Appointment page &rarr;</span>
+                    </Link>
+                  ) : (
+                    <p className="px-3 py-2.5 text-xs text-slate-500">No new appointment requests.</p>
+                  )}
+                </div>
+              )}
+            </div>
             <span className="text-xs text-slate-500">Staff session</span>
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-mint-500 to-teal-400 text-[10px] font-bold text-ink-950">PR</span>
           </div>
