@@ -14,8 +14,13 @@ const TIERS = [
     id: 'EXPRESS_SELF_SERVICE',
     name: 'Express Self-Service',
     price: '$149',
-    description: 'Guided W-7 intake and draft package generation for self-service clients.',
-    features: ['Guided online intake', 'Draft W-7 package for self-filing', 'Email support'],
+    description: 'Includes your required in-person CAA verification appointment — you then receive a ready-to-file draft package to review and mail yourself.',
+    features: [
+      'In-person CAA identity verification (required for every tier)',
+      'Guided online intake',
+      'Draft W-7 package you file yourself',
+      'Email support',
+    ],
     featured: false,
   },
   {
@@ -24,11 +29,11 @@ const TIERS = [
     price: '$180',
     wasPrice: '$349',
     note: 'Introductory CAA rate — save $169',
-    description: 'Document pre-review, an in-person CAA verification appointment, payment workflow, and IRS-ready package generation.',
+    description: 'Full-service handling: in-person CAA verification, complete document review, and we prepare and mail your IRS package for you.',
     features: [
       'In-person Certified Acceptance Agent identity review',
       'Full document verification queue',
-      'IRS-ready mailing package',
+      'We prepare & mail your IRS-ready package',
       'Priority case tracking',
     ],
     featured: true,
@@ -37,7 +42,7 @@ const TIERS = [
     id: 'B2B_PORTAL',
     name: 'B2B Wholesale Portal',
     price: '$99',
-    description: 'Partner intake flow for law firms, CPAs, and formation partners.',
+    description: 'Partner intake flow for law firms, CPAs, and formation partners — each applicant still completes their own CAA verification visit.',
     features: ['Bulk-friendly intake', 'Partner billing', 'Volume pricing available'],
     featured: false,
   },
@@ -74,11 +79,16 @@ export default function MeridianPricingPage() {
                     : undefined
                 }
               >
-                {tier.featured && (
-                  <span className="mb-2 w-fit rounded-full px-3 py-1.5 text-[.7rem] font-extrabold" style={{ background: 'linear-gradient(135deg,#1de9c2,#39e08a)', color: '#04241c' }}>
-                    Most popular
-                  </span>
-                )}
+                {/* Fixed-height badge slot on every card (even non-featured ones) so the
+                    title/price/feature rows line up across all 3 cards instead of the
+                    featured card's content sitting lower than its neighbors. */}
+                <div className="mb-2 flex h-7 items-center">
+                  {tier.featured && (
+                    <span className="w-fit rounded-full px-3 py-1.5 text-[.7rem] font-extrabold" style={{ background: 'linear-gradient(135deg,#1de9c2,#39e08a)', color: '#04241c' }}>
+                      Most popular
+                    </span>
+                  )}
+                </div>
                 <h3 className="text-[1.1rem] font-bold">{tier.name}</h3>
                 {tier.wasPrice ? (
                   <div className="mt-1 flex items-baseline gap-2.5">

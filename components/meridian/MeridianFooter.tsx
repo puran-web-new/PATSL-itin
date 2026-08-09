@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import RimRing from './RimRing';
 
 export default function MeridianFooter({ full = false }: { full?: boolean }) {
   if (!full) {
@@ -42,26 +41,15 @@ export default function MeridianFooter({ full = false }: { full?: boolean }) {
 
         <div>
           <h4 className="mrd-muted mb-4 text-[.82rem] uppercase tracking-[.08em]">Network</h4>
-          <div className="flex gap-3">
-            <Link
-              href="/about"
-              aria-label="PATSL Developer LLC"
-              className="relative flex h-[38px] w-[38px] items-center justify-center rounded-full text-[.72rem] font-bold text-[#1de9c2] transition-transform hover:-translate-y-1"
-              style={{ background: 'radial-gradient(circle at 32% 28%, #153c60, #0a1c30 78%)', boxShadow: '0 6px 20px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.05)' }}
-            >
-              <RimRing gradient="conic-gradient(from 0deg, transparent 0deg, transparent 270deg, #1de9c2 305deg, #39e08a 325deg, #1de9c2 345deg, transparent 360deg)" duration="5s" />
-              <span className="relative z-[1]">PD</span>
+          <div className="flex flex-wrap items-center gap-3.5">
+            <Link href="/about" aria-label="PATSL Developer LLC" className="transition-transform hover:-translate-y-1">
+              <Image src="/meridian/patsl-developer-logo.png" alt="PATSL Developer LLC" width={140} height={44} className="h-11 w-auto rounded-lg object-contain" />
             </Link>
-            <a
-              href="https://www.patsl.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Nexus CAA Training Academy"
-              className="relative flex h-[38px] w-[38px] items-center justify-center rounded-full text-[.72rem] font-bold text-[#39e08a] transition-transform hover:-translate-y-1"
-              style={{ background: 'radial-gradient(circle at 32% 28%, #153c60, #0a1c30 78%)', boxShadow: '0 6px 20px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.05)' }}
-            >
-              <RimRing gradient="conic-gradient(from 0deg, transparent 0deg, transparent 270deg, #39e08a 305deg, #1de9c2 325deg, #39e08a 345deg, transparent 360deg)" duration="5.6s" reverse />
-              <span className="relative z-[1]">N</span>
+            <a href="https://www.patsl.org" target="_blank" rel="noopener noreferrer" aria-label="Nexus CAA Training Academy" className="transition-transform hover:-translate-y-1">
+              <Image src="/meridian/nexus-seal.png" alt="Nexus CAA Training Academy" width={44} height={44} className="h-11 w-11 object-contain" />
+            </a>
+            <a href="https://www.puranaccounting.com" target="_blank" rel="noopener noreferrer" aria-label="Puran Accounting &amp; Tax Solution Lab" className="transition-transform hover:-translate-y-1">
+              <Image src="/meridian/puran-icon.png" alt="Puran Accounting &amp; Tax Solution Lab" width={44} height={44} className="h-11 w-11 rounded-lg object-contain" />
             </a>
           </div>
         </div>
