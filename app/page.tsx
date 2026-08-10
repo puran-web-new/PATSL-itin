@@ -153,7 +153,8 @@ export default function MeridianHomePage() {
 
         {/* Desktop: the 3 photos orbit a shared circle, chasing each other
             clockwise, staying upright via a counter-rotating inner wrapper. */}
-        <div className="relative mx-auto hidden md:block" style={{ width: 420, height: 420 }}>
+        <div className="hidden w-full justify-center md:flex">
+        <div className="relative" style={{ width: 500, height: 500 }}>
           <div className="mrd-badge-icon absolute -left-2 top-2 h-6 w-6" style={{ animation: 'mrd-floaty 6s ease-in-out infinite -1.5s' }}>
             <RimRing gradient="conic-gradient(from 0deg, transparent 0deg, transparent 270deg, #1de9c2 305deg, #39e08a 325deg, #1de9c2 345deg, transparent 360deg)" duration="5s" />
           </div>
@@ -164,20 +165,20 @@ export default function MeridianHomePage() {
           {/* Faint static circle guide so the orbit path reads intentionally */}
           <div
             className="pointer-events-none absolute rounded-full"
-            style={{ inset: 40, border: '1px dashed rgba(29,233,194,.15)' }}
+            style={{ inset: 48, border: '1px dashed rgba(29,233,194,.15)' }}
           />
 
           {SHOWCASE.map((card, i) => (
             <div
               key={card.id}
               className="mrd-orbit-item"
-              style={{ '--offset': `${i * 120}deg`, '--radius': '150px' } as CSSProperties}
+              style={{ '--offset': `${i * 120}deg`, '--radius': '180px' } as CSSProperties}
             >
               <div className="mrd-orbit-counter" style={{ '--offset': `${i * 120}deg` } as CSSProperties}>
                 <RevealOnScroll delay={`${i * 140}ms`}>
                   <div
                     className="relative overflow-hidden rounded-[18px]"
-                    style={{ width: 170, height: 130, boxShadow: '0 20px 50px rgba(0,0,0,.55)' }}
+                    style={{ width: 195, height: 150, boxShadow: '0 20px 50px rgba(0,0,0,.55)' }}
                   >
                     <RimRing
                       gradient="conic-gradient(from 0deg, transparent 0deg, transparent 240deg, #1de9c2 285deg, #39e08a 312deg, #1de9c2 340deg, transparent 360deg)"
@@ -185,7 +186,7 @@ export default function MeridianHomePage() {
                       padding="1.6px"
                       glow="drop-shadow(0 0 6px #1de9c2)"
                     />
-                    <Image src={card.photo} alt={card.label} fill sizes="170px" className="object-cover" />
+                    <Image src={card.photo} alt={card.label} fill sizes="195px" className="object-cover" />
                     <div className="pointer-events-none absolute inset-0" style={{ boxShadow: 'inset 0 0 30px 14px #071223' }} />
                     <span
                       className="absolute bottom-2.5 left-2.5 rounded-full px-2.5 py-1 text-[.62rem] font-semibold uppercase tracking-wide"
@@ -198,6 +199,7 @@ export default function MeridianHomePage() {
               </div>
             </div>
           ))}
+        </div>
         </div>
       </section>
 
