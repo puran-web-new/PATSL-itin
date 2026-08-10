@@ -246,17 +246,22 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: rotate(var(--offset, 0deg)) translateX(var(--radius, 140px));
+  /* translate(-50%,-50%) must come first so the box's own CENTER -- not its
+     top-left corner -- sits on the container's center point before rotating
+     outward. Without it, every item's pivot is offset by half its own
+     width/height in the same direction, so instead of spreading evenly
+     around the circle they all bunch toward one corner. */
+  transform: translate(-50%, -50%) rotate(var(--offset, 0deg)) translateX(var(--radius, 140px));
   animation: mrd-orbit-spin 22s linear infinite;
 }
 @keyframes mrd-orbit-spin {
-  from { transform: rotate(var(--offset, 0deg)) translateX(var(--radius, 140px)); }
-  to   { transform: rotate(calc(var(--offset, 0deg) + 360deg)) translateX(var(--radius, 140px)); }
+  from { transform: translate(-50%, -50%) rotate(var(--offset, 0deg)) translateX(var(--radius, 140px)); }
+  to   { transform: translate(-50%, -50%) rotate(calc(var(--offset, 0deg) + 360deg)) translateX(var(--radius, 140px)); }
 }
 .mrd-orbit-counter {
   animation: mrd-orbit-counter-spin 22s linear infinite;
 }
 @keyframes mrd-orbit-counter-spin {
-  from { transform: translate(-50%, -50%) rotate(calc(-1 * var(--offset, 0deg))); }
-  to   { transform: translate(-50%, -50%) rotate(calc(-1 * var(--offset, 0deg) - 360deg)); }
+  from { transform: rotate(calc(-1 * var(--offset, 0deg))); }
+  to   { transform: rotate(calc(-1 * var(--offset, 0deg) - 360deg)); }
 }
