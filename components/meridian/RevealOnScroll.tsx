@@ -7,6 +7,11 @@ import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 
  * the first time they scroll into view, instead of just appearing. Pass the
  * same `from` transform each card starts at — once visible, it animates to
  * its natural resting transform (set via CSS on the child itself).
+ *
+ * Defensive by design: if IntersectionObserver isn't available, throws, or
+ * simply never fires (slow connection, browser quirk, etc.), a fallback
+ * timer forces the content visible anyway. Content must never get stuck
+ * permanently invisible just because a scroll-animation hook didn't fire.
  */
 export default function RevealOnScroll({
   children,
@@ -22,18 +27,36 @@ export default function RevealOnScroll({
 
   useEffect(() => {
     const node = ref.current;
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
+    const reveal = () => setVisible(true);
+
+    // Safety net: no matter what happens with the observer below, make sure
+    // this content is visible within 1.2s of mounting.
+    const fallback = window.setTimeout(reveal, 1200);
+
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      reveal();
+      return () => window.clearTimeout(fallback);
+    }
+
+    try {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            reveal();
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.15 }
+      );
+      observer.observe(node);
+      return () => {
+        window.clearTimeout(fallback);
+        observer.disconnect();
+      };
+    } catch {
+      reveal();
+      return () => window.clearTimeout(fallback);
+    }
   }, []);
 
   return (

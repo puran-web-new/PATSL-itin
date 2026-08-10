@@ -166,6 +166,24 @@ export default function MeridianHomePage() {
           <span className="mb-3 inline-flex w-full justify-center text-[.78rem] uppercase tracking-[.16em] mrd-accent-green">Showcase</span>
           <h2 className="font-extrabold" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.4rem)' }}>Real people behind every case</h2>
         </div>
+        {/* Mobile / narrow-viewport fallback: the fancy overlapping layout below only
+            renders at md+, so phones and narrow windows need their own simple grid
+            instead of the whole section just being hidden. */}
+        <div className="mx-auto grid max-w-md grid-cols-3 gap-2.5 md:hidden">
+          {SHOWCASE.map((card) => (
+            <div key={card.id} className="mrd-card relative overflow-hidden rounded-2xl p-0" style={{ aspectRatio: '3 / 4' }}>
+              <div className="flex h-full w-full items-center justify-center" style={{ background: 'radial-gradient(circle at 32% 28%, #153c60, #0a1c30 78%)' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke={card.color} strokeWidth="1.4" style={{ width: '32%', height: '32%', filter: `drop-shadow(0 0 6px ${card.color})` }}>
+                  {card.icon}
+                </svg>
+              </div>
+              <span className="absolute inset-x-1.5 bottom-1.5 rounded-full px-2 py-1 text-center text-[.6rem] font-semibold uppercase tracking-wide" style={{ background: 'rgba(7,18,35,.7)' }}>
+                {card.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
         <div className="relative mx-auto hidden h-[320px] max-w-[1100px] md:block">
           {/* Small decorative rim-ring circles scattered around the showcase group for texture */}
           <div className="mrd-badge-icon absolute -left-2 top-2 h-6 w-6" style={{ animation: 'mrd-floaty 6s ease-in-out infinite -1.5s' }}>
