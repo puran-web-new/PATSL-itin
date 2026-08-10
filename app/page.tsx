@@ -16,38 +16,9 @@ const STATS = [
 ];
 
 const SHOWCASE = [
-  {
-    id: 'client-intake', label: 'Client Intake', rot: '-4deg', top: '5%', left: '18%', width: 300, height: 220, delay: '-1s', color: '#1de9c2', z: 10,
-    reveal: 'translateX(-40px) rotate(-10deg)',
-    icon: (
-      <>
-        <circle cx="12" cy="8" r="3.4" />
-        <path d="M5 20c0-3.6 3.1-6.4 7-6.4s7 2.8 7 6.4" />
-      </>
-    ),
-  },
-  {
-    id: 'document-review', label: 'Document Review', rot: '3deg', top: '0%', left: '41%', width: 280, height: 200, delay: '-3.4s', color: '#39e08a', z: 20,
-    reveal: 'translateY(-32px) scale(0.9)',
-    icon: (
-      <>
-        <rect x="5" y="3" width="12" height="18" rx="1.6" />
-        <path d="M8.5 8h5M8.5 11.5h5M8.5 15h3" />
-        <circle cx="17.5" cy="16.5" r="3.2" />
-        <path d="m20 19 2 2" />
-      </>
-    ),
-  },
-  {
-    id: 'irs-package', label: 'IRS Package', rot: '5deg', top: '7%', left: '63%', width: 260, height: 190, delay: '-2.1s', color: '#1de9c2', z: 30,
-    reveal: 'translateX(40px) rotate(10deg)',
-    icon: (
-      <>
-        <path d="M3.5 8.2 12 4l8.5 4.2v8.6L12 21l-8.5-4.2z" />
-        <path d="M3.5 8.2 12 12.4l8.5-4.2M12 12.4V21" />
-      </>
-    ),
-  },
+  { id: 'client-intake', label: 'Client Intake', photo: '/meridian/showcase-client-intake.jpg' },
+  { id: 'document-review', label: 'Document Review', photo: '/meridian/showcase-document-review.jpg' },
+  { id: 'irs-package', label: 'IRS Package', photo: '/meridian/showcase-irs-package.jpg' },
 ];
 
 const STEPS = [
@@ -166,17 +137,13 @@ export default function MeridianHomePage() {
           <span className="mb-3 inline-flex w-full justify-center text-[.78rem] uppercase tracking-[.16em] mrd-accent-green">Showcase</span>
           <h2 className="font-extrabold" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.4rem)' }}>Real people behind every case</h2>
         </div>
-        {/* Mobile / narrow-viewport fallback: the fancy overlapping layout below only
-            renders at md+, so phones and narrow windows need their own simple grid
-            instead of the whole section just being hidden. */}
+
+        {/* Mobile / narrow-viewport fallback: static row, no orbit motion (keeps
+            things simple and battery-friendly on small screens). */}
         <div className="mx-auto grid max-w-md grid-cols-3 gap-2.5 md:hidden">
           {SHOWCASE.map((card) => (
-            <div key={card.id} className="mrd-card relative overflow-hidden rounded-2xl p-0" style={{ aspectRatio: '3 / 4' }}>
-              <div className="flex h-full w-full items-center justify-center" style={{ background: 'radial-gradient(circle at 32% 28%, #153c60, #0a1c30 78%)' }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke={card.color} strokeWidth="1.4" style={{ width: '32%', height: '32%', filter: `drop-shadow(0 0 6px ${card.color})` }}>
-                  {card.icon}
-                </svg>
-              </div>
+            <div key={card.id} className="relative overflow-hidden rounded-2xl" style={{ aspectRatio: '3 / 4' }}>
+              <Image src={card.photo} alt={card.label} fill sizes="140px" className="object-cover" />
               <span className="absolute inset-x-1.5 bottom-1.5 rounded-full px-2 py-1 text-center text-[.6rem] font-semibold uppercase tracking-wide" style={{ background: 'rgba(7,18,35,.7)' }}>
                 {card.label}
               </span>
@@ -184,64 +151,51 @@ export default function MeridianHomePage() {
           ))}
         </div>
 
-        <div className="relative mx-auto hidden h-[320px] max-w-[1100px] md:block">
-          {/* Small decorative rim-ring circles scattered around the showcase group for texture */}
+        {/* Desktop: the 3 photos orbit a shared circle, chasing each other
+            clockwise, staying upright via a counter-rotating inner wrapper. */}
+        <div className="relative mx-auto hidden md:block" style={{ width: 420, height: 420 }}>
           <div className="mrd-badge-icon absolute -left-2 top-2 h-6 w-6" style={{ animation: 'mrd-floaty 6s ease-in-out infinite -1.5s' }}>
             <RimRing gradient="conic-gradient(from 0deg, transparent 0deg, transparent 270deg, #1de9c2 305deg, #39e08a 325deg, #1de9c2 345deg, transparent 360deg)" duration="5s" />
           </div>
-          <div className="mrd-badge-icon absolute right-8 top-0 h-4 w-4" style={{ animation: 'mrd-floaty 7s ease-in-out infinite -3s' }}>
+          <div className="mrd-badge-icon absolute right-4 top-0 h-4 w-4" style={{ animation: 'mrd-floaty 7s ease-in-out infinite -3s' }}>
             <RimRing gradient="conic-gradient(from 0deg, transparent 0deg, transparent 270deg, #39e08a 305deg, #1de9c2 325deg, #39e08a 345deg, transparent 360deg)" duration="4.5s" reverse />
           </div>
-          <div className="mrd-badge-icon absolute bottom-4 left-[46%] h-5 w-5" style={{ animation: 'mrd-floaty 6.5s ease-in-out infinite -4.5s' }}>
-            <RimRing gradient="conic-gradient(from 0deg, transparent 0deg, transparent 270deg, #1de9c2 305deg, #39e08a 325deg, #1de9c2 345deg, transparent 360deg)" duration="5.5s" />
-          </div>
+
+          {/* Faint static circle guide so the orbit path reads intentionally */}
+          <div
+            className="pointer-events-none absolute rounded-full"
+            style={{ inset: 40, border: '1px dashed rgba(29,233,194,.15)' }}
+          />
 
           {SHOWCASE.map((card, i) => (
             <div
               key={card.id}
-              className="absolute"
-              style={{ width: card.width, height: card.height, left: card.left, top: card.top, zIndex: card.z }}
+              className="mrd-orbit-item"
+              style={{ '--offset': `${i * 120}deg`, '--radius': '150px' } as CSSProperties}
             >
-              <RevealOnScroll delay={`${i * 140}ms`} from={card.reveal}>
-                <div
-                  className="relative overflow-hidden rounded-[20px]"
-                  style={{
-                    width: card.width, height: card.height,
-                    boxShadow: '0 20px 50px rgba(0,0,0,.55)',
-                    animation: `mrd-card-float 8s ease-in-out infinite ${card.delay}`,
-                    '--mrd-rot': card.rot,
-                  } as CSSProperties}
-                >
-                  <RimRing
-                    gradient="conic-gradient(from 0deg, transparent 0deg, transparent 240deg, #1de9c2 285deg, #39e08a 312deg, #1de9c2 340deg, transparent 360deg)"
-                    duration="6s"
-                    padding="1.6px"
-                    glow="drop-shadow(0 0 6px #1de9c2)"
-                  />
+              <div className="mrd-orbit-counter" style={{ '--offset': `${i * 120}deg` } as CSSProperties}>
+                <RevealOnScroll delay={`${i * 140}ms`}>
                   <div
-                    className="flex h-full w-full items-center justify-center"
-                    style={{
-                      background: 'radial-gradient(circle at 32% 28%, #153c60, #0a1c30 78%)',
-                      WebkitMaskImage: 'radial-gradient(ellipse 92% 92% at center, #000 58%, transparent 100%)',
-                      maskImage: 'radial-gradient(ellipse 92% 92% at center, #000 58%, transparent 100%)',
-                    }}
+                    className="relative overflow-hidden rounded-[18px]"
+                    style={{ width: 170, height: 130, boxShadow: '0 20px 50px rgba(0,0,0,.55)' }}
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke={card.color} strokeWidth="1.4" style={{ width: '30%', height: '30%', filter: `drop-shadow(0 0 8px ${card.color})` }}>
-                      {card.icon}
-                    </svg>
+                    <RimRing
+                      gradient="conic-gradient(from 0deg, transparent 0deg, transparent 240deg, #1de9c2 285deg, #39e08a 312deg, #1de9c2 340deg, transparent 360deg)"
+                      duration="6s"
+                      padding="1.6px"
+                      glow="drop-shadow(0 0 6px #1de9c2)"
+                    />
+                    <Image src={card.photo} alt={card.label} fill sizes="170px" className="object-cover" />
+                    <div className="pointer-events-none absolute inset-0" style={{ boxShadow: 'inset 0 0 30px 14px #071223' }} />
+                    <span
+                      className="absolute bottom-2.5 left-2.5 rounded-full px-2.5 py-1 text-[.62rem] font-semibold uppercase tracking-wide"
+                      style={{ background: 'rgba(7,18,35,.7)', backdropFilter: 'blur(4px)' }}
+                    >
+                      {card.label}
+                    </span>
                   </div>
-                  <div
-                    className="pointer-events-none absolute inset-0"
-                    style={{ boxShadow: 'inset 0 0 40px 22px #071223' }}
-                  />
-                  <span
-                    className="absolute bottom-3.5 left-3.5 rounded-full px-3.5 py-1.5 text-[.7rem] font-semibold uppercase tracking-wide"
-                    style={{ background: 'rgba(7,18,35,.65)', backdropFilter: 'blur(4px)' }}
-                  >
-                    {card.label}
-                  </span>
-                </div>
-              </RevealOnScroll>
+                </RevealOnScroll>
+              </div>
             </div>
           ))}
         </div>

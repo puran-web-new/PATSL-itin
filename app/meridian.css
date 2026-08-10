@@ -234,3 +234,29 @@
   cursor: pointer;
   color: #eaf6f6;
 }
+
+/* Circular "chase each other" orbit used by the homepage showcase photos.
+   Each .mrd-orbit-item is placed at the center of its parent and carries its
+   own --offset (0/120/240deg) and --radius; the shared keyframe animates all
+   three around the same circle in sync (clockwise), so they maintain equal
+   spacing and appear to follow one another. .mrd-orbit-counter spins the
+   opposite direction at the same rate so the photo card itself stays upright
+   instead of tumbling as it orbits. */
+.mrd-orbit-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: rotate(var(--offset, 0deg)) translateX(var(--radius, 140px));
+  animation: mrd-orbit-spin 22s linear infinite;
+}
+@keyframes mrd-orbit-spin {
+  from { transform: rotate(var(--offset, 0deg)) translateX(var(--radius, 140px)); }
+  to   { transform: rotate(calc(var(--offset, 0deg) + 360deg)) translateX(var(--radius, 140px)); }
+}
+.mrd-orbit-counter {
+  animation: mrd-orbit-counter-spin 22s linear infinite;
+}
+@keyframes mrd-orbit-counter-spin {
+  from { transform: translate(-50%, -50%) rotate(calc(-1 * var(--offset, 0deg))); }
+  to   { transform: translate(-50%, -50%) rotate(calc(-1 * var(--offset, 0deg) - 360deg)); }
+}
