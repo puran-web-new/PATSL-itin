@@ -30,9 +30,19 @@ export default function MeridianAboutPage() {
               padding="1.6px"
               glow="drop-shadow(0 0 6px #1de9c2)"
             />
-            <div className="flex h-full w-full items-center justify-center text-[.75rem] uppercase tracking-wide mrd-muted" style={{ background: 'linear-gradient(160deg, #113252, #0a1c30)' }}>
-              Founder photo — Puran Ramratan
-            </div>
+            <Image
+              src="/meridian/founder-photo.jpg"
+              alt="Puran Ramratan, IRS Certified Acceptance Agent and founder of PATSL"
+              fill
+              sizes="(max-width: 768px) 100vw, 500px"
+              className="object-cover"
+              style={{ objectPosition: '50% 12%' }}
+              priority
+            />
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{ background: 'linear-gradient(180deg, rgba(7,18,35,0) 55%, rgba(7,18,35,.55) 100%)' }}
+            />
           </div>
 
           <div>
