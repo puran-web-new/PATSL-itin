@@ -25,7 +25,7 @@ const STEPS = [
   { color: '#1de9c2', duration: '5s', reverse: false, title: 'Apply online', body: 'Complete a guided intake covering your identity, filing reason, and mailing details in about ten minutes.' },
   { color: '#39e08a', duration: '5.6s', reverse: true, title: 'Upload documents', body: 'Securely upload a copy of your passport or national ID so we can pre-verify it before your appointment.' },
   { color: '#39e08a', duration: '5.3s', reverse: false, title: 'Visit for verification', body: 'Book an appointment and bring your original ID to our CAA office — a quick in-person check, no embassy or consulate visit needed.' },
-  { color: '#1de9c2', duration: '4.4s', reverse: false, title: 'Pay & submit', body: 'Choose a service tier, pay securely through Square, and your case moves straight into CAA review.' },
+  { color: '#1de9c2', duration: '4.4s', reverse: false, title: 'Submit your intake', body: 'Choose a service tier and submit your intake. We will review your case and contact you about next steps, including payment.' },
   { color: '#39e08a', duration: '6.2s', reverse: true, title: 'Receive your IRS package', body: 'We compile your Form W-7, Certificate of Accuracy, and return in the correct IRS mailing order.' },
 ];
 
