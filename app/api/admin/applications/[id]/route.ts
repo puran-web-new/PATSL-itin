@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/security';
-import { notifyStatusChange } from '../../../../../lib/notify';
+import { notifyPackageReady, notifyStatusChange } from '../../../../../lib/notify';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const denied = requireAdmin(req);
@@ -68,6 +68,7 @@ const ALLOWED_STATUSES = [
   'DOCUMENTS_RECEIVED',
   'PAYMENT_PENDING',
   'CAA_REVIEW',
+  'PACKAGE_READY',
   'SUBMITTED_IRS',
   'ARCHIVED_PII_SCRUBBED',
 ];
@@ -117,9 +118,15 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     }
 
     if (clientInfo) {
-      notifyStatusChange({ email: clientInfo.email, phone: clientInfo.phone, firstName: clientInfo.first_name, applicationId: id, status }).catch((err) =>
-        console.error('Status-change notification failed:', err)
-      );
+      if (status === 'PACKAGE_READY') {
+        notifyPackageReady({ email: clientInfo.email, firstName: clientInfo.first_name, applicationId: id }).catch((err) =>
+          console.error('Package-ready notification failed:', err)
+        );
+      } else {
+        notifyStatusChange({ email: clientInfo.email, phone: clientInfo.phone, firstName: clientInfo.first_name, applicationId: id, status }).catch((err) =>
+          console.error('Status-change notification failed:', err)
+        );
+      }
     }
 
     return NextResponse.json({ success: true });
