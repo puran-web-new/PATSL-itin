@@ -2,7 +2,7 @@
 // route and the invoice/receipt generator so the two never drift apart.
 export const SERVICE_TIERS: Record<string, { amountCents: number; name: string }> = {
   EXPRESS_SELF_SERVICE: { amountCents: 14900, name: 'Express ITIN Prep - Self Service' },
-  CAA_CONCIERGE: { amountCents: 34900, name: 'CAA Concierge ITIN Package' },
+  CAA_CONCIERGE: { amountCents: 18000, name: 'CAA Concierge ITIN Package' },
   B2B_PORTAL: { amountCents: 9900, name: 'Partner Portal Wholesale ITIN Filing' },
 };
 
