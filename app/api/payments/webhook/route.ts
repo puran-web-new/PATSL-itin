@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getPool } from '../../../../lib/db';
-import { notifyStatusChange } from '../../../../lib/notify';
+import { notifyStaff, notifyStatusChange } from '../../../../lib/notify';
 
 function verifySquareSignature(signature: string, bodyText: string) {
   const key = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
         const result = await db.query(
           `UPDATE invoices
            SET payment_status = 'PAID', paid_at = COALESCE(paid_at, NOW())
-           WHERE square_order_id = $1
-           RETURNING application_id`,
+           WHERE square_order_id = $1 AND payment_status <> 'PAID'
+           RETURNING application_id, amount_cents`,
           [orderId]
         );
 
@@ -49,10 +49,11 @@ export async function POST(req: NextRequest) {
             [applicationId, { orderId, paymentId: payment.id }]
           );
           const clientResult = await db.query(
-            `SELECT c.email, c.phone, c.first_name FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
+            `SELECT c.email, c.phone, c.first_name, c.last_name, a.service_tier
+             FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
             [applicationId]
           );
-          if (clientResult.rows[0]) notifyInfo = { ...clientResult.rows[0], applicationId };
+          if (clientResult.rows[0]) notifyInfo = { ...clientResult.rows[0], applicationId, amountCents: result.rows[0].amount_cents };
         }
         await db.query('COMMIT');
         if (notifyInfo) {
@@ -62,7 +63,17 @@ export async function POST(req: NextRequest) {
             firstName: notifyInfo.first_name,
             applicationId: notifyInfo.applicationId,
             status: 'CAA_REVIEW',
-          }).catch((err) => console.error('Payment notification failed:', err));
+          }).catch((err) => console.error('Client payment notification failed:', err));
+          notifyStaff({
+            event: 'payment_completed',
+            applicationId: notifyInfo.applicationId,
+            firstName: notifyInfo.first_name,
+            lastName: notifyInfo.last_name,
+            email: notifyInfo.email,
+            phone: notifyInfo.phone,
+            serviceTier: notifyInfo.service_tier,
+            amountCents: notifyInfo.amountCents,
+          }).catch((err) => console.error('Payment staff notification failed:', err));
         }
       } catch (error) {
         await db.query('ROLLBACK');

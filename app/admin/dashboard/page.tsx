@@ -29,19 +29,20 @@ const EVENT_LABELS: Record<string, string> = {
   PII_SCRUBBED: 'Identity data scrubbed (retention policy)',
 };
 
-const STATUS_ORDER = ['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING', 'CAA_REVIEW', 'SUBMITTED_IRS', 'ARCHIVED_PII_SCRUBBED'];
+const STATUS_ORDER = ['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING', 'CAA_REVIEW', 'PACKAGE_READY', 'SUBMITTED_IRS', 'ARCHIVED_PII_SCRUBBED'];
 const STATUS_LABELS: Record<string, string> = {
   INTAKE_STARTED: 'Intake started',
   DOCUMENTS_RECEIVED: 'Documents received',
   PAYMENT_PENDING: 'Payment pending',
   CAA_REVIEW: 'CAA review',
+  PACKAGE_READY: 'Package ready for client',
   SUBMITTED_IRS: 'Submitted to IRS',
   ARCHIVED_PII_SCRUBBED: 'Archived',
 };
 // Applications in any of these statuses count as "in progress" for the pipeline summary.
 const PENDING_STATUSES = new Set(['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING']);
 const IN_PROGRESS_STATUSES = new Set(['CAA_REVIEW']);
-const COMPLETED_STATUSES = new Set(['SUBMITTED_IRS', 'ARCHIVED_PII_SCRUBBED']);
+const COMPLETED_STATUSES = new Set(['PACKAGE_READY', 'SUBMITTED_IRS', 'ARCHIVED_PII_SCRUBBED']);
 
 const VERIFICATION_LABELS: Record<string, string> = {
   PENDING_REVIEW: 'Pending review',
