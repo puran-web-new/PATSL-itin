@@ -93,7 +93,7 @@ export default function StartApplicationButton({ token }: { token: string }) {
                   <input className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
                   <select className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white" value={serviceTier} onChange={(e) => setServiceTier(e.target.value)}>
                     <option value="EXPRESS_SELF_SERVICE">Express Self-Service — $149</option>
-                    <option value="CAA_CONCIERGE">CAA Concierge — $349</option>
+                    <option value="CAA_CONCIERGE">CAA Concierge — $180</option>
                     <option value="B2B_PORTAL">B2B Wholesale — $99</option>
                   </select>
                 </div>

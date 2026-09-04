@@ -3,6 +3,10 @@
 // elsewhere in this app — so this is safe to deploy immediately and simply starts
 // working the moment RESEND_API_KEY / TWILIO_* are added in Vercel.
 
+function escapeHtml(value: string | null | undefined) {
+  return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] || char);
+}
+
 export async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL || 'PATSL <no-reply@patsl-itin-final.vercel.app>';
@@ -84,4 +88,35 @@ export async function notifyStatusChange(opts: {
   if (opts.phone) {
     await sendSms(opts.phone, `PATSL: ${message} Ref ${String(opts.applicationId).slice(0, 8)}. Track: ${trackUrl}`);
   }
+}
+
+
+export async function notifyStaff(opts: {
+  event: 'intake_submitted' | 'payment_completed';
+  applicationId: string;
+  firstName: string;
+  lastName?: string | null;
+  email: string;
+  phone?: string | null;
+  serviceTier?: string | null;
+  amountCents?: number | null;
+}) {
+  const recipient = process.env.CAA_EMAIL;
+  if (!recipient) return false;
+
+  const paymentDetails = opts.event === 'payment_completed'
+    ? `<li>Amount paid: ${typeof opts.amountCents === 'number' ? `$${(opts.amountCents / 100).toFixed(2)}` : 'not available'}</li>`
+    : '';
+  return sendEmail(
+    recipient,
+    `${opts.event === 'payment_completed' ? 'Payment received' : 'New intake submitted'} — PATSL`,
+    `<p><strong>${escapeHtml(opts.firstName)} ${escapeHtml(opts.lastName)}</strong> ${opts.event === 'payment_completed' ? 'completed a payment.' : 'submitted an intake.'}</p>
+     <ul>
+       <li>Application reference: ${escapeHtml(opts.applicationId)}</li>
+       <li>Email: ${escapeHtml(opts.email)}</li>
+       <li>Phone: ${escapeHtml(opts.phone) || 'not provided'}</li>
+       <li>Service tier: ${escapeHtml(opts.serviceTier) || 'not specified'}</li>
+       ${paymentDetails}
+     </ul>`
+  );
 }
