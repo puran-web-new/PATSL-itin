@@ -10,6 +10,7 @@ import { getFirmProfile } from '../../../lib/firmProfile';
 import { getClientSession } from '../../../lib/clientAuth';
 import { F1040_FIELDS, W7_FIELD_MAP, COA_FIELD_MAP, coaRowField } from '../../../lib/pdfFieldMaps';
 import { tierFor } from '../../../lib/pricing';
+import { applicationReference } from '../../../lib/applicationReference';
 
 const INK = rgb(0.04, 0.05, 0.12);
 const SLATE = rgb(0.35, 0.39, 0.45);
@@ -525,6 +526,53 @@ async function buildDataSummary(title: string, note: string, pairs: [string, str
   return doc;
 }
 
+async function addFirmBranding(doc: PDFDocument, page: PDFPage) {
+  const logoPath = path.join(process.cwd(), 'public', 'meridian', 'puran-logo.png');
+  if (!(await fileExists(logoPath))) return;
+  const logo = await doc.embedPng(await fs.readFile(logoPath));
+  const scale = Math.min(150 / logo.width, 58 / logo.height);
+  page.drawImage(logo, { x: 412, y: 724, width: logo.width * scale, height: logo.height * scale });
+}
+
+async function buildClientContentsPage(app: any, caseData: CaseData) {
+  const firm = getFirmProfile();
+  return buildDataSummary('Your Client Package — Contents', `Prepared by ${firm.businessName} · ${applicationReference(app.id)}`, [
+    ['1. Welcome & next steps', 'Your package overview, signing instructions, and secure case reference.'],
+    ['2. Invoice & payment receipt', 'Your service amount and payment record.'],
+    ['3. IRS application forms', 'Form W-7, Certificate of Accuracy, and associated Form 1040 where applicable.'],
+    ['4. Your IRS roadmap', 'What happens next, typical timing, and when to contact us.'],
+    ['5. Contact & support', `${firm.reviewerName} · ${firm.reviewerTitle} · ${firm.email} · ${firm.phone}`],
+    ['Important', 'Review your forms carefully. Do not sign or mail anything until PATSL tells you your package is finalized.'],
+  ]);
+}
+
+async function buildIrsRoadmapPage(app: any) {
+  const firm = getFirmProfile();
+  return buildDataSummary('Your ITIN Roadmap', `Keep this page with your records · ${applicationReference(app.id)}`, [
+    ['1. PATSL review', 'We review your intake and identity documents, then contact you if anything needs clarification.'],
+    ['2. In-person verification', 'Bring your original passport or qualifying identity document to your confirmed CAA appointment.'],
+    ['3. Final approval', 'When your package is complete, PATSL marks it ready and sends you a secure portal notification.'],
+    ['4. Signing & filing', 'Follow the final instructions from PATSL. If you are filing yourself, sign the required forms in ink and retain a complete copy.'],
+    ['5. IRS processing', 'ITIN processing commonly takes about 7–11 weeks after IRS receipt, with longer times during January–April.'],
+    ['Follow-up', `Keep your ${applicationReference(app.id)} reference. Contact ${firm.email} or ${firm.phone} before contacting the IRS if a correction or follow-up is needed.`],
+    ['Privacy', 'Use the secure client portal for documents. Do not email passport numbers, full tax returns, or identity-document images.'],
+  ]);
+}
+
+async function buildClientContactPage(app: any) {
+  const firm = getFirmProfile();
+  return buildDataSummary('Contact & Client Checklist', `${firm.businessName} · ${applicationReference(app.id)}`, [
+    ['Your preparer', `${firm.reviewerName}
+${firm.reviewerTitle}`],
+    ['Email', firm.email || 'info@puranaccounting.com'],
+    ['Phone & WhatsApp', firm.phone || '929-468-3527'],
+    ['Before your appointment', 'Bring original identity documents, confirm all names and dates match your supporting records, and tell us about any address or immigration-status changes.'],
+    ['Before filing', 'Review every completed page, sign only where instructed, and keep this client copy.'],
+    ['After filing', 'Retain proof of mailing and check your case status using your PATSL reference and last name.'],
+    ['Need help?', 'Contact Puran Accounting & Tax Solution Lab. We will explain the next step for your specific case.'],
+  ]);
+}
+
 function buildClientCoverPage(app: any, caseData: CaseData) {
   return async (): Promise<PDFDocument> => {
     const doc = await PDFDocument.create();
@@ -534,8 +582,9 @@ function buildClientCoverPage(app: any, caseData: CaseData) {
     const boldItalic = await doc.embedFont(StandardFonts.HelveticaBoldOblique);
 
     page.drawRectangle({ x: 0, y: 712, width: 612, height: 80, color: INK });
+    await addFirmBranding(doc, page);
     page.drawText('Your ITIN Application — Next Steps', { x: 50, y: 758, size: 20, font: bold, color: rgb(1, 1, 1) });
-    page.drawText(`Prepared for ${app.first_name} ${app.last_name} · Reference ${String(app.id).slice(0, 8)}`, { x: 50, y: 736, size: 10, font: regular, color: rgb(0.8, 0.85, 0.95) });
+    page.drawText(`Prepared for ${app.first_name} ${app.last_name} · Reference ${applicationReference(app.id)}`, { x: 50, y: 736, size: 10, font: regular, color: rgb(0.8, 0.85, 0.95) });
 
     let y = 685;
     page.drawText('What\'s enclosed', { x: 50, y, size: 11, font: bold }); y -= 20;
@@ -577,7 +626,7 @@ function buildClientCoverPage(app: any, caseData: CaseData) {
 
     page.drawText('Expected processing time: approximately 7-11 weeks from the date the IRS receives your', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 14;
     page.drawText('application (longer during peak filing season, Jan-Apr). Track status any time at', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 14;
-    page.drawText('patsl-itin-final.vercel.app/status with your reference ID above.', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 22;
+    page.drawText('itin.patsl.org/status with your reference ID above.', { x: 50, y, size: 9.5, font: regular, color: rgb(0.15, 0.17, 0.22) }); y -= 22;
 
     page.drawText('Review every page for accuracy before mailing. Contact PATSL immediately if any name, date,', { x: 50, y, size: 8.5, font: regular, color: SLATE }); y -= 12;
     page.drawText('or identification detail needs correction.', { x: 50, y, size: 8.5, font: regular, color: SLATE }); y -= 20;
@@ -773,6 +822,9 @@ export async function POST(req: NextRequest) {
     if (!app) {
       return NextResponse.json({ error: 'Application not found.' }, { status: 404 });
     }
+    if (actorLabel === 'client' && !['PACKAGE_READY', 'SUBMITTED_IRS'].includes(app.status)) {
+      return NextResponse.json({ error: 'Your package is not ready for download yet. PATSL will email you when it is available.' }, { status: 403 });
+    }
 
     let caseData = hydrateCaseData(app);
     if (!caseData.caaEin && !caseData.caaPtin && !caseData.caaOfficeCode) {
@@ -809,10 +861,13 @@ export async function POST(req: NextRequest) {
       // Page 1: cover/next-steps letter · Page 2: itemized invoice · Page 3+: client copies of W-7, COA, 1040.
       sequence = [
         await buildClientCoverPage(app, caseData)(),
+        await buildClientContentsPage(app, caseData),
         await buildInvoice(app, caseData, invoiceRow)(),
         await buildW7(caseData),
         await buildCOA(caseData),
         await buildF1040(caseData),
+        await buildIrsRoadmapPage(app),
+        await buildClientContactPage(app),
       ];
     } else {
       // IRS_MAIL — the package that actually gets mailed: Page 1 Form W-7, Page 2 Certificate

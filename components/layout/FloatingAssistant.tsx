@@ -15,7 +15,7 @@ const QUICK_QUESTIONS: { q: string; a: string }[] = [
   },
   {
     q: 'How much does it cost?',
-    a: 'Express Self-Service is $149, CAA Concierge is $349, and our B2B Wholesale Portal for partner firms is $99 per case. Full details are on the Services & Pricing page.',
+    a: 'Express Self-Service is $149, CAA Concierge is $180 introductory pricing, and our B2B Wholesale Portal for partner firms is $99 per case. Full details are on the Services & Pricing page.',
   },
   {
     q: 'How do I check my case status?',
