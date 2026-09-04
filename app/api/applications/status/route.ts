@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '../../../../lib/db';
+import { referencePrefix } from '../../../../lib/applicationReference';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,8 +11,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Application ID and last name are required.' }, { status: 400 });
     }
 
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidPattern.test(applicationId)) {
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const prefix = referencePrefix(applicationId);
+    if (!uuidPattern.test(applicationId) && !prefix) {
       return NextResponse.json({ error: 'No matching application found.' }, { status: 404 });
     }
 
@@ -24,9 +26,9 @@ export async function GET(req: NextRequest) {
        LEFT JOIN LATERAL (
          SELECT * FROM invoices i WHERE i.application_id = a.id ORDER BY i.created_at DESC LIMIT 1
        ) i ON TRUE
-       WHERE a.id = $1 AND lower(c.last_name) = lower($2)
+       WHERE (a.id::text = $1 OR replace(a.id::text, '-', '') LIKE $2) AND lower(c.last_name) = lower($3)
        LIMIT 1`,
-      [applicationId, lastName]
+      [applicationId, prefix ? `${prefix}%` : '', lastName]
     );
 
     if (!rows[0]) {

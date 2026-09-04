@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/security';
 
-const ALLOWED_TIERS = new Set(['EXPRESS_SELF_SERVICE', 'CAA_CONCIERGE', 'B2B_PORTAL']);
+const ALLOWED_TIERS = new Set(['EXPRESS_SELF_SERVICE', 'CAA_CONCIERGE', 'B2B_PORTAL', 'SUPERIOR_STAFFING']);
 
 // Mode B of the dual-mode entry flow: staff enters just enough to identify the
 // client (name, email, phone, tier), then generates a shareable link
