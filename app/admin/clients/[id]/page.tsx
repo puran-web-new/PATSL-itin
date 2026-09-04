@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import { useAdminAuth } from '../../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../../components/admin/AdminSidebarShell';
 import { viewDocument } from '../../../../lib/viewDocument';
+import { applicationReference } from '../../../../lib/applicationReference';
+import CreatePaymentLinkForm from '../../../../components/admin/CreatePaymentLinkForm';
 
 type Client = {
   id: string;
@@ -60,6 +62,7 @@ const STATUS_LABELS: Record<string, string> = {
   DOCUMENTS_RECEIVED: 'Documents received',
   PAYMENT_PENDING: 'Payment pending',
   CAA_REVIEW: 'CAA review',
+  PACKAGE_READY: 'Package ready for client',
   SUBMITTED_IRS: 'Submitted to IRS',
   ARCHIVED_PII_SCRUBBED: 'Archived',
 };
@@ -137,7 +140,7 @@ export default function ClientDetailPage() {
   }
 
   function refLabel(applicationId: string) {
-    return applicationId.slice(0, 8);
+    return applicationReference(applicationId);
   }
 
   if (!ready) return <div className="flex min-h-screen items-center justify-center bg-ink-950 text-sm text-slate-400">Checking staff session...</div>;
@@ -169,7 +172,8 @@ export default function ClientDetailPage() {
             </div>
 
             <div className="glass-card p-5">
-              <h3 className="mb-3 text-sm font-bold text-white">Applications ({applications.length})</h3>
+              <h3 className="mb-1 text-sm font-bold text-white">Applications ({applications.length})</h3>
+              <p className="mb-3 text-xs text-slate-400">Select <strong className="text-white">View &amp; edit submitted intake</strong> on any case to open every submitted field, review documents, and generate the client package.</p>
               {applications.length === 0 && <p className="text-xs text-slate-500">No applications on file for this client yet.</p>}
               <div className="space-y-3">
                 {applications.map((app) => (
@@ -195,8 +199,8 @@ export default function ClientDetailPage() {
                         Opened {new Date(app.created_at).toLocaleDateString()} · updated {new Date(app.updated_at).toLocaleDateString()}
                         {app.exception_type && ` · ${app.exception_type.toLowerCase().replace(/_/g, ' ')}`}
                       </span>
-                      <Link href={`/admin/applications/${app.id}`} className="font-semibold text-mint-300 hover:underline">
-                        Prepare application &amp; generate documents &rarr;
+                      <Link href={`/admin/applications/${app.id}`} className="rounded-lg border border-mint-500/40 bg-mint-500/10 px-3 py-2 font-semibold text-mint-300 hover:bg-mint-500/20">
+                        View &amp; edit submitted intake →
                       </Link>
                     </div>
                   </div>
@@ -232,8 +236,11 @@ export default function ClientDetailPage() {
           <div className="space-y-4">
             <div className="glass-card p-5">
               <h3 className="mb-3 text-sm font-bold text-white">Payments ({invoices.length})</h3>
-              {invoices.length === 0 && <p className="text-xs text-slate-500">No payment link created yet.</p>}
-              <div className="space-y-2">
+              {token && applications.map((app) => (
+                <CreatePaymentLinkForm key={app.id} applicationId={app.id} reference={refLabel(app.id)} token={token} onCreated={load} />
+              ))}
+              {invoices.length === 0 && <p className="mt-3 text-xs text-slate-500">No payment link created yet.</p>}
+              <div className="mt-3 space-y-2">
                 {invoices.map((inv) => (
                   <div key={inv.id} className="rounded-lg border border-white/10 px-3 py-2 text-xs">
                     <p className="font-semibold text-white">${(inv.amount_cents / 100).toFixed(2)} {inv.currency}</p>
