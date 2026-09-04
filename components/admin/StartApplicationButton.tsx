@@ -7,6 +7,7 @@ export default function StartApplicationButton({ token }: { token: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -22,7 +23,7 @@ export default function StartApplicationButton({ token }: { token: string }) {
     const res = await fetch('/api/admin/applications/create-draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-      body: JSON.stringify({ firstName, lastName, email, phone, serviceTier }),
+      body: JSON.stringify({ firstName, middleName, lastName, email, phone, serviceTier }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to create application.');
@@ -57,6 +58,7 @@ export default function StartApplicationButton({ token }: { token: string }) {
   function reset() {
     setOpen(false);
     setFirstName('');
+    setMiddleName('');
     setLastName('');
     setEmail('');
     setPhone('');
@@ -88,13 +90,15 @@ export default function StartApplicationButton({ token }: { token: string }) {
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2.5">
                   <input className="col-span-1 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                  <input className="col-span-1 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Middle name (optional)" value={middleName} onChange={(e) => setMiddleName(e.target.value)} />
                   <input className="col-span-1 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   <input className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
                   <input className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
                   <select className="col-span-2 rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-white" value={serviceTier} onChange={(e) => setServiceTier(e.target.value)}>
                     <option value="EXPRESS_SELF_SERVICE">Express Self-Service — $149</option>
-                    <option value="CAA_CONCIERGE">CAA Concierge — $349</option>
+                    <option value="CAA_CONCIERGE">CAA Concierge — $180</option>
                     <option value="B2B_PORTAL">B2B Wholesale — $99</option>
+                    <option value="SUPERIOR_STAFFING">Superior Staffing Employees Only — $150</option>
                   </select>
                 </div>
                 {error && <p className="mt-3 text-xs font-medium text-red-400">{error}</p>}

@@ -39,6 +39,15 @@ const TIERS = [
     featured: true,
   },
   {
+    id: 'SUPERIOR_STAFFING',
+    name: 'Superior Staffing Employees Only',
+    price: '$150',
+    note: 'Special employee rate',
+    description: 'Special ITIN service rate for verified Superior Staffing employees. Staff applies this rate after confirming eligibility.',
+    features: ['Guided online intake', 'In-person CAA identity verification', 'Full case tracking'],
+    featured: false,
+  },
+  {
     id: 'B2B_PORTAL',
     name: 'B2B Wholesale Portal',
     price: '$99',
@@ -109,11 +118,11 @@ export default function MeridianPricingPage() {
                   ))}
                 </div>
                 <Link
-                  href={`/itin-intake?tier=${tier.id}`}
+                  href={tier.id === 'SUPERIOR_STAFFING' ? '/appointment' : `/itin-intake?tier=${tier.id}`}
                   className={tier.featured ? 'mrd-btn-primary mt-5 w-full' : 'mrd-btn-ghost mt-5 w-full'}
                   style={tier.featured ? { padding: '.85rem 1.2rem', boxShadow: '0 0 20px rgba(29,233,194,.35)' } : { padding: '.8rem 1.2rem' }}
                 >
-                  Choose {tier.name}
+                  {tier.id === 'SUPERIOR_STAFFING' ? 'Ask about this rate' : `Choose ${tier.name}`}
                 </Link>
               </div>
             ))}

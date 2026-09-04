@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getPool } from '../../../../lib/db';
-import { notifyStatusChange } from '../../../../lib/notify';
+import { notifyStaff, notifyStatusChange } from '../../../../lib/notify';
 
 function verifySquareSignature(signature: string, bodyText: string) {
   const key = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -33,13 +33,16 @@ export async function POST(req: NextRequest) {
         await db.query('BEGIN');
         const result = await db.query(
           `UPDATE invoices
-           SET payment_status = 'PAID', paid_at = COALESCE(paid_at, NOW())
-           WHERE square_order_id = $1
-           RETURNING application_id`,
+           SET payment_status = 'PAID', amount_paid_cents = amount_cents, paid_at = COALESCE(paid_at, NOW())
+           WHERE square_order_id = $1 AND payment_status <> 'PAID'
+           RETURNING id, application_id, amount_cents`,
           [orderId]
         );
 
         let notifyInfo: any = null;
+        if (result.rows[0]) {
+          await db.query(`INSERT INTO payment_transactions (invoice_id, amount_cents, payment_method, external_reference) VALUES ($1, $2, 'Square', $3) ON CONFLICT (external_reference) DO NOTHING`, [result.rows[0].id, result.rows[0].amount_cents, payment.id || orderId,]);
+        }
         if (result.rows[0]?.application_id) {
           const applicationId = result.rows[0].application_id;
           await db.query(`UPDATE applications SET status = 'CAA_REVIEW', updated_at = NOW() WHERE id = $1`, [applicationId]);
@@ -49,10 +52,11 @@ export async function POST(req: NextRequest) {
             [applicationId, { orderId, paymentId: payment.id }]
           );
           const clientResult = await db.query(
-            `SELECT c.email, c.phone, c.first_name FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
+            `SELECT c.email, c.phone, c.first_name, c.last_name, a.service_tier
+             FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
             [applicationId]
           );
-          if (clientResult.rows[0]) notifyInfo = { ...clientResult.rows[0], applicationId };
+          if (clientResult.rows[0]) notifyInfo = { ...clientResult.rows[0], applicationId, amountCents: result.rows[0].amount_cents };
         }
         await db.query('COMMIT');
         if (notifyInfo) {
@@ -62,7 +66,17 @@ export async function POST(req: NextRequest) {
             firstName: notifyInfo.first_name,
             applicationId: notifyInfo.applicationId,
             status: 'CAA_REVIEW',
-          }).catch((err) => console.error('Payment notification failed:', err));
+          }).catch((err) => console.error('Client payment notification failed:', err));
+          notifyStaff({
+            event: 'payment_completed',
+            applicationId: notifyInfo.applicationId,
+            firstName: notifyInfo.first_name,
+            lastName: notifyInfo.last_name,
+            email: notifyInfo.email,
+            phone: notifyInfo.phone,
+            serviceTier: notifyInfo.service_tier,
+            amountCents: notifyInfo.amountCents,
+          }).catch((err) => console.error('Payment staff notification failed:', err));
         }
       } catch (error) {
         await db.query('ROLLBACK');

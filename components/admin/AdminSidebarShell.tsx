@@ -11,6 +11,7 @@ const NAV = [
   { href: '/admin/clients', label: 'Clients', icon: '👤' },
   { href: '/admin/documents', label: 'Documents', icon: '📄' },
   { href: '/admin/appointments', label: 'Appointments', icon: '📅' },
+  { href: '/admin/payments', label: 'Invoices & payments', icon: '$' },
 ];
 
 const NAV_SYSTEM = [{ href: '/admin/settings', label: 'Settings & tools', icon: '⚙' }];

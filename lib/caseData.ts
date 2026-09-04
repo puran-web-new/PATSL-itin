@@ -214,6 +214,7 @@ export function hydrateCaseData(app: ApplicationSourceRow): CaseData {
   return {
     ...emptyCaseData,
     firstName: stored.firstName || app.first_name || '',
+    middleName: stored.middleName || '',
     lastName: stored.lastName || app.last_name || '',
     email: stored.email || app.email || '',
     phone: stored.phone || app.phone || '',
