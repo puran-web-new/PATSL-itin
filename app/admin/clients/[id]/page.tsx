@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import { useAdminAuth } from '../../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../../components/admin/AdminSidebarShell';
 import { viewDocument } from '../../../../lib/viewDocument';
+import { applicationReference } from '../../../../lib/applicationReference';
+import CreatePaymentLinkForm from '../../../../components/admin/CreatePaymentLinkForm';
 
 type Client = {
   id: string;
@@ -137,7 +139,7 @@ export default function ClientDetailPage() {
   }
 
   function refLabel(applicationId: string) {
-    return applicationId.slice(0, 8);
+    return applicationReference(applicationId);
   }
 
   if (!ready) return <div className="flex min-h-screen items-center justify-center bg-ink-950 text-sm text-slate-400">Checking staff session...</div>;
@@ -232,8 +234,11 @@ export default function ClientDetailPage() {
           <div className="space-y-4">
             <div className="glass-card p-5">
               <h3 className="mb-3 text-sm font-bold text-white">Payments ({invoices.length})</h3>
-              {invoices.length === 0 && <p className="text-xs text-slate-500">No payment link created yet.</p>}
-              <div className="space-y-2">
+              {token && applications.map((app) => (
+                <CreatePaymentLinkForm key={app.id} applicationId={app.id} reference={refLabel(app.id)} token={token} onCreated={load} />
+              ))}
+              {invoices.length === 0 && <p className="mt-3 text-xs text-slate-500">No payment link created yet.</p>}
+              <div className="mt-3 space-y-2">
                 {invoices.map((inv) => (
                   <div key={inv.id} className="rounded-lg border border-white/10 px-3 py-2 text-xs">
                     <p className="font-semibold text-white">${(inv.amount_cents / 100).toFixed(2)} {inv.currency}</p>

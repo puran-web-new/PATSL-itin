@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { applicationReference } from '../../lib/applicationReference';
 
 type StatusResult = {
   id: string;
@@ -70,7 +71,7 @@ export default function StatusPage() {
           <input
             required
             className="rounded-lg border border-white/10 bg-abyss-panel p-3 text-white placeholder:text-slate-500 sm:col-span-2"
-            placeholder="Application reference ID"
+            placeholder="PATSL-1234ABCDE0"
             value={applicationId}
             onChange={(e) => setApplicationId(e.target.value)}
           />
@@ -95,7 +96,7 @@ export default function StatusPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="label-mono text-[10.5px] font-semibold uppercase text-slate-500">Reference</p>
-                <p className="font-mono text-sm text-white">{result.id}</p>
+                <p className="font-mono text-sm text-white">{applicationReference(result.id)}</p>
               </div>
               <span className="rounded-full border border-mint-500/30 bg-mint-500/10 px-3 py-1 text-xs font-bold text-mint-300">
                 {friendlyStatus(result.status)}

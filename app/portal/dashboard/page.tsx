@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { query } from '../../../lib/db';
 import { verifySessionToken, SESSION_COOKIE } from '../../../lib/clientAuth';
 import { DownloadClientCopyButton, UploadDocumentForm } from '../../../components/portal/PortalActions';
+import { applicationReference } from '../../../lib/applicationReference';
 
 const STEP_ORDER = ['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING', 'CAA_REVIEW', 'SUBMITTED_IRS'];
 const STEP_LABELS: Record<string, string> = {
@@ -81,7 +82,7 @@ export default async function PortalDashboardPage() {
               <div key={app.id} className="glass-card p-6">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-xs text-slate-500">Reference {app.id.slice(0, 8)}</p>
+                    <p className="text-xs text-slate-500">Reference {applicationReference(app.id)}</p>
                     <p className="text-sm font-bold capitalize text-white">{app.service_tier?.toLowerCase().replace(/_/g, ' ')}</p>
                   </div>
                   <span className="rounded-full border border-mint-500/30 bg-mint-500/10 px-3 py-1 text-xs font-bold text-mint-300">
