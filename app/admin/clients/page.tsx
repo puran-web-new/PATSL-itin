@@ -26,6 +26,7 @@ const STATUS_LABELS: Record<string, string> = {
   DOCUMENTS_RECEIVED: 'Documents received',
   PAYMENT_PENDING: 'Payment pending',
   CAA_REVIEW: 'CAA review',
+  PACKAGE_READY: 'Package ready for client',
   SUBMITTED_IRS: 'Submitted to IRS',
   ARCHIVED_PII_SCRUBBED: 'Archived',
 };

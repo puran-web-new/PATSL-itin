@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { applicationReference } from '../../lib/applicationReference';
 
 type StatusResult = {
   id: string;
@@ -12,13 +13,14 @@ type StatusResult = {
   has_documents: boolean;
 };
 
-const STEP_ORDER = ['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING', 'CAA_REVIEW', 'SUBMITTED_IRS'];
+const STEP_ORDER = ['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING', 'CAA_REVIEW', 'PACKAGE_READY', 'SUBMITTED_IRS'];
 
 const STEP_LABELS: Record<string, string> = {
   INTAKE_STARTED: 'Application received',
   DOCUMENTS_RECEIVED: 'Identity documents received',
   PAYMENT_PENDING: 'Payment processing',
   CAA_REVIEW: 'CAA review in progress',
+  PACKAGE_READY: 'Package ready for download',
   SUBMITTED_IRS: 'IRS package ready / mailed',
   ARCHIVED_PII_SCRUBBED: 'Case closed & archived',
 };
@@ -70,7 +72,7 @@ export default function StatusPage() {
           <input
             required
             className="rounded-lg border border-white/10 bg-abyss-panel p-3 text-white placeholder:text-slate-500 sm:col-span-2"
-            placeholder="Application reference ID"
+            placeholder="PATSL-1234ABCDE0"
             value={applicationId}
             onChange={(e) => setApplicationId(e.target.value)}
           />
@@ -95,7 +97,7 @@ export default function StatusPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="label-mono text-[10.5px] font-semibold uppercase text-slate-500">Reference</p>
-                <p className="font-mono text-sm text-white">{result.id}</p>
+                <p className="font-mono text-sm text-white">{applicationReference(result.id)}</p>
               </div>
               <span className="rounded-full border border-mint-500/30 bg-mint-500/10 px-3 py-1 text-xs font-bold text-mint-300">
                 {friendlyStatus(result.status)}
