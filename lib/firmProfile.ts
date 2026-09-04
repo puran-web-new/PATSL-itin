@@ -20,10 +20,10 @@ export function getFirmProfile(): FirmProfile {
     ein: process.env.CAA_EIN || '',
     ptin: process.env.CAA_PTIN || '',
     officeCode: process.env.CAA_OFFICE_CODE || '',
-    reviewerName: process.env.CAA_REVIEWER_NAME || 'Puran Ramratan',
-    reviewerTitle: process.env.CAA_REVIEWER_TITLE || 'Certified Acceptance Agent',
-    phone: process.env.CAA_PHONE || '',
-    email: process.env.CAA_EMAIL || '',
+    reviewerName: process.env.CAA_REVIEWER_NAME || 'Puran Ramratan, A.S., CAA, ADP-CP',
+    reviewerTitle: process.env.CAA_REVIEWER_TITLE || 'Accountant | IRS Tax Preparer & Certified Acceptance Agent',
+    phone: process.env.CAA_PHONE || '929-468-3527',
+    email: process.env.CAA_EMAIL || 'info@puranaccounting.com',
     address: process.env.CAA_ADDRESS || '',
   };
 }
