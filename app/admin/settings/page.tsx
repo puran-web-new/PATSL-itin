@@ -46,6 +46,9 @@ export default function SettingsPage() {
   const { token, ready } = useAdminAuth();
   const [integrations, setIntegrations] = useState<Integrations | null>(null);
   const [firmProfile, setFirmProfile] = useState<FirmProfile | null>(null);
+  const [editingFirm, setEditingFirm] = useState(false);
+  const [savingFirm, setSavingFirm] = useState(false);
+  const [firmMessage, setFirmMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -62,6 +65,18 @@ export default function SettingsPage() {
       }
     })();
   }, [ready, token]);
+
+  async function saveFirmProfile(e: React.FormEvent) {
+    e.preventDefault();
+    if (!token || !firmProfile) return;
+    setSavingFirm(true); setFirmMessage('');
+    try {
+      const res = await fetch('/api/admin/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify(firmProfile) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save firm profile.');
+      setFirmProfile(data.firmProfile); setEditingFirm(false); setFirmMessage('Firm profile saved. New document packages will use these details.');
+    } catch (err: any) { setFirmMessage(err.message || 'Failed to save firm profile.'); } finally { setSavingFirm(false); }
+  }
 
   if (!ready) return <div className="flex min-h-screen items-center justify-center bg-ink-950 text-sm text-slate-400">Checking staff session...</div>;
 
@@ -96,28 +111,23 @@ export default function SettingsPage() {
         </div>
 
         <div className="glass-card p-5">
-          <h3 className="mb-1 text-sm font-bold text-white">Firm profile</h3>
-          <p className="mb-3 text-[11px] text-slate-500">Auto-filled onto the Acceptance Agent section of every W-7 and Certificate of Accuracy.</p>
-          {!firmProfile ? (
-            <p className="text-xs text-slate-500">Loading firm profile...</p>
-          ) : (
-            <dl className="space-y-2.5 text-xs">
-              <div><dt className="text-slate-500">Business name</dt><dd className="font-semibold text-white">{firmProfile.businessName}</dd></div>
-              <div><dt className="text-slate-500">Reviewer</dt><dd className="font-semibold text-white">{firmProfile.reviewerName} — {firmProfile.reviewerTitle}</dd></div>
-              <div><dt className="text-slate-500">EIN</dt><dd className="font-semibold text-white">{firmProfile.ein || '— set CAA_EIN'}</dd></div>
-              <div><dt className="text-slate-500">PTIN</dt><dd className="font-semibold text-white">{firmProfile.ptin || '— set CAA_PTIN'}</dd></div>
-              <div><dt className="text-slate-500">Office code</dt><dd className="font-semibold text-white">{firmProfile.officeCode || '— set CAA_OFFICE_CODE'}</dd></div>
-              <div><dt className="text-slate-500">Phone</dt><dd className="font-semibold text-white">{firmProfile.phone || '— set CAA_PHONE'}</dd></div>
-              <div><dt className="text-slate-500">Email</dt><dd className="font-semibold text-white">{firmProfile.email || '— set CAA_EMAIL'}</dd></div>
-              <div><dt className="text-slate-500">Address</dt><dd className="font-semibold text-white">{firmProfile.address || '— set CAA_ADDRESS'}</dd></div>
-            </dl>
-          )}
-          <p className="mt-4 text-[10.5px] text-slate-400">
-            Change these in Vercel → Project → Settings → Environment Variables (CAA_BUSINESS_NAME, CAA_EIN, CAA_PTIN, CAA_OFFICE_CODE,
-            CAA_REVIEWER_NAME, CAA_REVIEWER_TITLE, CAA_PHONE, CAA_EMAIL, CAA_ADDRESS) — no code changes needed.
-          </p>
+          <div className="mb-1 flex items-center justify-between"><h3 className="text-sm font-bold text-white">Firm profile</h3>{firmProfile && <button type="button" onClick={() => setEditingFirm((v) => !v)} className="text-xs font-semibold text-mint-300 hover:underline">{editingFirm ? 'Cancel' : 'Edit'}</button>}</div>
+          <p className="mb-3 text-[11px] text-slate-500">Used on Form 1040, Form W-7, Certificate of Accuracy, receipts, and client packages.</p>
+          {!firmProfile ? <p className="text-xs text-slate-500">Loading firm profile...</p> : editingFirm ? <form onSubmit={saveFirmProfile} className="space-y-2 text-xs">
+            <Field label="Business name" value={firmProfile.businessName} onChange={(value) => setFirmProfile({ ...firmProfile, businessName: value })} />
+            <Field label="Reviewer / preparer name" value={firmProfile.reviewerName} onChange={(value) => setFirmProfile({ ...firmProfile, reviewerName: value })} />
+            <Field label="Reviewer title" value={firmProfile.reviewerTitle} onChange={(value) => setFirmProfile({ ...firmProfile, reviewerTitle: value })} />
+            <div className="grid grid-cols-2 gap-2"><Field label="EIN" value={firmProfile.ein} onChange={(value) => setFirmProfile({ ...firmProfile, ein: value })} /><Field label="PTIN" value={firmProfile.ptin} onChange={(value) => setFirmProfile({ ...firmProfile, ptin: value })} /></div>
+            <Field label="Office code" value={firmProfile.officeCode} onChange={(value) => setFirmProfile({ ...firmProfile, officeCode: value })} />
+            <div className="grid grid-cols-2 gap-2"><Field label="Phone" value={firmProfile.phone} onChange={(value) => setFirmProfile({ ...firmProfile, phone: value })} /><Field label="Email" value={firmProfile.email} onChange={(value) => setFirmProfile({ ...firmProfile, email: value })} /></div>
+            <Field label="Business address" value={firmProfile.address} onChange={(value) => setFirmProfile({ ...firmProfile, address: value })} />
+            <button disabled={savingFirm} className="btn-pill-primary w-full disabled:opacity-40">{savingFirm ? 'Saving...' : 'Save firm profile'}</button>
+          </form> : <dl className="space-y-2.5 text-xs"><div><dt className="text-slate-500">Business name</dt><dd className="font-semibold text-white">{firmProfile.businessName}</dd></div><div><dt className="text-slate-500">Reviewer</dt><dd className="font-semibold text-white">{firmProfile.reviewerName} — {firmProfile.reviewerTitle}</dd></div><div><dt className="text-slate-500">EIN / PTIN</dt><dd className="font-semibold text-white">{firmProfile.ein || '—'} / {firmProfile.ptin || '—'}</dd></div><div><dt className="text-slate-500">Office code</dt><dd className="font-semibold text-white">{firmProfile.officeCode || '—'}</dd></div><div><dt className="text-slate-500">Phone / email</dt><dd className="font-semibold text-white">{firmProfile.phone} / {firmProfile.email}</dd></div><div><dt className="text-slate-500">Address</dt><dd className="font-semibold text-white">{firmProfile.address || '—'}</dd></div></dl>}
+          {firmMessage && <p className="mt-3 text-xs text-mint-300">{firmMessage}</p>}
         </div>
       </div>
     </AdminSidebarShell>
   );
 }
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label className="block"><span className="mb-1 block text-[10px] font-semibold uppercase text-slate-500">{label}</span><input required={label === 'Business name' || label === 'Reviewer / preparer name' || label === 'Email'} value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg bg-abyss-panel p-2 text-xs text-white" /></label>; }

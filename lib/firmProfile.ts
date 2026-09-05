@@ -1,7 +1,5 @@
-// Firm-level defaults for the Certified Acceptance Agent section of every case.
-// Set these once as environment variables and every new case (and any case that
-// hasn't had them overridden) auto-fills with your credentials — nobody has to
-// retype the business name, EIN, PTIN, or office code per client.
+import { getPool } from './db';
+
 export type FirmProfile = {
   businessName: string;
   ein: string;
@@ -26,4 +24,16 @@ export function getFirmProfile(): FirmProfile {
     email: process.env.CAA_EMAIL || 'info@puranaccounting.com',
     address: process.env.CAA_ADDRESS || '',
   };
+}
+
+export async function getEditableFirmProfile(): Promise<FirmProfile> {
+  const fallback = getFirmProfile();
+  try {
+    const { rows } = await getPool().query(`SELECT * FROM firm_profile WHERE id = TRUE`);
+    const row = rows[0];
+    if (!row) return fallback;
+    return { businessName: row.business_name, ein: row.ein, ptin: row.ptin, officeCode: row.office_code, reviewerName: row.reviewer_name, reviewerTitle: row.reviewer_title, phone: row.phone, email: row.email, address: row.address };
+  } catch {
+    return fallback;
+  }
 }

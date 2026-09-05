@@ -6,7 +6,7 @@ import path from 'path';
 import { getPool } from '../../../lib/db';
 import { requireAdmin } from '../../../lib/security';
 import { CaseData, deriveFinancials, hydrateCaseData, REASON_LABELS } from '../../../lib/caseData';
-import { getFirmProfile } from '../../../lib/firmProfile';
+import { getEditableFirmProfile, getFirmProfile } from '../../../lib/firmProfile';
 import { getClientSession } from '../../../lib/clientAuth';
 import { F1040_FIELDS, W7_FIELD_MAP, COA_FIELD_MAP, coaRowField } from '../../../lib/pdfFieldMaps';
 import { tierFor } from '../../../lib/pricing';
@@ -855,8 +855,8 @@ export async function POST(req: NextRequest) {
     }
 
     let caseData = hydrateCaseData(app);
+    const firm = await getEditableFirmProfile();
     if (!caseData.caaEin && !caseData.caaPtin && !caseData.caaOfficeCode) {
-      const firm = getFirmProfile();
       caseData = {
         ...caseData,
         caaBusinessName: caseData.caaBusinessName || firm.businessName,
