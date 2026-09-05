@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, PDFFont, PDFName, PDFPage, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFFont, PDFName, PDFPage, StandardFonts, degrees, rgb } from 'pdf-lib';
 import { get } from '@vercel/blob';
 import fs from 'fs/promises';
 import path from 'path';
@@ -90,7 +90,7 @@ async function watermarkRecordsOnly(doc: PDFDocument) {
       font,
       color: rgb(0.72, 0.1, 0.1),
       opacity: 0.20,
-      rotate: { type: 'degrees', angle: 42 },
+      rotate: degrees(42),
     });
   }
 }
