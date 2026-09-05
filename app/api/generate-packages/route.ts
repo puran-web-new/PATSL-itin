@@ -76,6 +76,25 @@ function digitsOnly(value: string) {
   return (value || '').replace(/[^0-9]/g, '');
 }
 
+async function watermarkRecordsOnly(doc: PDFDocument) {
+  const font = await doc.embedFont(StandardFonts.HelveticaBold);
+  for (const page of doc.getPages()) {
+    const { width, height } = page.getSize();
+    const text = 'COPY — FOR RECORDS ONLY';
+    const size = Math.min(width, height) / 13;
+    const textWidth = font.widthOfTextAtSize(text, size);
+    page.drawText(text, {
+      x: (width - textWidth) / 2,
+      y: height / 2,
+      size,
+      font,
+      color: rgb(0.72, 0.1, 0.1),
+      opacity: 0.20,
+      rotate: { type: 'degrees', angle: 42 },
+    });
+  }
+}
+
 // SSN/ITIN boxes on Form 1040 are 9-character "comb" fields (one evenly spaced cell
 // per digit) — they can only hold a 9-digit number, so there's no reliable way to fit
 // "Applied For" inside one. When there's no prior ITIN to enter (the normal case for a
@@ -863,14 +882,18 @@ export async function POST(req: NextRequest) {
       // Internal CAA file copy — cover sheet + W-7 + COA, for the office's own records.
       sequence = [await buildIrsCoverPage(app, caseData)(), await buildW7(caseData), await buildCOA(caseData)];
     } else if (packageType === 'CLIENT_COPY') {
-      // Page 1: cover/next-steps letter · Page 2: itemized invoice · Page 3+: client copies of W-7, COA, 1040.
+      // IRS forms included in a client package are records copies, never filing originals.
+      const w7Copy = await buildW7(caseData);
+      const coaCopy = await buildCOA(caseData);
+      const f1040Copy = await buildF1040(caseData);
+      await Promise.all([watermarkRecordsOnly(w7Copy), watermarkRecordsOnly(coaCopy), watermarkRecordsOnly(f1040Copy)]);
       sequence = [
         await buildClientCoverPage(app, caseData)(),
         await buildClientContentsPage(app, caseData),
         await buildInvoice(app, caseData, invoiceRow)(),
-        await buildW7(caseData),
-        await buildCOA(caseData),
-        await buildF1040(caseData),
+        w7Copy,
+        coaCopy,
+        f1040Copy,
         await buildIrsRoadmapPage(app),
         await buildClientContactPage(app),
       ];
