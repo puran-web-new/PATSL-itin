@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '../../../../../lib/db';
-import { requireAdmin } from '../../../../../lib/security';
+import { query } from '../../../../lib/db';
+import { requireAdmin } from '../../../../lib/security';
 
 export async function GET(req: NextRequest) {
   const denied = requireAdmin(req);
