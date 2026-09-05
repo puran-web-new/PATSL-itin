@@ -278,6 +278,9 @@ export default function CaseDataEditor({
         </Section>
 
         <Section title="Contact" usedOn={['W-7', '1040']}>
+          <p className="mb-3 text-[11px] text-slate-500">
+            Phone and email are prefilled from the application. Update any field here, then save before generating the PDF.
+          </p>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Phone"><input className={input} value={data.phone} onChange={(e) => set('phone', e.target.value)} /></Field>
             <Field label="Email"><input className={input} value={data.email} onChange={(e) => set('email', e.target.value)} /></Field>
