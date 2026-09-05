@@ -414,9 +414,10 @@ export default function IntakeWizard() {
               {paymentError && <div className="mt-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{paymentError}</div>}
 
               {!paymentAttempted && (
-                <p className="mt-4 text-xs text-slate-500">
-                  Payment is optional. You can submit your intake now and our team will contact you about next steps, or pay securely now for {tierLabel.split(' - ')[1] || tierLabel}.
-                </p>
+                <div className="mt-4 rounded-lg border border-mint-500/20 bg-mint-500/5 p-3 text-xs text-slate-300">
+                  <p>Payment is optional. You can submit your intake now and our team will contact you about next steps, or pay securely now for {tierLabel.split(' - ')[1] || tierLabel}.</p>
+                  <p className="mt-2 font-semibold text-mint-300">Secure Square checkout accepts cards and shows Apple Pay or other eligible wallet options automatically on supported devices.</p>
+                </div>
               )}
 
               {paymentAttempted && !creatingPayment && !checkoutUrl && !paymentError && (
