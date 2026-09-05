@@ -204,7 +204,19 @@ export function hydrateCaseData(app: ApplicationSourceRow): CaseData {
   const stored = app.w7_data || {};
   const looksLikeCaseData = 'firstName' in stored && 'reasonCodes' in stored;
   if (looksLikeCaseData) {
-    return { ...emptyCaseData, ...stored, dependents: stored.dependents || [] };
+    // Older saved case files already have the CaseData shape but can predate the
+    // contact fields. Keep staff-entered values, while backfilling blank contact
+    // values from the client record so they reach the W-7 and Form 1040.
+    const saved = { ...emptyCaseData, ...stored, dependents: stored.dependents || [] };
+    return {
+      ...saved,
+      firstName: saved.firstName || app.first_name || '',
+      lastName: saved.lastName || app.last_name || '',
+      email: saved.email || app.email || '',
+      phone: saved.phone || app.phone || '',
+      dateOfBirth: saved.dateOfBirth || app.date_of_birth || '',
+      countryOfCitizenship: saved.countryOfCitizenship || app.country_of_citizenship || '',
+    };
   }
   const legacyReasonMap: Record<string, string[]> = {
     STANDARD_RETURN: ['b'],
