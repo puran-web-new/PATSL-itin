@@ -1,7 +1,3 @@
-// Firm-level defaults for the Certified Acceptance Agent section of every case.
-// Set these once as environment variables and every new case (and any case that
-// hasn't had them overridden) auto-fills with your credentials — nobody has to
-// retype the business name, EIN, PTIN, or office code per client.
 export type FirmProfile = {
   businessName: string;
   ein: string;
@@ -17,13 +13,13 @@ export type FirmProfile = {
 export function getFirmProfile(): FirmProfile {
   return {
     businessName: process.env.CAA_BUSINESS_NAME || 'Puran Accounting & Tax Solution Lab',
-    ein: process.env.CAA_EIN || '',
-    ptin: process.env.CAA_PTIN || '',
+    ein: process.env.CAA_EIN || '333131861',
+    ptin: process.env.CAA_PTIN || 'P03318364',
     officeCode: process.env.CAA_OFFICE_CODE || '',
-    reviewerName: process.env.CAA_REVIEWER_NAME || 'Puran Ramratan, A.S., CAA, ADP-CP',
-    reviewerTitle: process.env.CAA_REVIEWER_TITLE || 'Accountant | IRS Tax Preparer & Certified Acceptance Agent',
-    phone: process.env.CAA_PHONE || '929-468-3527',
-    email: process.env.CAA_EMAIL || 'info@puranaccounting.com',
+    reviewerName: process.env.CAA_REVIEWER_NAME || 'PURAN RAMRATAN',
+    reviewerTitle: process.env.CAA_REVIEWER_TITLE || 'TAX PREPARER',
+    phone: process.env.CAA_PHONE || '3474803527',
+    email: process.env.CAA_EMAIL || 'ramratan@puranaccountin.com',
     address: process.env.CAA_ADDRESS || '',
   };
 }
