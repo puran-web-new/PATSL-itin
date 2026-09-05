@@ -163,6 +163,30 @@ async function buildF1040(caseData: CaseData): Promise<PDFDocument> {
   setText(form, F1040_FIELDS.phone, caseData.phone);
   setText(form, F1040_FIELDS.email, caseData.email);
 
+  // The supplied 2024 Form 1040 template does not expose AcroForm controls for
+  // Paid Preparer Use Only. Draw the firm credentials in their printed boxes on
+  // page 2. The signature box intentionally stays blank for the preparer.
+  const paidPreparerPage = doc.getPages()[1];
+  if (paidPreparerPage) {
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const firm = getFirmProfile();
+    const preparerName = caseData.caaReviewerName || firm.reviewerName;
+    const firmName = caseData.caaBusinessName || firm.businessName;
+    const ein = caseData.caaEin || firm.ein;
+    const ptin = caseData.caaPtin || firm.ptin;
+    const phone = caseData.firmPhone || firm.phone;
+    const address = caseData.firmAddress || firm.address;
+    const draw = (value: string, x: number, y: number, maxWidth: number) => {
+      if (value) paidPreparerPage.drawText(value, { x, y, size: 8, font, color: INK, maxWidth });
+    };
+    draw(preparerName, 84, 145, 138);
+    draw(ptin, 431, 145, 82);
+    draw(firmName, 84, 111, 315);
+    draw(phone, 458, 111, 110);
+    draw(address, 84, 78, 315);
+    draw(ein, 458, 78, 110);
+  }
+
   form.flatten();
   return doc;
 }
