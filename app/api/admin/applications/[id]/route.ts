@@ -91,8 +91,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     let clientInfo: any = null;
     try {
       await db.query('BEGIN');
+      const previous = await db.query(`SELECT status FROM applications WHERE id = $1 FOR UPDATE`, [id]);
       const result = await db.query(
-        `UPDATE applications SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id`,
+        `UPDATE applications SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id, status AS next_status`,
         [status, id]
       );
       if (!result.rows[0]) {
@@ -103,6 +104,11 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
         `INSERT INTO audit_events (application_id, event_type, actor, metadata)
          VALUES ($1, 'STATUS_UPDATED', 'admin', $2)`,
         [id, JSON.stringify({ status })]
+      );
+      await db.query(
+        `INSERT INTO application_status_history (application_id, previous_status, next_status, changed_by)
+         VALUES ($1, $2, $3, 'admin')`,
+        [id, previous.rows[0]?.status || null, status]
       );
       const clientResult = await db.query(
         `SELECT c.email, c.phone, c.first_name FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
