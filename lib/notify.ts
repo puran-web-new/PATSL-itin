@@ -93,6 +93,15 @@ export async function notifyStatusChange(opts: {
 }
 
 
+export async function notifyPaymentReceipt(opts: { email: string; firstName: string; applicationId: string; amountCents: number }) {
+  const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://itin.patsl.org';
+  return sendEmail(
+    opts.email,
+    'PATSL payment receipt',
+    `<p>Hi ${escapeHtml(opts.firstName)},</p><p>Thank you. We received your payment of <strong>$${(opts.amountCents / 100).toFixed(2)}</strong>.</p><p>Application reference: <strong>${applicationReference(opts.applicationId)}</strong>.</p><p>Your case is now in review. <a href="${origin}/portal/sign-in">Open your secure client portal</a>.</p><p>— PATSL</p>`
+  );
+}
+
 export async function notifyStaff(opts: {
   event: 'intake_submitted' | 'payment_completed';
   applicationId: string;

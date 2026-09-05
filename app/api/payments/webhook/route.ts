@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getPool } from '../../../../lib/db';
-import { notifyStaff, notifyStatusChange } from '../../../../lib/notify';
+import { notifyPaymentReceipt, notifyStaff, notifyStatusChange } from '../../../../lib/notify';
 
 function verifySquareSignature(signature: string, bodyText: string) {
   const key = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -60,6 +60,12 @@ export async function POST(req: NextRequest) {
         }
         await db.query('COMMIT');
         if (notifyInfo) {
+          notifyPaymentReceipt({
+            email: notifyInfo.email,
+            firstName: notifyInfo.first_name,
+            applicationId: notifyInfo.applicationId,
+            amountCents: notifyInfo.amountCents,
+          }).catch((err) => console.error('Client receipt notification failed:', err));
           notifyStatusChange({
             email: notifyInfo.email,
             phone: notifyInfo.phone,

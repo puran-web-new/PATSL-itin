@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
             location_id: process.env.SQUARE_LOCATION_ID,
           },
           checkout_options: {
-            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/status`,
+            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/payment/confirmation`,
           },
         }),
       });
