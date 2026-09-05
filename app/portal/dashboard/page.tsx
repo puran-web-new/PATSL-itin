@@ -40,7 +40,7 @@ export default async function PortalDashboardPage() {
         [applicationIds]
       ),
       query(
-        `SELECT application_id, amount_cents, currency, payment_status, created_at FROM invoices WHERE application_id = ANY($1) ORDER BY created_at DESC`,
+        `SELECT application_id, amount_cents, amount_paid_cents, currency, payment_status, square_payment_link, created_at FROM invoices WHERE application_id = ANY($1) ORDER BY created_at DESC`,
         [applicationIds]
       ),
     ]);
@@ -140,6 +140,13 @@ export default async function PortalDashboardPage() {
                       <div className="rounded-lg border border-white/10 p-3 text-xs">
                         <p className="font-bold text-white">${(appInvoice.amount_cents / 100).toFixed(2)} {appInvoice.currency}</p>
                         <p className="mt-1 capitalize text-slate-500">{appInvoice.payment_status.toLowerCase()}</p>
+                        {appInvoice.payment_status !== 'PAID' && appInvoice.square_payment_link && (
+                          <div className="mt-3 border-t border-white/10 pt-3">
+                            <p className="mb-2 text-slate-300">Payment is required to continue your application. Amount due: <strong className="text-white">${((appInvoice.amount_cents - (appInvoice.amount_paid_cents || 0)) / 100).toFixed(2)}</strong>.</p>
+                            <a href={appInvoice.square_payment_link} className="btn-pill-primary inline-flex px-4 py-2 text-xs">Pay securely with Square</a>
+                            <p className="mt-2 text-[10.5px] text-slate-500">Cards accepted. Apple Pay and eligible wallet options appear automatically on supported devices.</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <p className="text-xs text-slate-500">No invoice yet.</p>
