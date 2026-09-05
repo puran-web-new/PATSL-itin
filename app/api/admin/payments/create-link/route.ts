@@ -38,12 +38,20 @@ export async function POST(req: NextRequest) {
     const pool = getPool();
     const db = await pool.connect();
     try {
-      const clientResult = await db.query(
-        `SELECT c.id AS client_id, c.email, c.first_name, a.id AS application_id
-         FROM clients c LEFT JOIN applications a ON a.id = $1
-         WHERE (a.id = $1 OR c.id = $2) AND (a.id IS NOT NULL OR $1 = '') LIMIT 1`,
-        [applicationId, clientId]
-      );
+      const clientResult = applicationId
+        ? await db.query(
+            `SELECT c.id AS client_id, c.email, c.first_name, a.id AS application_id
+             FROM applications a
+             JOIN clients c ON c.id = a.client_id
+             WHERE a.id = $1`,
+            [applicationId]
+          )
+        : await db.query(
+            `SELECT c.id AS client_id, c.email, c.first_name, NULL::uuid AS application_id
+             FROM clients c
+             WHERE c.id = $1`,
+            [clientId]
+          );
       const client = clientResult.rows[0];
       if (!client) return NextResponse.json({ error: 'Client or application not found.' }, { status: 404 });
 

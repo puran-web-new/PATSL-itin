@@ -72,6 +72,7 @@ const STATUS_STYLES: Record<string, string> = {
   DOCUMENTS_RECEIVED: 'border-blue-500/30 text-blue-300',
   PAYMENT_PENDING: 'border-gold-500/30 text-gold-300',
   CAA_REVIEW: 'border-mint-500/30 text-mint-300',
+  PACKAGE_READY: 'border-teal-500/30 text-teal-200',
   SUBMITTED_IRS: 'border-mint-500/30 text-mint-300',
   ARCHIVED_PII_SCRUBBED: 'border-white/10 text-slate-500',
 };

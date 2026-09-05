@@ -29,6 +29,8 @@ type ApplicationRow = {
 
 const hydrate = hydrateCaseData;
 
+const CASE_SECTIONS = ['identity', 'reason', 'addresses', 'identification', 'contact', 'dependents', 'income', 'payments', 'credentials', 'invoice'];
+
 const emptyDependent: Dependent = {
   firstLast: '',
   ssnOrItin: '',
@@ -54,6 +56,9 @@ export default function CaseDataEditor({
   const [saved, setSaved] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
   const [showReview, setShowReview] = useState(false);
+  const [notifyingPackage, setNotifyingPackage] = useState(false);
+  const [packageMessage, setPackageMessage] = useState('');
+  const [activeSection, setActiveSection] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -98,6 +103,12 @@ export default function CaseDataEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId]);
 
+  function navigateSection(direction: -1 | 1) {
+    const next = Math.max(0, Math.min(CASE_SECTIONS.length - 1, activeSection + direction));
+    setActiveSection(next);
+    document.getElementById(`case-section-${CASE_SECTIONS[next]}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function set<K extends keyof CaseData>(field: K, value: CaseData[K]) {
     setData((prev) => ({ ...prev, [field]: value }));
     setSaved(false);
@@ -138,6 +149,24 @@ export default function CaseDataEditor({
       setError(err.message || 'Save failed.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function notifyClientPackage() {
+    setNotifyingPackage(true);
+    setPackageMessage('');
+    try {
+      const res = await fetch(`/api/admin/applications/${applicationId}/send-client-package`, {
+        method: 'POST',
+        headers: { 'x-admin-token': token },
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Unable to notify the client.');
+      setPackageMessage(result.emailSent ? 'Package is ready and the client has been emailed.' : 'Package is ready, but email is not configured. Send the client to the secure portal manually.');
+    } catch (err: any) {
+      setPackageMessage(err.message || 'Unable to notify the client.');
+    } finally {
+      setNotifyingPackage(false);
     }
   }
 
@@ -183,7 +212,15 @@ export default function CaseDataEditor({
       <div className="space-y-6">
         {error && <div className="rounded-lg border border-red-900 bg-red-950 p-4 text-sm text-red-200">{error}</div>}
 
-        <Section title="Identity" usedOn={['W-7', 'COA', '1040']}>
+        <div className="sticky top-2 z-10 flex items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-950/95 p-3 text-xs shadow-lg backdrop-blur">
+          <span className="font-semibold text-slate-300">Section {activeSection + 1} of {CASE_SECTIONS.length}</span>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => navigateSection(-1)} disabled={activeSection === 0} className="rounded-lg border border-slate-700 px-3 py-1.5 font-semibold text-slate-300 disabled:opacity-40">Previous</button>
+            <button type="button" onClick={() => navigateSection(1)} disabled={activeSection === CASE_SECTIONS.length - 1} className="rounded-lg border border-teal-500/50 bg-teal-500/10 px-3 py-1.5 font-semibold text-teal-200 disabled:opacity-40">Next</button>
+          </div>
+        </div>
+
+        <Section sectionId="identity" title="Identity" usedOn={['W-7', 'COA', '1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="First name"><input className={input} value={data.firstName} onChange={(e) => set('firstName', e.target.value)} /></Field>
             <Field label="Middle name"><input className={input} value={data.middleName} onChange={(e) => set('middleName', e.target.value)} /></Field>
@@ -203,7 +240,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Reason for applying (Form W-7)" usedOn={['W-7']}>
+        <Section sectionId="reason" title="Reason for applying (Form W-7)" usedOn={['W-7']}>
           <div className="grid gap-2 sm:grid-cols-2">
             {Object.entries(REASON_LABELS).map(([code, text]) => (
               <label key={code} className="flex items-start gap-2 rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">
@@ -232,7 +269,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Mailing & foreign address" usedOn={['W-7', '1040']}>
+        <Section sectionId="addresses" title="Mailing & foreign address" usedOn={['W-7', '1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Mailing street"><input className={input} value={data.mailingStreet} onChange={(e) => set('mailingStreet', e.target.value)} /></Field>
             <Field label="Apt / route"><input className={input} value={data.mailingAptOrRoute} onChange={(e) => set('mailingAptOrRoute', e.target.value)} /></Field>
@@ -248,7 +285,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Identification document" usedOn={['W-7', 'COA']}>
+        <Section sectionId="identification" title="Identification document" usedOn={['W-7', 'COA']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Document type">
               <select className={input} value={data.idDocType} onChange={(e) => set('idDocType', e.target.value as CaseData['idDocType'])}>
@@ -277,7 +314,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Contact" usedOn={['W-7', '1040']}>
+        <Section sectionId="contact" title="Contact" usedOn={['W-7', '1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Phone"><input className={input} value={data.phone} onChange={(e) => set('phone', e.target.value)} /></Field>
             <Field label="Email"><input className={input} value={data.email} onChange={(e) => set('email', e.target.value)} /></Field>
@@ -285,7 +322,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Dependents" usedOn={['1040']}>
+        <Section sectionId="dependents" title="Dependents" usedOn={['1040']}>
           <div className="space-y-3">
             {data.dependents.map((dep, index) => (
               <div key={index} className="grid gap-3 rounded-lg border border-slate-800 bg-slate-950 p-3 sm:grid-cols-6">
@@ -317,7 +354,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Form 1040 — filing & income" usedOn={['1040']}>
+        <Section sectionId="income" title="Form 1040 — filing & income" usedOn={['1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Filing status">
               <select className={input} value={data.filingStatus} onChange={(e) => set('filingStatus', e.target.value as CaseData['filingStatus'])}>
@@ -345,7 +382,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Form 1040 — payments & refund" usedOn={['1040']}>
+        <Section sectionId="payments" title="Form 1040 — payments & refund" usedOn={['1040']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Federal income tax withheld"><input inputMode="decimal" className={input} value={data.federalWithholding} onChange={(e) => set('federalWithholding', e.target.value)} /></Field>
             <Field label="Estimated tax payments"><input inputMode="decimal" className={input} value={data.estimatedTaxPayments} onChange={(e) => set('estimatedTaxPayments', e.target.value)} /></Field>
@@ -361,7 +398,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Certificate of Accuracy & signature" usedOn={['W-7', 'COA']}>
+        <Section sectionId="credentials" title="Certificate of Accuracy & signature" usedOn={['W-7', 'COA']}>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="CAA business name"><input className={input} value={data.caaBusinessName} onChange={(e) => set('caaBusinessName', e.target.value)} /></Field>
             <Field label="CAA EIN"><input className={input} value={data.caaEin} onChange={(e) => set('caaEin', e.target.value)} /></Field>
@@ -374,7 +411,7 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Invoice & payment" usedOn={['Invoice']}>
+        <Section sectionId="invoice" title="Invoice & payment" usedOn={['Invoice']}>
           <p className="mb-3 text-[11px] text-slate-500">
             Leave these blank to use the real Square order on file automatically. Only fill them in for a
             payment taken outside Square (cash, check, or a manual override of the fee).
@@ -446,6 +483,10 @@ export default function CaseDataEditor({
           <button onClick={() => generate('CLIENT_COPY')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
             {generating === 'CLIENT_COPY' ? 'Generating...' : 'Generate full client copy'}
           </button>
+          <button type="button" onClick={notifyClientPackage} disabled={notifyingPackage} className="w-full rounded-lg border border-teal-500/50 bg-teal-500/10 px-4 py-3 text-sm font-semibold text-teal-200 hover:bg-teal-500/20 disabled:opacity-50">
+            {notifyingPackage ? 'Sending...' : 'Mark package ready & email client'}
+          </button>
+          {packageMessage && <p className="px-1 text-[10.5px] text-slate-400">{packageMessage}</p>}
           <button onClick={() => generate('CAA_RECORD')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
             {generating === 'CAA_RECORD' ? 'Generating...' : 'Generate CAA record copy'}
           </button>
@@ -477,9 +518,9 @@ export default function CaseDataEditor({
   );
 }
 
-function Section({ title, usedOn, children }: { title: string; usedOn?: string[]; children: React.ReactNode }) {
+function Section({ sectionId, title, usedOn, children }: { sectionId: string; title: string; usedOn?: string[]; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+    <section id={`case-section-${sectionId}`} className="scroll-mt-20 rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-bold uppercase tracking-wide text-teal-300">{title}</h2>
         {usedOn && usedOn.length > 0 && (

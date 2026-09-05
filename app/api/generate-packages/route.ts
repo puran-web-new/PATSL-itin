@@ -180,6 +180,21 @@ async function buildF1040(caseData: CaseData): Promise<PDFDocument> {
   setText(form, F1040_FIELDS.phone, caseData.phone);
   setText(form, F1040_FIELDS.email, caseData.email);
 
+  // The 2024 Form 1040 template does not expose reliable AcroForm names for the
+  // paid-preparer block. Draw the configured CAA/preparer credentials into its
+  // printed cells so the generated return includes the office information.
+  const preparerPage = doc.getPages()[1];
+  const preparerFont = await doc.embedFont(StandardFonts.Helvetica);
+  const preparerColor = rgb(0, 0, 0);
+  const drawPreparer = (value: string, x: number, y: number, maxLength = 36) => {
+    if (value) preparerPage.drawText(value.slice(0, maxLength), { x, y, size: 7, font: preparerFont, color: preparerColor });
+  };
+  drawPreparer(caseData.caaReviewerName, 71, 81);
+  drawPreparer(caseData.caaBusinessName, 71, 43);
+  drawPreparer(caseData.caaEin, 455, 81, 18);
+  drawPreparer(caseData.caaPtin, 535, 81, 14);
+  drawPreparer(getFirmProfile().phone, 456, 44, 18);
+
   form.flatten();
   return doc;
 }
