@@ -4,6 +4,7 @@ import { getPool } from '../../../../../lib/db';
 import { applicationReference } from '../../../../../lib/applicationReference';
 import { sendEmail } from '../../../../../lib/notify';
 import { requireAdmin } from '../../../../../lib/security';
+import { resolveApplicationId } from '../../../../../lib/resolveApplicationId';
 
 function squareBaseUrl() {
   return process.env.SQUARE_ENVIRONMENT === 'production'
@@ -17,11 +18,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const applicationId = String(body.applicationId || '').trim();
+    const applicationIdRaw = String(body.applicationId || '').trim();
+    const applicationId = await resolveApplicationId(applicationIdRaw);
     const amountCents = Math.round(Number(body.amount) * 100);
     const description = String(body.description || 'PATSL ITIN service fee').trim().slice(0, 120);
 
-    if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(applicationId)) {
+    if (!applicationId) {
       return NextResponse.json({ error: 'A valid application is required.' }, { status: 400 });
     }
     if (!Number.isSafeInteger(amountCents) || amountCents < 100 || amountCents > 1000000) {
@@ -82,7 +84,7 @@ export async function POST(req: NextRequest) {
       const emailSent = await sendEmail(
         client.email,
         'Your PATSL payment link',
-        `<p>Hi ${client.first_name},</p><p>Please use the secure link below to pay your PATSL service fee of <strong>$${(amountCents / 100).toFixed(2)}</strong>.</p><p><a href="${payload.payment_link.url}">Pay securely</a></p><p>Application reference: <strong>${applicationReference(applicationId)}</strong></p><p>— PATSL</p>`
+        `\u003cp\u003eHi ${client.first_name},\u003c/p\u003e\u003cp\u003ePlease use the secure link below to pay your PATSL service fee of \u003cstrong\u003e$${(amountCents / 100).toFixed(2)}\u003c/strong\u003e.\u003c/p\u003e\u003cp\u003e\u003ca href="${payload.payment_link.url}"\u003ePay securely\u003c/a\u003e\u003c/p\u003e\u003cp\u003eApplication reference: \u003cstrong\u003e${applicationReference(applicationId)}\u003c/strong\u003e\u003c/p\u003e\u003cp\u003e— PATSL\u003c/p\u003e`
       );
       return NextResponse.json({ checkoutUrl: payload.payment_link.url, emailSent, amountCents });
     } catch (error) {
