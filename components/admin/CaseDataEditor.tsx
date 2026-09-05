@@ -85,6 +85,8 @@ export default function CaseDataEditor({
               caaOfficeCode: firmProfile.officeCode,
               caaReviewerName: hydrated.caaReviewerName || firmProfile.reviewerName,
               caaReviewerTitle: hydrated.caaReviewerTitle || firmProfile.reviewerTitle,
+              firmPhone: hydrated.firmPhone || firmProfile.phone,
+              firmAddress: hydrated.firmAddress || firmProfile.address,
             };
           }
         }
@@ -364,13 +366,16 @@ export default function CaseDataEditor({
           </div>
         </Section>
 
-        <Section title="Certificate of Accuracy & signature" usedOn={['W-7', 'COA']}>
+        <Section title="Firm credentials & paid preparer" usedOn={['W-7', 'COA', '1040']}>
+          <p className="mb-3 text-[11px] text-slate-500">These values automatically fill the W-7, Certificate of Accuracy, and Form 1040 Paid Preparer boxes. The Form 1040 signature box is left blank for the preparer to sign.</p>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="CAA business name"><input className={input} value={data.caaBusinessName} onChange={(e) => set('caaBusinessName', e.target.value)} /></Field>
-            <Field label="CAA EIN"><input className={input} value={data.caaEin} onChange={(e) => set('caaEin', e.target.value)} /></Field>
-            <Field label="CAA PTIN"><input className={input} value={data.caaPtin} onChange={(e) => set('caaPtin', e.target.value)} /></Field>
+            <Field label="Firm name"><input className={input} value={data.caaBusinessName} onChange={(e) => set('caaBusinessName', e.target.value)} /></Field>
+            <Field label="Firm EIN"><input className={input} value={data.caaEin} onChange={(e) => set('caaEin', e.target.value)} /></Field>
+            <Field label="Preparer PTIN"><input className={input} value={data.caaPtin} onChange={(e) => set('caaPtin', e.target.value)} /></Field>
             <Field label="Office code"><input className={input} value={data.caaOfficeCode} onChange={(e) => set('caaOfficeCode', e.target.value)} /></Field>
-            <Field label="Reviewer name"><input className={input} value={data.caaReviewerName} onChange={(e) => set('caaReviewerName', e.target.value)} /></Field>
+            <Field label="Preparer name"><input className={input} value={data.caaReviewerName} onChange={(e) => set('caaReviewerName', e.target.value)} /></Field>
+            <Field label="Firm phone"><input type="tel" className={input} value={data.firmPhone} onChange={(e) => set('firmPhone', e.target.value)} /></Field>
+            <Field label="Firm address"><input className={input} value={data.firmAddress} onChange={(e) => set('firmAddress', e.target.value)} /></Field>
             <Field label="Reviewer title"><input className={input} value={data.caaReviewerTitle} onChange={(e) => set('caaReviewerTitle', e.target.value)} /></Field>
             <Field label="Documents reviewed summary"><input className={input} value={data.documentsReviewedSummary} onChange={(e) => set('documentsReviewedSummary', e.target.value)} placeholder="e.g. Original passport reviewed and returned to applicant" /></Field>
             <Field label="Signature date"><input type="date" className={input} value={data.signatureDate} onChange={(e) => set('signatureDate', e.target.value)} /></Field>

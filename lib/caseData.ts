@@ -73,6 +73,8 @@ export type CaseData = {
   caaOfficeCode: string;
   caaReviewerName: string;
   caaReviewerTitle: string;
+  firmPhone: string;
+  firmAddress: string;
   documentsReviewedSummary: string;
 
   // --- Form 1040: filing ---
@@ -120,7 +122,7 @@ export const emptyCaseData: CaseData = {
   phone: '', email: '', occupation: '',
 
   caaBusinessName: 'Puran Accounting & Tax Solution Lab', caaEin: '', caaPtin: '', caaOfficeCode: '',
-  caaReviewerName: '', caaReviewerTitle: 'Certified Acceptance Agent', documentsReviewedSummary: '',
+  caaReviewerName: '', caaReviewerTitle: 'Certified Acceptance Agent', firmPhone: '', firmAddress: '', documentsReviewedSummary: '',
 
   filingStatus: '', digitalAssets: '', dependents: [],
 
