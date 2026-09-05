@@ -9,9 +9,9 @@ import { useAdminAuth } from '../../lib/useAdminAuth';
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '▣' },
   { href: '/admin/clients', label: 'Clients', icon: '👤' },
-  { href: '/admin/documents', label: 'Documents', icon: '📄' },
+  { href: '/admin/documents', label: 'Applications & documents', icon: '📄' },
   { href: '/admin/appointments', label: 'Appointments', icon: '📅' },
-  { href: '/admin/payments', label: 'Invoices & payments', icon: '$' },
+  { href: '/admin/payments', label: 'Accounting & billing', icon: '$' },
 ];
 
 const NAV_SYSTEM = [{ href: '/admin/settings', label: 'Settings & tools', icon: '⚙' }];
