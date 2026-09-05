@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/security';
 
-const ALLOWED_TIERS = new Set(['EXPRESS_SELF_SERVICE', 'CAA_CONCIERGE', 'B2B_PORTAL']);
+const ALLOWED_TIERS = new Set(['EXPRESS_SELF_SERVICE', 'CAA_CONCIERGE', 'B2B_PORTAL', 'SUPERIOR_STAFFING']);
 
 // Mode B of the dual-mode entry flow: staff enters just enough to identify the
 // client (name, email, phone, tier), then generates a shareable link
@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const firstName = String(body.firstName || '').trim();
+    const middleName = String(body.middleName || '').trim();
     const lastName = String(body.lastName || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
     const phone = String(body.phone || '').trim();
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
         `INSERT INTO applications (client_id, service_tier, status, w7_data)
          VALUES ($1, $2, 'INTAKE_STARTED', $3)
          RETURNING id`,
-        [clientId, serviceTier, { firstName, middleName: '', lastName, phone, email }]
+        [clientId, serviceTier, { firstName, middleName, lastName, phone, email }]
       );
       const applicationId = applicationResult.rows[0].id;
 

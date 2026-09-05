@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAdminAuth } from '../../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../../components/admin/AdminSidebarShell';
 import CaseDataEditor from '../../../../components/admin/CaseDataEditor';
+import CaseManagementPanel from '../../../../components/admin/CaseManagementPanel';
 
 export default function PrepareApplicationPage() {
   const params = useParams<{ id: string }>();
@@ -18,7 +19,7 @@ export default function PrepareApplicationPage() {
 
   return (
     <AdminSidebarShell
-      title="Prepare application"
+      title="Submitted intake & case file"
       subtitle={clientInfo ? `${clientInfo.firstName} ${clientInfo.lastName} · one case file, every document.` : 'One case file, every document.'}
     >
       <Link
@@ -29,10 +30,10 @@ export default function PrepareApplicationPage() {
       </Link>
 
       <div className="mb-6 rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 text-xs text-teal-200">
-        Fill this once — the same data automatically populates the W-7, Certificate of Accuracy, and Form 1040
-        together. Each section below is tagged with which official document(s) it feeds, so you can review
-        rather than retype.
+        Review and complete every submitted client field here. Changes populate the W-7, Certificate of Accuracy, and Form 1040 together; use this page to review the intake before generating documents.
       </div>
+
+      <CaseManagementPanel applicationId={params.id} token={token} />
 
       <div className="-mx-6 -mb-6 bg-ink-950 px-6 pb-10 pt-6">
         <CaseDataEditor applicationId={params.id} token={token} onLoaded={setClientInfo} />

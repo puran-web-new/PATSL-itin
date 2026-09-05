@@ -38,16 +38,21 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [docTypeFilter, setDocTypeFilter] = useState('ALL');
+  const [applications, setApplications] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   useEffect(() => {
     if (!ready || !token) return;
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/admin/documents', { headers: { 'x-admin-token': token } });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to load documents.');
-        setRows(data.documents || []);
+        const [docsRes, appsRes] = await Promise.all([
+          fetch('/api/admin/documents', { headers: { 'x-admin-token': token } }),
+          fetch('/api/admin/applications', { headers: { 'x-admin-token': token } }),
+        ]);
+        const data = await docsRes.json(); const appsData = await appsRes.json();
+        if (!docsRes.ok || !appsRes.ok) throw new Error(data.error || appsData.error || 'Failed to load the operations queue.');
+        setRows(data.documents || []); setApplications(appsData.applications || []);
       } catch (err: any) {
         setError(err.message || 'Failed to load documents.');
       } finally {
@@ -71,8 +76,14 @@ export default function DocumentsPage() {
   if (!ready) return <div className="flex min-h-screen items-center justify-center bg-ink-950 text-sm text-slate-400">Checking staff session...</div>;
 
   return (
-    <AdminSidebarShell title="Documents" subtitle={`${filtered.length} of ${rows.length} identity documents on file`}>
+    <AdminSidebarShell title="Applications & documents" subtitle={`${applications.length} applications and ${rows.length} identity documents — open any record to continue work.`}>
       {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+
+      <div className="mb-5 glass-card p-4">
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-bold text-white">Application queue</h2><span className="text-xs text-slate-500">Every pending and completed case</span></div>
+        <div className="mb-3 flex flex-wrap gap-2"><select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg bg-abyss-panel p-2 text-xs"><option value="ALL">All statuses</option>{Array.from(new Set(applications.map((a) => a.status))).map((status) => <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>)}</select></div>
+        <div className="max-h-72 overflow-auto"><table className="w-full text-left text-xs"><thead className="text-slate-500"><tr><th className="p-2">Client</th><th>Application</th><th>Status</th><th>Document</th><th>Payment</th><th/></tr></thead><tbody>{applications.filter((a) => statusFilter === 'ALL' || a.status === statusFilter).map((a) => <tr key={a.id} className="border-t border-white/10"><td className="p-2"><Link href={`/admin/clients/${a.client_id || ''}`} className="font-semibold text-white hover:text-mint-300">{a.first_name} {a.last_name}</Link><div className="text-slate-500">{a.email}</div></td><td>{a.service_tier?.replace(/_/g, ' ')}</td><td>{a.status.replace(/_/g, ' ')}</td><td>{a.doc_type ? a.doc_type.replace(/_/g, ' ') : 'Not uploaded'}</td><td>{a.payment_status || 'No invoice'}</td><td><Link href={`/admin/applications/${a.id}`} className="font-semibold text-mint-300 hover:underline">Open</Link></td></tr>)}</tbody></table></div>
+      </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <input

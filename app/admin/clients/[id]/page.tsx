@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAdminAuth } from '../../../../lib/useAdminAuth';
 import AdminSidebarShell from '../../../../components/admin/AdminSidebarShell';
 import { viewDocument } from '../../../../lib/viewDocument';
+import { applicationReference } from '../../../../lib/applicationReference';
+import CreatePaymentLinkForm from '../../../../components/admin/CreatePaymentLinkForm';
 
 type Client = {
   id: string;
@@ -60,6 +62,7 @@ const STATUS_LABELS: Record<string, string> = {
   DOCUMENTS_RECEIVED: 'Documents received',
   PAYMENT_PENDING: 'Payment pending',
   CAA_REVIEW: 'CAA review',
+  PACKAGE_READY: 'Package ready for client',
   SUBMITTED_IRS: 'Submitted to IRS',
   ARCHIVED_PII_SCRUBBED: 'Archived',
 };
@@ -69,6 +72,7 @@ const STATUS_STYLES: Record<string, string> = {
   DOCUMENTS_RECEIVED: 'border-blue-500/30 text-blue-300',
   PAYMENT_PENDING: 'border-gold-500/30 text-gold-300',
   CAA_REVIEW: 'border-mint-500/30 text-mint-300',
+  PACKAGE_READY: 'border-teal-500/30 text-teal-200',
   SUBMITTED_IRS: 'border-mint-500/30 text-mint-300',
   ARCHIVED_PII_SCRUBBED: 'border-white/10 text-slate-500',
 };
@@ -94,6 +98,9 @@ export default function ClientDetailPage() {
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [error, setError] = useState('');
   const [statusSaving, setStatusSaving] = useState<string | null>(null);
+  const [editingClient, setEditingClient] = useState(false);
+  const [clientSaving, setClientSaving] = useState(false);
+  const [clientDraft, setClientDraft] = useState({ firstName: '', lastName: '', email: '', phone: '' });
 
   async function load() {
     if (!token) return;
@@ -102,6 +109,7 @@ export default function ClientDetailPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load client.');
       setClient(data.client);
+      setClientDraft({ firstName: data.client.first_name || '', lastName: data.client.last_name || '', email: data.client.email || '', phone: data.client.phone || '' });
       setApplications(data.applications || []);
       setDocuments(data.documents || []);
       setInvoices(data.invoices || []);
@@ -137,7 +145,19 @@ export default function ClientDetailPage() {
   }
 
   function refLabel(applicationId: string) {
-    return applicationId.slice(0, 8);
+    return applicationReference(applicationId);
+  }
+
+  async function saveClient(e: FormEvent) {
+    e.preventDefault();
+    if (!token) return;
+    setClientSaving(true); setError('');
+    try {
+      const res = await fetch(`/api/admin/clients/${params.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify(clientDraft) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save client information.');
+      setClient(data.client); setEditingClient(false);
+    } catch (err: any) { setError(err.message || 'Failed to save client information.'); } finally { setClientSaving(false); }
   }
 
   if (!ready) return <div className="flex min-h-screen items-center justify-center bg-ink-950 text-sm text-slate-400">Checking staff session...</div>;
@@ -159,17 +179,13 @@ export default function ClientDetailPage() {
         <div className="grid grid-cols-[2fr_1fr] gap-4">
           <div className="space-y-4">
             <div className="glass-card p-5">
-              <h3 className="mb-3 text-sm font-bold text-white">General information</h3>
-              <dl className="grid grid-cols-2 gap-3 text-xs">
-                <div><dt className="text-slate-500">Email</dt><dd className="font-semibold text-white">{client.email}</dd></div>
-                <div><dt className="text-slate-500">Phone</dt><dd className="font-semibold text-white">{client.phone || '—'}</dd></div>
-                <div><dt className="text-slate-500">Client since</dt><dd className="font-semibold text-white">{new Date(client.created_at).toLocaleDateString()}</dd></div>
-                <div><dt className="text-slate-500">Total paid</dt><dd className="font-semibold text-white">${(totalPaidCents / 100).toFixed(2)}</dd></div>
-              </dl>
+              <div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-bold text-white">Client information</h3><button type="button" onClick={() => setEditingClient((v) => !v)} className="text-xs font-semibold text-mint-300 hover:underline">{editingClient ? 'Cancel' : 'Edit client'}</button></div>
+              {editingClient ? <form onSubmit={saveClient} className="grid grid-cols-2 gap-3 text-xs"><input required value={clientDraft.firstName} onChange={(e) => setClientDraft({ ...clientDraft, firstName: e.target.value })} placeholder="First name" className="rounded-lg bg-abyss-panel p-2"/><input required value={clientDraft.lastName} onChange={(e) => setClientDraft({ ...clientDraft, lastName: e.target.value })} placeholder="Last name" className="rounded-lg bg-abyss-panel p-2"/><input required type="email" value={clientDraft.email} onChange={(e) => setClientDraft({ ...clientDraft, email: e.target.value })} placeholder="Email" className="rounded-lg bg-abyss-panel p-2"/><input value={clientDraft.phone} onChange={(e) => setClientDraft({ ...clientDraft, phone: e.target.value })} placeholder="Phone" className="rounded-lg bg-abyss-panel p-2"/><button disabled={clientSaving} className="btn-pill-primary col-span-2 disabled:opacity-40">{clientSaving ? 'Saving...' : 'Save client information'}</button></form> : <dl className="grid grid-cols-2 gap-3 text-xs"><div><dt className="text-slate-500">Email</dt><dd className="font-semibold text-white">{client.email}</dd></div><div><dt className="text-slate-500">Phone</dt><dd className="font-semibold text-white">{client.phone || '—'}</dd></div><div><dt className="text-slate-500">Client since</dt><dd className="font-semibold text-white">{new Date(client.created_at).toLocaleDateString()}</dd></div><div><dt className="text-slate-500">Total paid</dt><dd className="font-semibold text-white">${(totalPaidCents / 100).toFixed(2)}</dd></div></dl>}
             </div>
 
             <div className="glass-card p-5">
-              <h3 className="mb-3 text-sm font-bold text-white">Applications ({applications.length})</h3>
+              <h3 className="mb-1 text-sm font-bold text-white">Applications ({applications.length})</h3>
+              <p className="mb-3 text-xs text-slate-400">Select <strong className="text-white">View &amp; edit submitted intake</strong> on any case to open every submitted field, review documents, and generate the client package.</p>
               {applications.length === 0 && <p className="text-xs text-slate-500">No applications on file for this client yet.</p>}
               <div className="space-y-3">
                 {applications.map((app) => (
@@ -195,8 +211,8 @@ export default function ClientDetailPage() {
                         Opened {new Date(app.created_at).toLocaleDateString()} · updated {new Date(app.updated_at).toLocaleDateString()}
                         {app.exception_type && ` · ${app.exception_type.toLowerCase().replace(/_/g, ' ')}`}
                       </span>
-                      <Link href={`/admin/applications/${app.id}`} className="font-semibold text-mint-300 hover:underline">
-                        Prepare application &amp; generate documents &rarr;
+                      <Link href={`/admin/applications/${app.id}`} className="rounded-lg border border-mint-500/40 bg-mint-500/10 px-3 py-2 font-semibold text-mint-300 hover:bg-mint-500/20">
+                        View &amp; edit submitted intake →
                       </Link>
                     </div>
                   </div>
@@ -232,8 +248,11 @@ export default function ClientDetailPage() {
           <div className="space-y-4">
             <div className="glass-card p-5">
               <h3 className="mb-3 text-sm font-bold text-white">Payments ({invoices.length})</h3>
-              {invoices.length === 0 && <p className="text-xs text-slate-500">No payment link created yet.</p>}
-              <div className="space-y-2">
+              {token && applications.map((app) => (
+                <CreatePaymentLinkForm key={app.id} applicationId={app.id} reference={refLabel(app.id)} token={token} onCreated={load} />
+              ))}
+              {invoices.length === 0 && <p className="mt-3 text-xs text-slate-500">No payment link created yet.</p>}
+              <div className="mt-3 space-y-2">
                 {invoices.map((inv) => (
                   <div key={inv.id} className="rounded-lg border border-white/10 px-3 py-2 text-xs">
                     <p className="font-semibold text-white">${(inv.amount_cents / 100).toFixed(2)} {inv.currency}</p>

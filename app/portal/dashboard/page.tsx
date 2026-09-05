@@ -4,13 +4,15 @@ import Link from 'next/link';
 import { query } from '../../../lib/db';
 import { verifySessionToken, SESSION_COOKIE } from '../../../lib/clientAuth';
 import { DownloadClientCopyButton, UploadDocumentForm } from '../../../components/portal/PortalActions';
+import { applicationReference } from '../../../lib/applicationReference';
 
-const STEP_ORDER = ['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING', 'CAA_REVIEW', 'SUBMITTED_IRS'];
+const STEP_ORDER = ['INTAKE_STARTED', 'DOCUMENTS_RECEIVED', 'PAYMENT_PENDING', 'CAA_REVIEW', 'PACKAGE_READY', 'SUBMITTED_IRS'];
 const STEP_LABELS: Record<string, string> = {
   INTAKE_STARTED: 'Intake started',
   DOCUMENTS_RECEIVED: 'Documents received',
   PAYMENT_PENDING: 'Payment complete',
   CAA_REVIEW: 'In review',
+  PACKAGE_READY: 'Package ready for client',
   SUBMITTED_IRS: 'Submitted to IRS',
   ARCHIVED_PII_SCRUBBED: 'Case closed & archived',
 };
@@ -38,7 +40,7 @@ export default async function PortalDashboardPage() {
         [applicationIds]
       ),
       query(
-        `SELECT application_id, amount_cents, currency, payment_status, created_at FROM invoices WHERE application_id = ANY($1) ORDER BY created_at DESC`,
+        `SELECT application_id, amount_cents, amount_paid_cents, currency, payment_status, square_payment_link, created_at FROM invoices WHERE application_id = ANY($1) ORDER BY created_at DESC`,
         [applicationIds]
       ),
     ]);
@@ -81,7 +83,7 @@ export default async function PortalDashboardPage() {
               <div key={app.id} className="glass-card p-6">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-xs text-slate-500">Reference {app.id.slice(0, 8)}</p>
+                    <p className="text-xs text-slate-500">Reference {applicationReference(app.id)}</p>
                     <p className="text-sm font-bold capitalize text-white">{app.service_tier?.toLowerCase().replace(/_/g, ' ')}</p>
                   </div>
                   <span className="rounded-full border border-mint-500/30 bg-mint-500/10 px-3 py-1 text-xs font-bold text-mint-300">
@@ -138,6 +140,13 @@ export default async function PortalDashboardPage() {
                       <div className="rounded-lg border border-white/10 p-3 text-xs">
                         <p className="font-bold text-white">${(appInvoice.amount_cents / 100).toFixed(2)} {appInvoice.currency}</p>
                         <p className="mt-1 capitalize text-slate-500">{appInvoice.payment_status.toLowerCase()}</p>
+                        {appInvoice.payment_status !== 'PAID' && appInvoice.square_payment_link && (
+                          <div className="mt-3 border-t border-white/10 pt-3">
+                            <p className="mb-2 text-slate-300">Payment is required to continue your application. Amount due: <strong className="text-white">${((appInvoice.amount_cents - (appInvoice.amount_paid_cents || 0)) / 100).toFixed(2)}</strong>.</p>
+                            <a href={appInvoice.square_payment_link} className="btn-pill-primary inline-flex px-4 py-2 text-xs">Pay securely with Square</a>
+                            <p className="mt-2 text-[10.5px] text-slate-500">Cards accepted. Apple Pay and eligible wallet options appear automatically on supported devices.</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <p className="text-xs text-slate-500">No invoice yet.</p>
@@ -145,8 +154,12 @@ export default async function PortalDashboardPage() {
                   </div>
 
                   <div>
-                    <p className="label-mono mb-2 text-[10px] font-bold uppercase text-slate-500">Your documents</p>
-                    <DownloadClientCopyButton applicationId={app.id} />
+                    <p className="label-mono mb-2 text-[10px] font-bold uppercase text-slate-500">Your client package</p>
+                    {['PACKAGE_READY', 'SUBMITTED_IRS'].includes(app.status) ? (
+                      <DownloadClientCopyButton applicationId={app.id} />
+                    ) : (
+                      <p className="text-xs text-slate-500">Your package will appear here after PATSL completes the final review.</p>
+                    )}
                   </div>
                 </div>
               </div>

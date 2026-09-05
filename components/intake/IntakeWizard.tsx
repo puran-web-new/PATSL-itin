@@ -3,9 +3,11 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { applicationReference } from '../../lib/applicationReference';
 
 type PersonalInfo = {
   firstName: string;
+  middleName: string;
   lastName: string;
   email: string;
   phone: string;
@@ -20,12 +22,13 @@ type CaseDetails = {
   serviceTier: string;
 };
 
-const STEP_LABELS = ['Personal info', 'Case details', 'Identity verification', 'Review & payment'];
+const STEP_LABELS = ['Personal info', 'Case details', 'Identity verification', 'Review & submit'];
 
 const DRAFT_KEY = 'patsl-intake-draft';
 
 const emptyPersonal: PersonalInfo = {
   firstName: '',
+  middleName: '',
   lastName: '',
   email: '',
   phone: '',
@@ -70,6 +73,7 @@ export default function IntakeWizard() {
   const [paymentError, setPaymentError] = useState('');
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [paymentAttempted, setPaymentAttempted] = useState(false);
+  const [intakeSubmitted, setIntakeSubmitted] = useState(false);
 
   const [resumeError, setResumeError] = useState('');
   const [resumingLink, setResumingLink] = useState(false);
@@ -102,7 +106,7 @@ export default function IntakeWizard() {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || 'This application link is no longer valid.');
           const app = data.application;
-          setPersonal((prev) => ({ ...prev, firstName: app.first_name || '', lastName: app.last_name || '', email: app.email || '', phone: app.phone || '' }));
+          setPersonal((prev) => ({ ...prev, firstName: app.first_name || '', middleName: app.middle_name || '', lastName: app.last_name || '', email: app.email || '', phone: app.phone || '' }));
           setCaseDetails((prev) => ({ ...prev, serviceTier: tierParam || app.service_tier || prev.serviceTier }));
           setApplicationId(app.id);
         })
@@ -209,27 +213,36 @@ export default function IntakeWizard() {
     }
   }
 
+  function submitIntake() {
+    window.sessionStorage.removeItem(DRAFT_KEY);
+    setIntakeSubmitted(true);
+  }
+
   const tierLabel = useMemo(() => {
     const labels: Record<string, string> = {
       EXPRESS_SELF_SERVICE: 'Express Self-Service - $149',
-      CAA_CONCIERGE: 'CAA Concierge - $349',
+      CAA_CONCIERGE: 'CAA Concierge - $180',
       B2B_PORTAL: 'B2B Wholesale - $99',
     };
     return labels[caseDetails.serviceTier] || caseDetails.serviceTier;
   }, [caseDetails.serviceTier]);
 
-  if (successReturn) {
+  if (successReturn || intakeSubmitted) {
+    const completedApplicationId = successReturn ? returnedApplicationId : applicationId;
+    const paymentCompleted = successReturn;
     return (
       <section className="relative overflow-hidden bg-abyss py-16 text-center md:py-24">
         <div className="bg-dot-grid absolute inset-0 opacity-40" />
         <div className="glass-card relative mx-auto max-w-lg border-mint-500/30 p-8 shadow-glow-mint">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mint-500 text-xl text-ink-950">✓</span>
-          <h1 className="mt-4 text-2xl font-bold text-white">Payment received</h1>
+          <h1 className="mt-4 text-2xl font-bold text-white">{paymentCompleted ? 'Payment received' : 'Intake submitted'}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            Your case is now in CAA review. Save your reference ID to track progress any time.
+            {paymentCompleted
+              ? 'Your case is now in CAA review. Save your reference ID to track progress any time.'
+              : 'Thank you. Our team will review your intake and contact you about next steps, including payment.'}
           </p>
-          {returnedApplicationId && (
-            <p className="mt-4 rounded-lg bg-abyss-panel px-4 py-3 font-mono text-sm text-white">{returnedApplicationId}</p>
+          {completedApplicationId && (
+            <p className="mt-4 rounded-lg bg-abyss-panel px-4 py-3 font-mono text-sm text-white">{applicationReference(completedApplicationId)}</p>
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/status" className="btn-pill-primary">
@@ -251,7 +264,7 @@ export default function IntakeWizard() {
         <p className="label-mono text-[12px] font-semibold uppercase text-mint-400">Secure Intake</p>
         <h1 className="mt-2 text-3xl font-bold text-white">PATSL ITIN Application Portal</h1>
         <p className="mt-2 text-sm text-slate-400">
-          Create your application record, verify identity, choose a service tier, and complete payment.
+          Create your application record, verify identity, and choose a service tier. Payment is optional and can be arranged after review.
         </p>
 
         {resumingLink && (
@@ -295,6 +308,7 @@ export default function IntakeWizard() {
               className="grid gap-4 md:grid-cols-2"
             >
               <input required className={inputClass} placeholder="First name" value={personal.firstName} onChange={(e) => updatePersonal('firstName', e.target.value)} />
+              <input className={inputClass} placeholder="Middle name (optional)" value={personal.middleName} onChange={(e) => updatePersonal('middleName', e.target.value)} />
               <input required className={inputClass} placeholder="Last name" value={personal.lastName} onChange={(e) => updatePersonal('lastName', e.target.value)} />
               <input required type="email" className={inputClass} placeholder="Email" value={personal.email} onChange={(e) => updatePersonal('email', e.target.value)} />
               <input className={inputClass} placeholder="Phone" value={personal.phone} onChange={(e) => updatePersonal('phone', e.target.value)} />
@@ -316,7 +330,7 @@ export default function IntakeWizard() {
               </select>
               <select className={`${inputClass} md:col-span-2`} value={caseDetails.serviceTier} onChange={(e) => updateCase('serviceTier', e.target.value)}>
                 <option value="EXPRESS_SELF_SERVICE">Express Self-Service - $149</option>
-                <option value="CAA_CONCIERGE">CAA Concierge - $349</option>
+                <option value="CAA_CONCIERGE">CAA Concierge - $180</option>
                 <option value="B2B_PORTAL">B2B Wholesale - $99</option>
               </select>
               <textarea className={`${inputClass} md:col-span-2`} rows={3} placeholder="U.S. mailing address" value={caseDetails.mailingAddress} onChange={(e) => updateCase('mailingAddress', e.target.value)} />
@@ -336,7 +350,7 @@ export default function IntakeWizard() {
             <div>
               {applicationId && (
                 <p className="mb-4 rounded-lg bg-abyss-panel px-4 py-3 text-xs text-slate-400">
-                  Application reference: <span className="font-mono font-semibold text-white">{applicationId}</span> — save this to track your case later.
+                  Application reference: <span className="font-mono font-semibold text-white">{applicationReference(applicationId)}</span> — save this to track your case later.
                 </p>
               )}
 
@@ -391,7 +405,7 @@ export default function IntakeWizard() {
           {step === 4 && (
             <div>
               <dl className="grid gap-3 rounded-lg bg-abyss-panel p-4 text-sm sm:grid-cols-2">
-                <div><dt className="label-mono text-[10px] uppercase text-slate-500">Name</dt><dd className="font-medium text-white">{personal.firstName} {personal.lastName}</dd></div>
+                <div><dt className="label-mono text-[10px] uppercase text-slate-500">Name</dt><dd className="font-medium text-white">{[personal.firstName, personal.middleName, personal.lastName].filter(Boolean).join(' ')}</dd></div>
                 <div><dt className="label-mono text-[10px] uppercase text-slate-500">Email</dt><dd className="font-medium text-white">{personal.email}</dd></div>
                 <div><dt className="label-mono text-[10px] uppercase text-slate-500">Service tier</dt><dd className="font-medium text-white">{tierLabel}</dd></div>
                 <div><dt className="label-mono text-[10px] uppercase text-slate-500">Identity document</dt><dd className="font-medium text-white">{uploadedUrl ? 'Received' : docSkipped ? 'Pending — you can email it later' : 'Not uploaded'}</dd></div>
@@ -400,10 +414,10 @@ export default function IntakeWizard() {
               {paymentError && <div className="mt-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{paymentError}</div>}
 
               {!paymentAttempted && (
-                <p className="mt-4 text-xs text-slate-500">
-                  Clicking below creates a secure Square payment link for {tierLabel.split(' - ')[1] || tierLabel} and moves
-                  your case into CAA review once paid.
-                </p>
+                <div className="mt-4 rounded-lg border border-mint-500/20 bg-mint-500/5 p-3 text-xs text-slate-300">
+                  <p>Payment is optional. You can submit your intake now and our team will contact you about next steps, or pay securely now for {tierLabel.split(' - ')[1] || tierLabel}.</p>
+                  <p className="mt-2 font-semibold text-mint-300">Secure Square checkout accepts cards and shows Apple Pay or other eligible wallet options automatically on supported devices.</p>
+                </div>
               )}
 
               {paymentAttempted && !creatingPayment && !checkoutUrl && !paymentError && (
@@ -419,11 +433,19 @@ export default function IntakeWizard() {
                 </button>
                 <button
                   type="button"
+                  onClick={submitIntake}
+                  disabled={!applicationId}
+                  className="btn-pill-ghost flex-1 disabled:opacity-40"
+                >
+                  Submit intake without payment
+                </button>
+                <button
+                  type="button"
                   onClick={submitPayment}
                   disabled={creatingPayment || !applicationId}
                   className="btn-pill-primary flex-1 disabled:opacity-40"
                 >
-                  {creatingPayment ? 'Preparing checkout...' : 'Proceed to secure payment'}
+                  {creatingPayment ? 'Preparing checkout...' : 'Pay now (optional)'}
                 </button>
               </div>
             </div>

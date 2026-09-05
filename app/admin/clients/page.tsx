@@ -26,6 +26,7 @@ const STATUS_LABELS: Record<string, string> = {
   DOCUMENTS_RECEIVED: 'Documents received',
   PAYMENT_PENDING: 'Payment pending',
   CAA_REVIEW: 'CAA review',
+  PACKAGE_READY: 'Package ready for client',
   SUBMITTED_IRS: 'Submitted to IRS',
   ARCHIVED_PII_SCRUBBED: 'Archived',
 };
@@ -35,6 +36,7 @@ const STATUS_STYLES: Record<string, string> = {
   DOCUMENTS_RECEIVED: 'bg-blue-500/10 text-blue-300',
   PAYMENT_PENDING: 'bg-gold-500/10 text-gold-300',
   CAA_REVIEW: 'bg-mint-500/10 text-mint-300',
+  PACKAGE_READY: 'bg-teal-500/10 text-teal-200',
   SUBMITTED_IRS: 'bg-mint-500/10 text-mint-300',
   ARCHIVED_PII_SCRUBBED: 'bg-white/5 text-slate-500',
 };
@@ -64,6 +66,7 @@ function ClientsPageInner() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
   useEffect(() => {
     if (!ready || !token) return;
@@ -118,10 +121,16 @@ function ClientsPageInner() {
             ))}
           </select>
         </div>
-        <StartApplicationButton token={token as string} />
+        <div className="flex items-center gap-2">
+          <div className="rounded-lg border border-white/10 p-1 text-[10.5px] font-semibold">
+            <button type="button" onClick={() => setViewMode('table')} className={`rounded px-2 py-1 ${viewMode === 'table' ? 'bg-teal-500/20 text-teal-200' : 'text-slate-400'}`}>Table</button>
+            <button type="button" onClick={() => setViewMode('grid')} className={`rounded px-2 py-1 ${viewMode === 'grid' ? 'bg-teal-500/20 text-teal-200' : 'text-slate-400'}`}>Grid</button>
+          </div>
+          <StartApplicationButton token={token as string} />
+        </div>
       </div>
 
-      <div className="overflow-hidden glass-card">
+      <div className={viewMode === 'table' ? 'overflow-hidden glass-card' : 'hidden'}>
         <table className="w-full text-left text-xs">
           <thead className="bg-abyss-panel text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             <tr>
@@ -162,6 +171,30 @@ function ClientsPageInner() {
           </tbody>
         </table>
       </div>
+
+      {viewMode === 'grid' && (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {loading && <p className="col-span-full py-6 text-center text-sm text-slate-400">Loading clients...</p>}
+          {!loading && filtered.length === 0 && <p className="col-span-full py-6 text-center text-sm text-slate-400">No clients match this search.</p>}
+          {filtered.map((r) => (
+            <Link key={r.id} href={`/admin/clients/${r.id}`} className="glass-card p-4 transition hover:border-teal-500/40 hover:bg-teal-500/5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-white">{r.first_name} {r.last_name}</p>
+                  <p className="mt-1 break-all text-xs text-slate-400">{r.email}</p>
+                </div>
+                <StatusPill status={r.latest_status} />
+              </div>
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                <div><dt className="text-slate-500">Phone</dt><dd className="mt-1 text-slate-300">{r.phone || '—'}</dd></div>
+                <div><dt className="text-slate-500">Cases</dt><dd className="mt-1 font-semibold text-white">{r.application_count}</dd></div>
+                <div><dt className="text-slate-500">Total paid</dt><dd className="mt-1 font-semibold text-white">${(r.total_paid_cents / 100).toFixed(2)}</dd></div>
+                <div><dt className="text-slate-500">Client since</dt><dd className="mt-1 text-slate-300">{new Date(r.created_at).toLocaleDateString()}</dd></div>
+              </dl>
+            </Link>
+          ))}
+        </div>
+      )}
     </AdminSidebarShell>
   );
 }

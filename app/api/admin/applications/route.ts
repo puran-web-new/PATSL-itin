@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
     const { rows } = await query(
       `SELECT
          a.id,
+         a.client_id,
          a.status,
          a.service_tier,
          a.exception_type,
