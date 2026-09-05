@@ -16,6 +16,9 @@ export default function StartApplicationButton({ token }: { token: string }) {
   const [error, setError] = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const [emailing, setEmailing] = useState(false);
+  const [emailMessage, setEmailMessage] = useState('');
+  const [draftId, setDraftId] = useState('');
 
   const valid = firstName.trim() && lastName.trim() && email.trim();
 
@@ -47,12 +50,24 @@ export default function StartApplicationButton({ token }: { token: string }) {
     setError('');
     try {
       const applicationId = await createDraft();
+      setDraftId(applicationId);
       setGeneratedLink(`${window.location.origin}/itin-intake?applicationId=${applicationId}`);
     } catch (err: any) {
       setError(err.message || 'Failed to create application.');
     } finally {
       setCreating(null);
     }
+  }
+
+  async function emailIntakeLink() {
+    if (!draftId) return;
+    setEmailing(true); setEmailMessage('');
+    try {
+      const res = await fetch(`/api/admin/applications/${draftId}/send-intake-link`, { method: 'POST', headers: { 'x-admin-token': token } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to email the application link.');
+      setEmailMessage(`Application link emailed to ${email}.`);
+    } catch (err: any) { setEmailMessage(err.message || 'Unable to email the application link.'); } finally { setEmailing(false); }
   }
 
   function reset() {
@@ -66,6 +81,9 @@ export default function StartApplicationButton({ token }: { token: string }) {
     setGeneratedLink('');
     setError('');
     setCopied(false);
+    setEmailing(false);
+    setEmailMessage('');
+    setDraftId('');
   }
 
   return (
@@ -142,7 +160,11 @@ export default function StartApplicationButton({ token }: { token: string }) {
                     {copied ? 'Copied ✓' : 'Copy'}
                   </button>
                 </div>
-                <button type="button" onClick={reset} className="mt-5 w-full rounded-lg border border-white/10 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/5">
+                <button type="button" onClick={emailIntakeLink} disabled={emailing} className="btn-pill-primary mt-3 w-full disabled:opacity-40">
+                  {emailing ? 'Sending...' : 'Email client intake link'}
+                </button>
+                {emailMessage && <p className="mt-2 text-center text-xs text-slate-300">{emailMessage}</p>}
+                <button type="button" onClick={reset} className="mt-3 w-full rounded-lg border border-white/10 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/5">
                   Done
                 </button>
               </>
