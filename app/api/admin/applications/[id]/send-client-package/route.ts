@@ -20,8 +20,11 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
          JOIN clients c ON c.id = a.client_id
          LEFT JOIN LATERAL (
            SELECT amount_cents, amount_paid_cents, square_payment_link
-           FROM invoices WHERE application_id = a.id AND payment_status <> 'PAID'
-           ORDER BY created_at DESC LIMIT 1
+           FROM invoices
+           WHERE (application_id = a.id OR (application_id IS NULL AND client_id = c.id))
+             AND payment_status <> 'PAID'
+           ORDER BY CASE WHEN application_id = a.id THEN 0 ELSE 1 END, created_at DESC
+           LIMIT 1
          ) i ON TRUE
          WHERE a.id = $1`,
         [id]
