@@ -11,13 +11,18 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     const { id } = await context.params;
     const pool = getPool();
     const db = await pool.connect();
-    let client: { email: string; first_name: string } | undefined;
+    let client: { email: string; first_name: string; amount_cents: number | null; amount_paid_cents: number | null; square_payment_link: string | null } | undefined;
     try {
       await db.query('BEGIN');
       const result = await db.query(
-        `SELECT c.email, c.first_name
+        `SELECT c.email, c.first_name, i.amount_cents, i.amount_paid_cents, i.square_payment_link
          FROM applications a
          JOIN clients c ON c.id = a.client_id
+         LEFT JOIN LATERAL (
+           SELECT amount_cents, amount_paid_cents, square_payment_link
+           FROM invoices WHERE application_id = a.id AND payment_status <> 'PAID'
+           ORDER BY created_at DESC LIMIT 1
+         ) i ON TRUE
          WHERE a.id = $1`,
         [id]
       );
@@ -40,7 +45,8 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
       db.release();
     }
 
-    const emailSent = await notifyPackageReady({ email: client!.email, firstName: client!.first_name, applicationId: id });
+    const balanceCents = Math.max(0, Number(client!.amount_cents || 0) - Number(client!.amount_paid_cents || 0));
+    const emailSent = await notifyPackageReady({ email: client!.email, firstName: client!.first_name, applicationId: id, amountCents: balanceCents || null, paymentLink: balanceCents ? client!.square_payment_link : null });
     return NextResponse.json({ success: true, emailSent });
   } catch (error: any) {
     console.error('Client package notification failed:', error);

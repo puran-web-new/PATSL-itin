@@ -133,11 +133,14 @@ export async function notifyStaff(opts: {
 }
 
 
-export async function notifyPackageReady(opts: { email: string; firstName: string; applicationId: string }) {
+export async function notifyPackageReady(opts: { email: string; firstName: string; applicationId: string; amountCents?: number | null; paymentLink?: string | null }) {
   const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://itin.patsl.org';
+  const paymentRequest = opts.paymentLink && typeof opts.amountCents === 'number'
+    ? `<p>Your current balance is <strong>$${(opts.amountCents / 100).toFixed(2)}</strong>. <a href="${opts.paymentLink}">Pay securely now</a>.</p>`
+    : '';
   return sendEmail(
     opts.email,
     'Your PATSL client package is ready',
-    `<p>Hi ${escapeHtml(opts.firstName)},</p><p>Your ITIN client package is ready for secure download.</p><p><a href="${origin}/portal/sign-in">Open your secure client portal</a></p><p>Sign in with this email address to download your package. Reference: <strong>${applicationReference(opts.applicationId)}</strong>.</p><p>For help, contact Puran Accounting &amp; Tax Solution Lab at <a href="mailto:info@puranaccounting.com">info@puranaccounting.com</a> or 929-468-3527.</p>`
+    `<p>Hi ${escapeHtml(opts.firstName)},</p><p>Your ITIN client package is ready for secure download.</p>${paymentRequest}<p><a href="${origin}/portal/sign-in">Open your secure client portal</a></p><p>Sign in with this email address to download your package. Reference: <strong>${applicationReference(opts.applicationId)}</strong>.</p><p>For help, contact Puran Accounting &amp; Tax Solution Lab at <a href="mailto:info@puranaccounting.com">info@puranaccounting.com</a> or 929-468-3527.</p>`
   );
 }

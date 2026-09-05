@@ -81,11 +81,15 @@ async function watermarkRecordsOnly(doc: PDFDocument) {
   for (const page of doc.getPages()) {
     const { width, height } = page.getSize();
     const text = 'COPY — FOR RECORDS ONLY';
-    const size = Math.min(width, height) / 13;
+    const size = Math.min(width, height) / 17;
     const textWidth = font.widthOfTextAtSize(text, size);
+    const angle = (42 * Math.PI) / 180;
+    // Position the rotated text by its center rather than its lower-left origin.
+    const x = (width - (textWidth * Math.cos(angle) - size * Math.sin(angle))) / 2;
+    const y = (height - (textWidth * Math.sin(angle) + size * Math.cos(angle))) / 2;
     page.drawText(text, {
-      x: (width - textWidth) / 2,
-      y: height / 2,
+      x,
+      y,
       size,
       font,
       color: rgb(0.72, 0.1, 0.1),
