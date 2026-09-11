@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/security';
-import { notifyPackageReady, notifyStatusChange } from '../../../../../lib/notify';
+import { notifyStatusChange } from '../../../../../lib/notify';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const denied = requireAdmin(req);
@@ -89,20 +89,26 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     const pool = getPool();
     const db = await pool.connect();
     let clientInfo: any = null;
+    let previousStatus = '';
     try {
       await db.query('BEGIN');
-      const result = await db.query(
-        `UPDATE applications SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id`,
-        [status, id]
+      const previous = await db.query(
+        `SELECT status FROM applications WHERE id = $1 FOR UPDATE`,
+        [id]
       );
-      if (!result.rows[0]) {
+      if (!previous.rows[0]) {
         await db.query('ROLLBACK');
         return NextResponse.json({ error: 'Application not found.' }, { status: 404 });
       }
+      previousStatus = previous.rows[0].status;
+      await db.query(
+        `UPDATE applications SET status = $1, updated_at = NOW() WHERE id = $2`,
+        [status, id]
+      );
       await db.query(
         `INSERT INTO audit_events (application_id, event_type, actor, metadata)
          VALUES ($1, 'STATUS_UPDATED', 'admin', $2)`,
-        [id, JSON.stringify({ status })]
+        [id, JSON.stringify({ status, previousStatus: previous.rows[0].status })]
       );
       const clientResult = await db.query(
         `SELECT c.email, c.phone, c.first_name FROM applications a JOIN clients c ON c.id = a.client_id WHERE a.id = $1`,
@@ -117,16 +123,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       db.release();
     }
 
-    if (clientInfo) {
-      if (status === 'PACKAGE_READY') {
-        notifyPackageReady({ email: clientInfo.email, firstName: clientInfo.first_name, applicationId: id }).catch((err) =>
-          console.error('Package-ready notification failed:', err)
-        );
-      } else {
-        notifyStatusChange({ email: clientInfo.email, phone: clientInfo.phone, firstName: clientInfo.first_name, applicationId: id, status }).catch((err) =>
-          console.error('Status-change notification failed:', err)
-        );
-      }
+    if (clientInfo && status !== previousStatus && status !== 'PACKAGE_READY') {
+      await notifyStatusChange({ email: clientInfo.email, phone: clientInfo.phone, firstName: clientInfo.first_name, applicationId: id, status });
     }
 
     return NextResponse.json({ success: true });

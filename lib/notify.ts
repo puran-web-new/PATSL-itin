@@ -129,6 +129,6 @@ export async function notifyPackageReady(opts: { email: string; firstName: strin
   return sendEmail(
     opts.email,
     'Your PATSL client package is ready',
-    `<p>Hi ${escapeHtml(opts.firstName)},</p><p>Your ITIN client package is ready for secure download.</p><p><a href="${origin}/portal/sign-in">Open your secure client portal</a></p><p>Sign in with this email address to download your package. Reference: <strong>${applicationReference(opts.applicationId)}</strong>.</p><p>For help, contact Puran Accounting &amp; Tax Solution Lab at <a href="mailto:info@puranaccounting.com">info@puranaccounting.com</a> or 929-468-3527.</p>`
+    `<p>Hi ${escapeHtml(opts.firstName)},</p><p>Your ITIN client package is ready for secure download.</p><p><a href="${origin}/portal/sign-in">Open your secure client portal</a></p><p>Sign in with this email address to download your completed package. Reference: <strong>${applicationReference(opts.applicationId)}</strong>.</p><p>For help, contact Puran Accounting &amp; Tax Solution Lab at <a href="mailto:info@puranaccounting.com">info@puranaccounting.com</a> or 929-468-3527.</p>`
   );
 }
