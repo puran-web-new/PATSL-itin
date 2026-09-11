@@ -106,7 +106,7 @@ function ClientsPageInner() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter by name, email, phone, or client ID..."
-            className="w-80 rounded-lg glass-card p-2.5 text-xs text-white placeholder:text-slate-500"
+            className="w-full rounded-lg sm:w-80 glass-card p-2.5 text-xs text-white placeholder:text-slate-500"
           />
           <select
             value={statusFilter}
@@ -122,7 +122,7 @@ function ClientsPageInner() {
         <StartApplicationButton token={token as string} />
       </div>
 
-      <div className="overflow-hidden glass-card">
+      <div className="overflow-x-auto glass-card">
         <table className="w-full text-left text-xs">
           <thead className="bg-abyss-panel text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             <tr>

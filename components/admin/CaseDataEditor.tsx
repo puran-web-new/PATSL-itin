@@ -179,7 +179,7 @@ export default function CaseDataEditor({
   const label = 'mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500';
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-6">
         {error && <div className="rounded-lg border border-red-900 bg-red-950 p-4 text-sm text-red-200">{error}</div>}
 
@@ -390,7 +390,7 @@ export default function CaseDataEditor({
         </Section>
       </div>
 
-      <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+      <aside className="order-first space-y-4 lg:order-none lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Applicant</p>
           <p className="mt-1 text-sm font-bold text-white">{application.first_name} {application.last_name}</p>
@@ -436,14 +436,14 @@ export default function CaseDataEditor({
           )}
         </div>
 
-        <div className="space-y-2">
-          <button onClick={save} disabled={saving} className="btn-pill-primary w-full disabled:opacity-40">
+        <div className="grid gap-2 sm:grid-cols-2 lg:block lg:space-y-2">
+          <button onClick={save} disabled={saving} className="btn-pill-primary w-full disabled:opacity-40 sm:col-span-2 lg:col-auto">
             {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save case data'}
           </button>
           <button onClick={() => generate('IRS_MAIL')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
             {generating === 'IRS_MAIL' ? 'Generating...' : 'Generate IRS mail package'}
           </button>
-          <p className="px-1 text-[10.5px] text-slate-500">
+          <p className="px-1 text-[10.5px] text-slate-500 sm:col-span-2 lg:col-auto">
             Includes a printable USPS Flat Rate Envelope mailing label as the last page, generated automatically.
           </p>
           <button onClick={() => generate('CLIENT_COPY')} disabled={!!generating} className="w-full rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-900 disabled:opacity-50">
@@ -482,7 +482,7 @@ export default function CaseDataEditor({
 
 function Section({ title, usedOn, children }: { title: string; usedOn?: string[]; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-bold uppercase tracking-wide text-teal-300">{title}</h2>
         {usedOn && usedOn.length > 0 && (

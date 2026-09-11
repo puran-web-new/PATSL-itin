@@ -49,13 +49,13 @@ export default async function PortalDashboardPage() {
   }
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-abyss py-10">
+    <section className="relative min-h-screen overflow-hidden bg-abyss py-6 sm:py-10">
       <div className="bg-dot-grid absolute inset-0 opacity-30" />
       <div className="container-page relative">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="label-mono text-[11px] font-semibold uppercase text-mint-400">Client Portal</p>
-            <h1 className="mt-1 text-2xl font-bold text-white">Welcome back, {session!.email}</h1>
+            <h1 className="mt-1 break-words text-xl font-bold text-white sm:text-2xl">Welcome back, {session!.email}</h1>
           </div>
           <form action="/api/portal/auth/sign-out" method="POST">
             <button className="btn-pill-ghost px-4 py-2 text-xs">Sign out</button>
@@ -80,7 +80,7 @@ export default async function PortalDashboardPage() {
             const progressPct = archived ? 100 : activeIndex >= 0 ? Math.round(((activeIndex + 1) / STEP_ORDER.length) * 100) : 0;
 
             return (
-              <div key={app.id} className="glass-card p-6">
+              <div key={app.id} className="glass-card p-4 sm:p-6">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-xs text-slate-500">Reference {applicationReference(app.id)}</p>
@@ -101,7 +101,7 @@ export default async function PortalDashboardPage() {
                 </div>
 
                 {!archived ? (
-                  <ol className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                  <ol className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-5">
                     {STEP_ORDER.map((step, index) => {
                       const done = activeIndex >= 0 && index <= activeIndex;
                       return (

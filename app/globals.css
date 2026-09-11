@@ -9,10 +9,17 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
 body {
   margin: 0;
+  min-width: 320px;
   font-family: var(--font-display);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -78,4 +85,8 @@ body {
     content: '';
     @apply absolute inset-0 rounded-full bg-mint-500 animate-pulse-dot;
   }
+}
+
+@media (max-width: 639px) {
+  input, select, textarea { font-size: 16px !important; }
 }

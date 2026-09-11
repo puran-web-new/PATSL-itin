@@ -114,14 +114,14 @@ export default function DashboardPage() {
     <AdminSidebarShell title="Dashboard" subtitle="Overview of every active case, payment, and document in the pipeline.">
       {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{error}</div>}
 
-      <div className="mb-6 grid grid-cols-4 gap-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Total clients" value={stats?.totalClients} />
         <StatCard label="Pending" value={pendingCount} note="Intake / docs / payment" />
         <StatCard label="In progress" value={inProgressCount} note="CAA review" warn />
         <StatCard label="Completed" value={completedCount} note="Submitted or archived" good />
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
         <div className="glass-card p-5">
           <h3 className="mb-3 text-sm font-bold text-white">Applications by status ({totalApplications})</h3>
           <div className="space-y-2">
@@ -190,7 +190,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-[2fr_1fr] gap-4">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="glass-card p-5">
           <h3 className="mb-3 text-sm font-bold text-white">Recent activity</h3>
           {activity.length === 0 && <p className="text-xs text-slate-500">No activity yet.</p>}

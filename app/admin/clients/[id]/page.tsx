@@ -159,7 +159,7 @@ export default function ClientDetailPage() {
       {!client ? (
         <p className="text-xs text-slate-500">Loading client file...</p>
       ) : (
-        <div className="grid grid-cols-[2fr_1fr] gap-4">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="space-y-4">
             <div className="glass-card p-5">
               <h3 className="mb-3 text-sm font-bold text-white">General information</h3>

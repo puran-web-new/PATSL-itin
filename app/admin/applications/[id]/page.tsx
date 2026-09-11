@@ -32,7 +32,7 @@ export default function PrepareApplicationPage() {
         Review and complete every submitted client field here. Changes populate the W-7, Certificate of Accuracy, and Form 1040 together; use this page to review the intake before generating documents.
       </div>
 
-      <div className="-mx-6 -mb-6 bg-ink-950 px-6 pb-10 pt-6">
+      <div className="-mx-4 -mb-4 bg-ink-950 px-4 pb-8 pt-4 sm:-mx-6 sm:-mb-6 sm:px-6 sm:pb-10 sm:pt-6">
         <CaseDataEditor applicationId={params.id} token={token} onLoaded={setClientInfo} />
       </div>
     </AdminSidebarShell>
