@@ -63,9 +63,9 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-[220px_1fr] bg-abyss text-white">
-      <aside className="flex flex-col border-r border-teal-500/10 bg-abyss-raised p-3 text-slate-300">
-        <Link href="/admin/dashboard" className="mb-3 flex items-center gap-2 border-b border-white/10 px-2 pb-4">
+    <div className="grid min-h-screen grid-cols-1 bg-abyss text-white md:grid-cols-[220px_minmax(0,1fr)]">
+      <aside className="flex min-w-0 flex-col border-b border-teal-500/10 bg-abyss-raised p-3 text-slate-300 md:border-b-0 md:border-r">
+        <Link href="/admin/dashboard" className="mb-3 flex items-center gap-2 border-b border-white/10 px-2 pb-3 md:pb-4">
           <GoldCrest className="h-8 w-8" />
           <span>
             <span className="block text-xs font-bold text-white">PATSL Control Center</span>
@@ -73,12 +73,12 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
           </span>
         </Link>
 
-        <nav className="space-y-0.5">
+        <nav className="flex gap-1 overflow-x-auto pb-1 md:block md:space-y-0.5 md:overflow-visible md:pb-0">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center justify-between gap-2.5 rounded-lg px-2.5 py-2.5 text-xs font-semibold ${
+              className={`flex shrink-0 items-center justify-between gap-2.5 rounded-lg px-2.5 py-2.5 text-xs font-semibold ${
                 pathname?.startsWith(item.href) ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -95,8 +95,8 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
           ))}
         </nav>
 
-        <p className="mb-1 mt-4 px-2.5 text-[9px] font-semibold uppercase tracking-widest text-slate-600">System</p>
-        <nav className="space-y-0.5">
+        <p className="mb-1 mt-3 hidden px-2.5 text-[9px] font-semibold uppercase tracking-widest text-slate-600 md:mt-4 md:block">System</p>
+        <nav className="hidden space-y-0.5 md:block">
           {NAV_SYSTEM.map((item) => (
             <Link
               key={item.href}
@@ -111,7 +111,7 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
           ))}
         </nav>
 
-        <div className="mt-auto space-y-0.5 border-t border-slate-800 pt-3">
+        <div className="mt-3 flex gap-1 border-t border-slate-800 pt-3 md:mt-auto md:block md:space-y-0.5">
           <Link href="/" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-xs font-semibold text-slate-400 hover:bg-white/5 hover:text-white">
             <span className="w-4 text-center text-[11px]">&larr;</span>Back to public site
           </Link>
@@ -121,14 +121,14 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
         </div>
       </aside>
 
-      <main className="overflow-auto p-6">
-        <div className="mb-5 flex items-center justify-between">
+      <main className="min-w-0 overflow-x-auto p-4 sm:p-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <form onSubmit={submitSearch}>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search clients, references, documents..."
-              className="w-80 rounded-full border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500"
+              className="w-full min-w-0 rounded-full sm:w-80 border border-white/10 bg-abyss-panel p-2.5 text-xs text-white placeholder:text-slate-500"
             />
           </form>
           <div className="flex items-center gap-3">
@@ -166,7 +166,7 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
                 </div>
               )}
             </div>
-            <span className="text-xs text-slate-500">Staff session</span>
+            <span className="hidden text-xs text-slate-500 sm:inline">Staff session</span>
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-mint-500 to-teal-400 text-[10px] font-bold text-ink-950">PR</span>
           </div>
         </div>

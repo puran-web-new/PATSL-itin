@@ -15,9 +15,15 @@ export const metadata: Metadata = {
   },
   description:
     'A secure ITIN intake, payment, identity review, and IRS package automation platform for professional document preparation workflows.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'PATSL ITIN' },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
   themeColor: '#080e14',
 };
 
