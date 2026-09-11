@@ -84,6 +84,7 @@ const EVENT_LABELS: Record<string, string> = {
   STATUS_UPDATED: 'Status updated',
   CASE_DATA_UPDATED: 'Case data updated',
   PACKAGE_GENERATED: 'Document package generated',
+  PACKAGE_DELIVERY_REQUESTED: 'Client package delivery requested',
   PII_SCRUBBED: 'Identity data scrubbed (retention policy)',
 };
 
@@ -96,6 +97,7 @@ export default function ClientDetailPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [error, setError] = useState('');
+  const [deliveryNotice, setDeliveryNotice] = useState('');
   const [statusSaving, setStatusSaving] = useState<string | null>(null);
 
   async function load() {
@@ -120,9 +122,30 @@ export default function ClientDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, token, params.id]);
 
+  async function sendPackage(applicationId: string) {
+    if (!token) return;
+    setStatusSaving(applicationId);
+    setDeliveryNotice('');
+    try {
+      const res = await fetch(`/api/admin/applications/${applicationId}/send-package`, {
+        method: 'POST',
+        headers: { 'x-admin-token': token },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to send the package email.');
+      setDeliveryNotice('Package email accepted for delivery. The client can sign in to the secure portal and download their completed package.');
+      await load();
+    } catch (err: any) {
+      setError(err.message || 'Unable to send the package email.');
+    } finally {
+      setStatusSaving(null);
+    }
+  }
+
   async function changeStatus(applicationId: string, status: string) {
     if (!token) return;
     setStatusSaving(applicationId);
+    setDeliveryNotice('');
     try {
       const res = await fetch(`/api/admin/applications/${applicationId}`, {
         method: 'PATCH',
@@ -131,6 +154,9 @@ export default function ClientDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update status.');
+      if (status === 'PACKAGE_READY') {
+        setDeliveryNotice('The package is ready. Use Send client package to email the secure download link.');
+      }
       await load();
     } catch (err: any) {
       setError(err.message || 'Failed to update status.');
@@ -155,6 +181,7 @@ export default function ClientDetailPage() {
       <Link href="/admin/clients" className="mb-4 inline-block text-xs font-semibold text-slate-500 hover:text-mint-300">&larr; All clients</Link>
 
       {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{error}</div>}
+      {deliveryNotice && <div className="mb-4 rounded-lg border border-mint-500/30 bg-mint-500/10 p-3 text-sm text-mint-200">{deliveryNotice}</div>}
 
       {!client ? (
         <p className="text-xs text-slate-500">Loading client file...</p>
@@ -199,9 +226,21 @@ export default function ClientDetailPage() {
                         Opened {new Date(app.created_at).toLocaleDateString()} · updated {new Date(app.updated_at).toLocaleDateString()}
                         {app.exception_type && ` · ${app.exception_type.toLowerCase().replace(/_/g, ' ')}`}
                       </span>
-                      <Link href={`/admin/applications/${app.id}`} className="rounded-lg border border-mint-500/40 bg-mint-500/10 px-3 py-2 font-semibold text-mint-300 hover:bg-mint-500/20">
-                        View &amp; edit submitted intake →
-                      </Link>
+                      <div className="flex flex-wrap gap-2">
+                        {['PACKAGE_READY', 'SUBMITTED_IRS'].includes(app.status) && (
+                          <button
+                            type="button"
+                            onClick={() => sendPackage(app.id)}
+                            disabled={statusSaving === app.id}
+                            className="rounded-lg border border-gold-500/40 bg-gold-500/10 px-3 py-2 font-semibold text-gold-300 hover:bg-gold-500/20 disabled:opacity-50"
+                          >
+                            {statusSaving === app.id ? 'Sending...' : 'Send client package'}
+                          </button>
+                        )}
+                        <Link href={`/admin/applications/${app.id}`} className="rounded-lg border border-mint-500/40 bg-mint-500/10 px-3 py-2 font-semibold text-mint-300 hover:bg-mint-500/20">
+                          View &amp; edit submitted intake →
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 ))}
