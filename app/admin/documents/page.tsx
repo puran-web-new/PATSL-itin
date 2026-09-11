@@ -79,7 +79,7 @@ export default function DocumentsPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by client name, email, or document number..."
-          className="w-80 rounded-lg glass-card p-2.5 text-xs"
+          className="w-full rounded-lg sm:w-80 glass-card p-2.5 text-xs"
         />
         <select
           value={docTypeFilter}
@@ -93,7 +93,7 @@ export default function DocumentsPage() {
         </select>
       </div>
 
-      <div className="overflow-hidden glass-card">
+      <div className="overflow-x-auto glass-card">
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             <tr>

@@ -88,14 +88,14 @@ export default function AdminAppointmentsPage() {
     <AdminSidebarShell title="Appointments" subtitle="In-person CAA verification requests from the public Appointment page.">
       {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-sm text-red-300">{error}</div>}
 
-      <div className="mb-6 grid grid-cols-4 gap-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Awaiting confirmation" value={stats.REQUESTED} note={stats.REQUESTED > 0 ? 'Needs a response' : undefined} warn />
         <StatCard label="Confirmed" value={stats.CONFIRMED} />
         <StatCard label="Completed" value={stats.COMPLETED} />
         <StatCard label="Cancelled" value={stats.CANCELLED} />
       </div>
 
-      <div className="overflow-hidden glass-card">
+      <div className="overflow-x-auto glass-card">
         <table className="w-full text-left text-xs">
           <thead className="bg-abyss-panel text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             <tr>

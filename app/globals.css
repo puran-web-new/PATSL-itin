@@ -86,3 +86,7 @@ body {
     @apply absolute inset-0 rounded-full bg-mint-500 animate-pulse-dot;
   }
 }
+
+@media (max-width: 639px) {
+  input, select, textarea { font-size: 16px !important; }
+}

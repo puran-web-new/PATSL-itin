@@ -69,7 +69,7 @@ export default function SettingsPage() {
     <AdminSidebarShell title="Settings & tools" subtitle="Integration health and the firm credentials auto-filled onto every generated document.">
       {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
-      <div className="grid grid-cols-[1.4fr_1fr] gap-4">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="glass-card p-5">
           <h3 className="mb-1 text-sm font-bold text-white">Integration status</h3>
           <p className="mb-3 text-[11px] text-slate-500">Live checks — no secret values are ever shown, only whether each is configured.</p>
