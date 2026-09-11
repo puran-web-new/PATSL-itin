@@ -45,10 +45,10 @@ function PortalSignInInner() {
   }
 
   return (
-    <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-abyss px-6 py-16">
+    <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-abyss px-4 py-10 sm:px-6 sm:py-16">
       <div className="bg-dot-grid absolute inset-0 opacity-40" />
       <div className="glow-blob absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 rounded-full bg-mint-500/15" />
-      <div className="glass-card relative w-full max-w-sm p-8 text-center shadow-glow-mint">
+      <div className="glass-card relative w-full max-w-sm p-5 sm:p-8 text-center shadow-glow-mint">
         <p className="label-mono text-[11px] font-semibold uppercase text-mint-400">Client portal</p>
         <h1 className="mt-2 text-2xl font-bold text-white">Sign in to your case</h1>
         <p className="mt-2 text-sm text-slate-400">

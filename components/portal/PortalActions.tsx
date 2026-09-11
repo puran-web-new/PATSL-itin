@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export function DownloadClientCopyButton({ applicationId }: { applicationId: string }) {
   const [loading, setLoading] = useState(false);
@@ -40,7 +41,7 @@ export function DownloadClientCopyButton({ applicationId }: { applicationId: str
       <button
         onClick={download}
         disabled={loading}
-        className="btn-pill-primary px-4 py-2.5 text-xs disabled:opacity-50"
+        className="btn-pill-primary w-full px-4 py-2.5 text-xs disabled:opacity-50"
       >
         {loading ? 'Preparing...' : 'Download my client copy'}
       </button>
@@ -50,6 +51,7 @@ export function DownloadClientCopyButton({ applicationId }: { applicationId: str
 }
 
 export function UploadDocumentForm({ applicationId }: { applicationId: string }) {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [docType, setDocType] = useState('PASSPORT');
   const [uploading, setUploading] = useState(false);
@@ -81,6 +83,7 @@ export function UploadDocumentForm({ applicationId }: { applicationId: string })
       }
       setDone(true);
       setFile(null);
+      router.refresh();
     } catch (err: any) {
       setError(err.message || 'Upload failed.');
     } finally {
@@ -100,8 +103,9 @@ export function UploadDocumentForm({ applicationId }: { applicationId: string })
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp,application/pdf"
+        capture="environment"
         onChange={(e) => setFile(e.target.files?.[0] || null)}
-        className="w-full text-xs text-slate-400"
+        className="w-full rounded-lg border border-white/10 bg-abyss-panel p-2.5 text-xs text-slate-400"
       />
       {error && <p className="text-xs text-red-400">{error}</p>}
       {done && <p className="text-xs font-semibold text-mint-400">Uploaded — your preparer will review it shortly.</p>}
