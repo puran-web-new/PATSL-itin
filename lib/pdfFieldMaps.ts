@@ -1,76 +1,90 @@
 // Verified AcroForm field names for the official IRS PDFs bundled in public/templates.
 //
-// F1040_FIELDS was reverse-engineered from the real "2024 Form 1040" (confirmed via
-// PDFDocument.getTitle()) using a published open-source field map + calculation script
-// (github.com/wickedest/irs-form-filler, src/maps/f1040-map.yaml + src/scripts/f1040.yaml),
-// cross-checked against the form's own field ordering. Only fields we could verify with
-// high confidence are mapped — some rarely-needed lines (AMT, Schedule 3 credits, exact
-// refund routing lines) are intentionally left unmapped rather than guessed.
+// F1040_FIELDS targets the real "2025 Form 1040" (confirmed via PDFDocument.getTitle()).
+// The 2025 form was substantially redesigned from 2024 — it added a special-processing
+// block at the top (which renumbered nearly every field), moved the deduction/taxable-
+// income lines 12–15 onto page 2, split AGI across line 11a (page 1) and 11b (page 2),
+// and TRANSPOSED the dependents table so each dependent is a COLUMN (Dependent 1–4) and
+// the attributes (first name, last name, SSN, relationship, credits) are rows.
+//
+// Every field below was mapped by extracting the PDF's text layer to find each field's
+// printed label, then confirmed VISUALLY by filling each field with a token and rendering
+// both pages (name/SSN/address, filing status, digital assets, the transposed dependents
+// grid, income lines 1a–11, page-2 lines 11b/12e/14/15/16/24/33/37, occupation/phone/email,
+// and the Paid Preparer block). Rarely-needed lines (AMT, Schedule 3 credits, refund
+// routing) are intentionally left unmapped rather than guessed.
 export const F1040_FIELDS = {
-  firstNameMI: 'topmostSubform[0].Page1[0].f1_04[0]',
-  lastName: 'topmostSubform[0].Page1[0].f1_05[0]',
-  ssn: 'topmostSubform[0].Page1[0].f1_06[0]',
-  spouseFirstMI: 'topmostSubform[0].Page1[0].f1_07[0]',
-  spouseLastName: 'topmostSubform[0].Page1[0].f1_08[0]',
-  spouseSsn: 'topmostSubform[0].Page1[0].f1_09[0]',
+  firstNameMI: 'topmostSubform[0].Page1[0].f1_14[0]',
+  lastName: 'topmostSubform[0].Page1[0].f1_15[0]',
+  ssn: 'topmostSubform[0].Page1[0].f1_16[0]',
+  spouseFirstMI: 'topmostSubform[0].Page1[0].f1_17[0]',
+  spouseLastName: 'topmostSubform[0].Page1[0].f1_18[0]',
+  spouseSsn: 'topmostSubform[0].Page1[0].f1_19[0]',
 
-  street: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_10[0]',
-  apt: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_11[0]',
-  city: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_12[0]',
-  state: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_13[0]',
-  zip: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_14[0]',
-  foreignCountry: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_15[0]',
-  foreignProvince: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_16[0]',
-  foreignPostal: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_17[0]',
+  street: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_20[0]',
+  apt: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_21[0]',
+  city: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_22[0]',
+  state: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_23[0]',
+  zip: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_24[0]',
+  foreignCountry: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_25[0]',
+  foreignProvince: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_26[0]',
+  foreignPostal: 'topmostSubform[0].Page1[0].Address_ReadOrder[0].f1_27[0]',
 
+  // Filing status is two overlapping checkbox groups on the 2025 form: the left column
+  // (Single / MFJ / MFS) lives under Checkbox_ReadOrder, the right column (HOH / QSS)
+  // is the plain c1_8 group.
   filingStatus: {
-    SINGLE: 'topmostSubform[0].Page1[0].FilingStatus_ReadOrder[0].c1_3[0]',
-    MARRIED_FILING_JOINTLY: 'topmostSubform[0].Page1[0].FilingStatus_ReadOrder[0].c1_3[1]',
-    MARRIED_FILING_SEPARATELY: 'topmostSubform[0].Page1[0].FilingStatus_ReadOrder[0].c1_3[2]',
-    HEAD_OF_HOUSEHOLD: 'topmostSubform[0].Page1[0].c1_3[0]',
-    QUALIFYING_SURVIVING_SPOUSE: 'topmostSubform[0].Page1[0].c1_3[1]',
+    SINGLE: 'topmostSubform[0].Page1[0].Checkbox_ReadOrder[0].c1_8[0]',
+    MARRIED_FILING_JOINTLY: 'topmostSubform[0].Page1[0].Checkbox_ReadOrder[0].c1_8[1]',
+    MARRIED_FILING_SEPARATELY: 'topmostSubform[0].Page1[0].Checkbox_ReadOrder[0].c1_8[2]',
+    HEAD_OF_HOUSEHOLD: 'topmostSubform[0].Page1[0].c1_8[0]',
+    QUALIFYING_SURVIVING_SPOUSE: 'topmostSubform[0].Page1[0].c1_8[1]',
   },
 
-  digitalAssetsYes: 'topmostSubform[0].Page1[0].c1_5[0]',
-  digitalAssetsNo: 'topmostSubform[0].Page1[0].c1_5[1]',
+  digitalAssetsYes: 'topmostSubform[0].Page1[0].c1_10[0]',
+  digitalAssetsNo: 'topmostSubform[0].Page1[0].c1_10[1]',
 
-  dependentsOverflow: 'topmostSubform[0].Page1[0].Dependents_ReadOrder[0].c1_13[0]',
+  // Transposed dependents grid: one entry per dependent COLUMN (1–4). First and last
+  // name are separate cells on the 2025 form (they used to be one), so each row carries
+  // both nameFirst and nameLast. The CTC/ODC checkboxes live in the row-7 "Credits"
+  // band under DependentN subforms.
+  dependentsOverflow: 'topmostSubform[0].Page1[0].Dependents_ReadOrder[0].c1_11[0]',
   dependentRows: [
-    { name: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].f1_20[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].f1_21[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].f1_22[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].c1_14[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].c1_15[0]' },
-    { name: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].f1_23[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].f1_24[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].f1_25[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].c1_16[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].c1_17[0]' },
-    { name: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].f1_26[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].f1_27[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].f1_28[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].c1_18[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].c1_19[0]' },
-    { name: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].f1_29[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].f1_30[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].f1_31[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].c1_20[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].c1_21[0]' },
+    { nameFirst: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].f1_31[0]', nameLast: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].f1_35[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].f1_39[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].f1_43[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent1[0].c1_28[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent1[0].c1_28[1]' },
+    { nameFirst: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].f1_32[0]', nameLast: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].f1_36[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].f1_40[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].f1_44[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent2[0].c1_29[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent2[0].c1_29[1]' },
+    { nameFirst: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].f1_33[0]', nameLast: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].f1_37[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].f1_41[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].f1_45[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent3[0].c1_30[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent3[0].c1_30[1]' },
+    { nameFirst: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row1[0].f1_34[0]', nameLast: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row2[0].f1_38[0]', ssn: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row3[0].f1_42[0]', relationship: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row4[0].f1_46[0]', ctc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent4[0].c1_31[0]', odc: 'topmostSubform[0].Page1[0].Table_Dependents[0].Row7[0].Dependent4[0].c1_31[1]' },
   ],
 
-  wages1a: 'topmostSubform[0].Page1[0].f1_32[0]',
-  line1z: 'topmostSubform[0].Page1[0].f1_41[0]',
-  totalIncome9: 'topmostSubform[0].Page1[0].Line4a-11_ReadOrder[0].f1_54[0]',
-  adjustments10: 'topmostSubform[0].Page1[0].Line4a-11_ReadOrder[0].f1_55[0]',
-  agi11: 'topmostSubform[0].Page1[0].Line4a-11_ReadOrder[0].f1_56[0]',
-  standardDeduction12: 'topmostSubform[0].Page1[0].f1_57[0]',
-  totalDeductions14: 'topmostSubform[0].Page1[0].f1_59[0]',
-  taxableIncome15: 'topmostSubform[0].Page1[0].f1_60[0]',
+  wages1a: 'topmostSubform[0].Page1[0].f1_47[0]',
+  line1z: 'topmostSubform[0].Page1[0].f1_57[0]',
+  totalIncome9: 'topmostSubform[0].Page1[0].f1_73[0]',
+  adjustments10: 'topmostSubform[0].Page1[0].f1_74[0]',
+  agi11: 'topmostSubform[0].Page1[0].f1_75[0]', // line 11a (page 1)
+  agi11b: 'topmostSubform[0].Page2[0].f2_01[0]', // line 11b (page 2) — AGI carried forward
 
-  tax16: 'topmostSubform[0].Page2[0].f2_02[0]',
-  totalTax24: 'topmostSubform[0].Page2[0].f2_10[0]',
-  totalPayments33: 'topmostSubform[0].Page2[0].f2_22[0]',
-  amountYouOwe37: 'topmostSubform[0].Page2[0].f2_28[0]',
+  standardDeduction12: 'topmostSubform[0].Page2[0].f2_02[0]', // line 12e
+  totalDeductions14: 'topmostSubform[0].Page2[0].f2_05[0]', // line 14
+  taxableIncome15: 'topmostSubform[0].Page2[0].f2_06[0]', // line 15
 
-  occupation: 'topmostSubform[0].Page2[0].f2_33[0]',
-  phone: 'topmostSubform[0].Page2[0].f2_37[0]',
-  email: 'topmostSubform[0].Page2[0].f2_38[0]',
+  tax16: 'topmostSubform[0].Page2[0].f2_08[0]', // line 16
+  totalTax24: 'topmostSubform[0].Page2[0].f2_16[0]', // line 24
+  totalPayments33: 'topmostSubform[0].Page2[0].f2_29[0]', // line 33
+  amountYouOwe37: 'topmostSubform[0].Page2[0].f2_35[0]', // line 37
 
-  // "Paid Preparer Use Only" block at the bottom of page 2. Field positions
-  // (x/y widget rectangles) were read off the real 2024 Form 1040 template and
-  // matched to the printed labels: preparer name + PTIN on the top row, then the
-  // firm name/phone and firm address/EIN rows beneath. The preparer's signature
-  // and date are intentionally left blank for the CAA to sign by hand.
-  preparerName: 'topmostSubform[0].Page2[0].f2_39[0]',
-  preparerPtin: 'topmostSubform[0].Page2[0].f2_40[0]',
-  firmName: 'topmostSubform[0].Page2[0].f2_41[0]',
-  firmPhone: 'topmostSubform[0].Page2[0].f2_42[0]',
-  firmAddress: 'topmostSubform[0].Page2[0].f2_43[0]',
-  firmEin: 'topmostSubform[0].Page2[0].f2_44[0]',
+  occupation: 'topmostSubform[0].Page2[0].f2_40[0]',
+  phone: 'topmostSubform[0].Page2[0].f2_44[0]',
+  email: 'topmostSubform[0].Page2[0].f2_45[0]',
+
+  // "Paid Preparer Use Only" block at the bottom of page 2 (2025 layout). The
+  // preparer's signature and date are intentionally left blank for the CAA to sign
+  // by hand.
+  preparerName: 'topmostSubform[0].Page2[0].f2_46[0]',
+  preparerPtin: 'topmostSubform[0].Page2[0].f2_47[0]',
+  firmName: 'topmostSubform[0].Page2[0].f2_48[0]',
+  firmPhone: 'topmostSubform[0].Page2[0].f2_49[0]',
+  firmAddress: 'topmostSubform[0].Page2[0].f2_50[0]',
+  firmEin: 'topmostSubform[0].Page2[0].f2_51[0]',
 } as const;
 
 // Verified AcroForm field names for the official "Form W-7 (Rev. December 2024)"

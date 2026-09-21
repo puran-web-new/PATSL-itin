@@ -131,7 +131,16 @@ async function buildF1040(caseData: CaseData): Promise<PDFDocument> {
   caseData.dependents.slice(0, 4).forEach((dep, index) => {
     const row = F1040_FIELDS.dependentRows[index];
     if (!row) return;
-    setText(form, row.name, dep.firstLast);
+    // The 2025 form splits the dependent's name into separate first/last cells.
+    // Case data stores one "firstLast" string, so split on the first space: the
+    // first token is the first name, the remainder is the last name (falling back
+    // to the whole string in the first-name cell if there's no space).
+    const trimmedName = (dep.firstLast || '').trim();
+    const spaceAt = trimmedName.indexOf(' ');
+    const depFirst = spaceAt === -1 ? trimmedName : trimmedName.slice(0, spaceAt);
+    const depLast = spaceAt === -1 ? '' : trimmedName.slice(spaceAt + 1).trim();
+    setText(form, row.nameFirst, depFirst);
+    setText(form, row.nameLast, depLast);
     setSsnField(form, row.ssn, dep.ssnOrItin);
     setText(form, row.relationship, dep.relationship);
     if (dep.childTaxCredit) setCheck(form, row.ctc);
@@ -143,7 +152,10 @@ async function buildF1040(caseData: CaseData): Promise<PDFDocument> {
   setText(form, F1040_FIELDS.line1z, totals.wages ? money(totals.wages) : '');
   setText(form, F1040_FIELDS.totalIncome9, totals.totalIncome ? money(totals.totalIncome) : '');
   setText(form, F1040_FIELDS.adjustments10, totals.adjustments ? money(totals.adjustments) : '');
+  // AGI prints on line 11a (page 1) and is carried forward to line 11b (page 2)
+  // on the 2025 form, so fill both.
   setText(form, F1040_FIELDS.agi11, totals.totalIncome ? money(totals.agi) : '');
+  setText(form, F1040_FIELDS.agi11b, totals.totalIncome ? money(totals.agi) : '');
   setText(form, F1040_FIELDS.standardDeduction12, caseData.filingStatus ? money(totals.standardDeduction) : '');
   setText(form, F1040_FIELDS.totalDeductions14, caseData.filingStatus ? money(totals.standardDeduction) : '');
   setText(form, F1040_FIELDS.taxableIncome15, caseData.filingStatus ? money(totals.taxableIncome) : '');
