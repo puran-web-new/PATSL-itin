@@ -124,6 +124,27 @@ export async function notifyStaff(opts: {
 }
 
 
+// Client-facing acknowledgment sent the moment an intake is submitted — the
+// first step of the automated pipeline. Confirms receipt, gives the client their
+// case reference and a status-tracking link, and sets expectations for what
+// happens next, so no one is left wondering whether their submission went through.
+export async function notifyClientIntakeReceived(opts: {
+  email: string;
+  firstName: string;
+  applicationId: string;
+}) {
+  const trackUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://itin.patsl.org'}/status`;
+  return sendEmail(
+    opts.email,
+    'We received your PATSL ITIN application',
+    `<p>Hi ${escapeHtml(opts.firstName)},</p>
+     <p>Thank you — we&#39;ve received your ITIN application and it&#39;s now in our queue. Your Certified Acceptance Agent will review the details and reach out with next steps, including how to complete payment and verify your identity documents.</p>
+     <p>Your case reference is <strong>${applicationReference(opts.applicationId)}</strong>. Keep it handy — you can check your status anytime at <a href="${trackUrl}">${trackUrl}</a> using this reference and your last name.</p>
+     <p>Questions in the meantime? Reply to this email or contact Puran Accounting &amp; Tax Solution Lab at <a href="mailto:info@puranaccounting.com">info@puranaccounting.com</a> or 929-468-3527.</p>
+     <p>— PATSL</p>`
+  );
+}
+
 export async function notifyPackageReady(opts: { email: string; firstName: string; applicationId: string }) {
   const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://itin.patsl.org';
   return sendEmail(

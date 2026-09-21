@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import GoldCrest from '../layout/GoldCrest';
 import { useAdminAuth } from '../../lib/useAdminAuth';
+import { clearAdminToken } from '../../lib/adminSession';
 
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '▣' },
@@ -53,7 +54,7 @@ export default function AdminSidebarShell({ children, title, subtitle }: { child
   }, [token]);
 
   function signOut() {
-    window.sessionStorage.removeItem('patsl-admin-token');
+    clearAdminToken();
     router.replace('/admin');
   }
 
