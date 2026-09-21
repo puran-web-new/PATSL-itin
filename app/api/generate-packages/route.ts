@@ -163,6 +163,18 @@ async function buildF1040(caseData: CaseData): Promise<PDFDocument> {
   setText(form, F1040_FIELDS.phone, caseData.phone);
   setText(form, F1040_FIELDS.email, caseData.email);
 
+  // Paid Preparer Use Only — the CAA's own credentials. These come from the case
+  // file's CAA fields (which are pre-filled from the firm profile in the editor),
+  // falling back to the firm profile directly so the block is never blank even on
+  // an older case that predates those fields.
+  const firm = getFirmProfile();
+  setText(form, F1040_FIELDS.preparerName, caseData.caaReviewerName || firm.reviewerName);
+  setText(form, F1040_FIELDS.preparerPtin, caseData.caaPtin || firm.ptin);
+  setText(form, F1040_FIELDS.firmName, caseData.caaBusinessName || firm.businessName);
+  setText(form, F1040_FIELDS.firmPhone, firm.phone);
+  setText(form, F1040_FIELDS.firmAddress, firm.address);
+  setText(form, F1040_FIELDS.firmEin, caseData.caaEin || firm.ein);
+
   form.flatten();
   return doc;
 }

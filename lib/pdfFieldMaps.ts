@@ -59,6 +59,18 @@ export const F1040_FIELDS = {
   occupation: 'topmostSubform[0].Page2[0].f2_33[0]',
   phone: 'topmostSubform[0].Page2[0].f2_37[0]',
   email: 'topmostSubform[0].Page2[0].f2_38[0]',
+
+  // "Paid Preparer Use Only" block at the bottom of page 2. Field positions
+  // (x/y widget rectangles) were read off the real 2024 Form 1040 template and
+  // matched to the printed labels: preparer name + PTIN on the top row, then the
+  // firm name/phone and firm address/EIN rows beneath. The preparer's signature
+  // and date are intentionally left blank for the CAA to sign by hand.
+  preparerName: 'topmostSubform[0].Page2[0].f2_39[0]',
+  preparerPtin: 'topmostSubform[0].Page2[0].f2_40[0]',
+  firmName: 'topmostSubform[0].Page2[0].f2_41[0]',
+  firmPhone: 'topmostSubform[0].Page2[0].f2_42[0]',
+  firmAddress: 'topmostSubform[0].Page2[0].f2_43[0]',
+  firmEin: 'topmostSubform[0].Page2[0].f2_44[0]',
 } as const;
 
 // Verified AcroForm field names for the official "Form W-7 (Rev. December 2024)"
