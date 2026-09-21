@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, PDFFont, PDFName, PDFPage, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFFont, PDFName, PDFPage, StandardFonts, degrees, rgb } from 'pdf-lib';
 import { get } from '@vercel/blob';
 import fs from 'fs/promises';
 import path from 'path';
@@ -386,6 +386,37 @@ async function buildCOA(caseData: CaseData): Promise<PDFDocument> {
 // ---------------------------------------------------------------------------
 function applyPrintScaling(doc: PDFDocument) {
   doc.catalog.set(PDFName.of('ViewerPreferences'), doc.context.obj({ PrintScaling: PDFName.of('None') }));
+}
+
+// Stamps a translucent, diagonal "COPY - DO NOT FILE" watermark across every page
+// of the given document. Applied ONLY to the client's copy of the official IRS
+// forms (W-7, Certificate of Accuracy, Form 1040) so the client can instantly tell
+// their copy apart from the single signed original PATSL mails to the IRS — and can
+// never mistakenly file the copy themselves. The IRS_MAIL package is never stamped.
+async function stampDoNotFile(doc: PDFDocument) {
+  const font = await doc.embedFont(StandardFonts.HelveticaBold);
+  const label = 'COPY - DO NOT FILE';
+  const size = 30;
+  const textWidth = font.widthOfTextAtSize(label, size);
+  const cos = Math.cos(Math.PI / 4);
+  const sin = Math.sin(Math.PI / 4);
+  for (const page of doc.getPages()) {
+    const { width, height } = page.getSize();
+    // Three stacked diagonal stamps so the mark is unmistakable regardless of how
+    // dense the underlying form is. Each is centered on its band, then offset back
+    // along the 45° text vector so the rotated line sits centered horizontally.
+    for (const centerY of [height * 0.27, height * 0.54, height * 0.81]) {
+      page.drawText(label, {
+        x: width / 2 - (textWidth / 2) * cos,
+        y: centerY - (textWidth / 2) * sin,
+        size,
+        font,
+        color: rgb(0.8, 0.12, 0.12),
+        rotate: degrees(45),
+        opacity: 0.16,
+      });
+    }
+  }
 }
 
 function formatCurrency(cents: number, currency = 'USD') {
@@ -883,13 +914,21 @@ export async function POST(req: NextRequest) {
       sequence = [await buildIrsCoverPage(app, caseData)(), await buildW7(caseData), await buildCOA(caseData)];
     } else if (packageType === 'CLIENT_COPY') {
       // Page 1: cover/next-steps letter · Page 2: itemized invoice · Page 3+: client copies of W-7, COA, 1040.
+      // The three official forms are watermarked "COPY - DO NOT FILE" so this bundle
+      // can never be confused with the signed original PATSL mails to the IRS.
+      const w7Copy = await buildW7(caseData);
+      const coaCopy = await buildCOA(caseData);
+      const f1040Copy = await buildF1040(caseData);
+      await stampDoNotFile(w7Copy);
+      await stampDoNotFile(coaCopy);
+      await stampDoNotFile(f1040Copy);
       sequence = [
         await buildClientCoverPage(app, caseData)(),
         await buildClientContentsPage(app, caseData),
         await buildInvoice(app, caseData, invoiceRow)(),
-        await buildW7(caseData),
-        await buildCOA(caseData),
-        await buildF1040(caseData),
+        w7Copy,
+        coaCopy,
+        f1040Copy,
         await buildIrsRoadmapPage(app),
         await buildClientContactPage(app),
       ];
