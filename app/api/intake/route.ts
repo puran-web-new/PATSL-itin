@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '../../../lib/db';
-import { notifyStaff } from '../../../lib/notify';
+import { notifyStaff, notifyClientIntakeReceived } from '../../../lib/notify';
 
 const allowedTiers = new Set(['EXPRESS_SELF_SERVICE', 'CAA_CONCIERGE', 'B2B_PORTAL']);
 
@@ -70,6 +70,10 @@ export async function POST(req: NextRequest) {
         phone,
         serviceTier,
       }).catch((err) => console.error('Intake staff notification failed:', err));
+
+      notifyClientIntakeReceived({ email, firstName, applicationId }).catch((err) =>
+        console.error('Intake client acknowledgment failed:', err)
+      );
 
       return NextResponse.json({ applicationId, status: applicationResult.rows[0].status }, { status: 201 });
     } catch (error) {

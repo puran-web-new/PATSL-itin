@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getAdminToken, setAdminToken } from '../../lib/adminSession';
 
 export default function AdminSignInPage() {
   const router = useRouter();
@@ -10,8 +11,7 @@ export default function AdminSignInPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const saved = window.sessionStorage.getItem('patsl-admin-token');
-    if (saved) router.replace('/admin/dashboard');
+    if (getAdminToken()) router.replace('/admin/dashboard');
   }, [router]);
 
   async function signIn() {
@@ -21,7 +21,7 @@ export default function AdminSignInPage() {
       const res = await fetch('/api/admin/applications', { headers: { 'x-admin-token': token } });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Invalid token.');
-      window.sessionStorage.setItem('patsl-admin-token', token);
+      setAdminToken(token);
       router.replace('/admin/dashboard');
     } catch (err: any) {
       setError(err.message || 'Sign-in failed.');
@@ -35,7 +35,7 @@ export default function AdminSignInPage() {
       <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900/70 p-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">Staff access</p>
         <h1 className="mt-2 text-2xl font-bold text-white">PATSL Admin Console</h1>
-        <p className="mt-2 text-sm text-slate-400">Enter your admin access token to open the control center.</p>
+        <p className="mt-2 text-sm text-slate-400">Enter your admin access token to open the control center. You&apos;ll stay signed in on this browser across tabs and reloads until you sign out.</p>
 
         <form
           onSubmit={(e) => {

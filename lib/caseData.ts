@@ -133,12 +133,14 @@ export const emptyCaseData: CaseData = {
   invoiceNumber: '', paymentMethod: '', serviceFeeOverride: '',
 };
 
-const STANDARD_DEDUCTION_2024: Record<string, number> = {
-  SINGLE: 14600,
-  MARRIED_FILING_SEPARATELY: 14600,
-  MARRIED_FILING_JOINTLY: 29200,
-  QUALIFYING_SURVIVING_SPOUSE: 29200,
-  HEAD_OF_HOUSEHOLD: 21900,
+// 2025 tax-year standard deduction amounts, as printed in the "Standard deduction
+// for—" box on the 2025 Form 1040 itself (raised under the 2025 tax law).
+const STANDARD_DEDUCTION_2025: Record<string, number> = {
+  SINGLE: 15750,
+  MARRIED_FILING_SEPARATELY: 15750,
+  MARRIED_FILING_JOINTLY: 31500,
+  QUALIFYING_SURVIVING_SPOUSE: 31500,
+  HEAD_OF_HOUSEHOLD: 23625,
 };
 
 function toNumber(value: string | undefined): number {
@@ -158,7 +160,7 @@ export function deriveFinancials(data: CaseData) {
   const agi = Math.max(0, totalIncome - adjustments);
   const standardDeduction = data.standardDeduction
     ? toNumber(data.standardDeduction)
-    : STANDARD_DEDUCTION_2024[data.filingStatus] || 0;
+    : STANDARD_DEDUCTION_2025[data.filingStatus] || 0;
   const taxableIncome = Math.max(0, agi - standardDeduction);
   const tax = toNumber(data.taxAmount);
   const withholding = toNumber(data.federalWithholding);
